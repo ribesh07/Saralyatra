@@ -1,0 +1,24 @@
+name: mapbox
+description: A Flutter app using Mapbox Directions API and flutter_map for display.
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.17.0 <4.0.0"
+
+dependencies:
+  flutter_dotenv: ^5.2.1
+  flutter:
+    sdk: flutter
+  # flutter_background_service: ^5.1.0
+  flutter_map:
+  geolocator: ^14.0.0
+  http:
+  latlong2:
+  location:
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - .env
