@@ -10,11 +10,25 @@ import 'package:geolocator/geolocator.dart' as geolocator;
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
 import 'package:location/location.dart';
+import 'package:mapbox/provider.dart';
+// import 'package:mapbox/routeMap.dart';
+import 'package:mapbox/route_map.dart';
+
+import 'package:provider/provider.dart';
+
+import 'map_services.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
-  runApp(MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => RouteProvider(),
+      child: MaterialApp(
+        home: MyApp(),
+      ),
+    ),
+  );
 
   Geolocator.checkPermission().then((status) {
     if (status == LocationPermission.denied) {
@@ -154,7 +168,43 @@ class _MapScreenState extends State<MapScreen> {
     );
 
     return Scaffold(
-      appBar: AppBar(title: Text("Mapbox Directions")),
+      appBar: AppBar(
+        title: Text("Mapbox Directions"),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: () {
+              _initLocation();
+              if (currentLocation != null) {
+                mapController.move(currentLocation!, 13.0);
+              }
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.map),
+            onPressed: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    // builder: (context) => RouteMap(),
+                    builder: (context) => RouteMapPage(),
+                  ));
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.file_download),
+            onPressed: () {
+              loadRouteFromGeoJson().then((points) {
+                print("Loaded Route Points: $points");
+                setState(() {
+                  routePoints = points;
+                });
+              });
+            },
+          ),
+        ],
+        backgroundColor: Colors.blue,
+      ),
       body: currentLocation == null
           ? Center(child: CircularProgressIndicator())
           : FlutterMap(
