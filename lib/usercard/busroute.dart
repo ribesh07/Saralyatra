@@ -46,7 +46,7 @@ class _BusControlPanelState extends State<BusControlPanel> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Bus Control Panel'),
+        title: Text('Bus Route'),
         backgroundColor: Colors.red,
       ),
       body: Container(

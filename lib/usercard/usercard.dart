@@ -7,6 +7,7 @@ import 'package:mapbox/usercard/statement.dart';
 import 'package:mapbox/usercard/busroute.dart';
 
 import 'package:flutter/material.dart';
+import 'package:mapbox/usercard/topup.dart';
 
 String generate16DigitNumber() {
   final random = Random();
@@ -152,7 +153,7 @@ class UserCardApp extends StatelessWidget {
                               } else if (action['label'] == 'Statement') {
                                 return BankStatementScreen();
                               } else if (action['label'] == 'Topup') {
-                                return Container();
+                                return TopUpPage();
                               } else if (action['label'] == 'Report') {
                                 return Helpline();
                               }

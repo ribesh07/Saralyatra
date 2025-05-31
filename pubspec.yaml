@@ -30,5 +30,8 @@ flutter:
     - assets/mahasagar.geojson
     - assets/sanga.geojson
     - assets/mahasagar-bus.json
+    - assets/images/esewa.png
+    - assets/images/khalti.png
+
 
     # - assets/marker.png
