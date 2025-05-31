@@ -79,7 +79,7 @@ class _RouteMapPageState extends State<RouteMapPage> {
           initialZoom: 13.0,
         );
         return Scaffold(
-          appBar: AppBar(title: Text("Mapbox route with flutter_map")),
+          appBar: AppBar(title: Text("Mapbox route")),
           body: FlutterMap(
             mapController: _mapController,
             options: mapOptions,
@@ -99,7 +99,7 @@ class _RouteMapPageState extends State<RouteMapPage> {
                   polylines: [
                     Polyline(
                       points: points,
-                      strokeWidth: 4.0,
+                      strokeWidth: 5.0,
                       color: Colors.blueAccent,
                     ),
                   ],

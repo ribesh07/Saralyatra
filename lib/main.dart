@@ -194,7 +194,13 @@ class _MapScreenState extends State<MapScreen> {
           IconButton(
             icon: Icon(Icons.file_download),
             onPressed: () {
-              loadRouteFromGeoJson().then((points) {
+              // loadRouteFromGeoJson().then((points) {
+              //   print("Loaded Route Points: $points");
+              //   setState(() {
+              //     routePoints = points;
+              //   });
+              // });
+              loadRouteFromGeoJsonSanga().then((points) {
                 print("Loaded Route Points: $points");
                 setState(() {
                   routePoints = points;

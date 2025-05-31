@@ -25,5 +25,7 @@ flutter:
   assets:
     - .env
     - assets/mahasagar.geojson
+    - assets/sanga.geojson
     - assets/mahasagar-bus.json
+
     # - assets/marker.png
