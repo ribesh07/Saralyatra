@@ -1,9 +1,5 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
-
-import 'package:card/busroute.dart';
-import 'package:card/cardfun.dart';
-import 'package:card/cardi.dart';
-import 'package:card/test.dart';
+import 'package:card/usercard.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -61,19 +57,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -98,40 +81,22 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            // ElevatedButton(
+            //     onPressed: () {
+            //       Navigator.push(
+            //         context,
+            //         MaterialPageRoute(builder: (context) => CardButtons()),
+            //       );
+            //     },
+            //     child: const Text(
+            //       "full_viewcard",
+            //       style: TextStyle(),
+            //     )),
             ElevatedButton(
                 onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => cardiac()),
-                  );
-                },
-                child: Text('card')),
-            const SizedBox(
-              height: 40,
-            ),
-            ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).push(
+                  Navigator.push(
+                    context,
                     MaterialPageRoute(builder: (context) => UserCardApp()),
-                  );
-                },
-                child: const Text(
-                  "full_viewcard",
-                  style: TextStyle(),
-                )),
-            ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => BusInfoApp()),
-                  );
-                },
-                child: const Text(
-                  "full_viewcard",
-                  style: TextStyle(),
-                )),
-            ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => BusRoutesList()),
                   );
                 },
                 child: const Text(

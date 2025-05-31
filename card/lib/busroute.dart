@@ -4,8 +4,6 @@ import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 
-void main() => runApp(BusInfoApp());
-
 class BusInfoApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
