@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:latlong2/latlong.dart';
 
-Future<List<LatLng>> loadRouteFromGeoJson() async {
-  final geoJson = await rootBundle.loadString('assets/mahasagar.geojson');
-  final data = json.decode(geoJson);
-  final List coords = data['coordinates'];
+Future<List<LatLng>> loadRouteFromGeoJson(String data) async {
+  final geoJson = await rootBundle.loadString('assets/${data}.geojson');
+  final decoded = json.decode(geoJson);
+  final List coords = decoded['coordinates'];
 
   final List<LatLng> points = [];
 

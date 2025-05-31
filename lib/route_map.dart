@@ -9,12 +9,15 @@ import 'package:geolocator/geolocator.dart';
 import 'map_services.dart';
 
 class RouteMapPage extends StatefulWidget {
+  final String data;
+  RouteMapPage({required this.data});
   @override
   _RouteMapPageState createState() => _RouteMapPageState();
 }
 
 class _RouteMapPageState extends State<RouteMapPage> {
   late final MapController _mapController;
+  // final dataPath = widget.data;
 
   String accessToken = dotenv.get('MAPBOX_API', fallback: 'default_token');
 
@@ -24,7 +27,7 @@ class _RouteMapPageState extends State<RouteMapPage> {
     _mapController = MapController();
 
     // Load route points on startup
-    loadRouteFromGeoJson().then((points) {
+    loadRouteFromGeoJson(widget.data).then((points) {
       context.read<RouteProvider>().setRoutePoints(points);
       // Zoom map to route
       if (points.isNotEmpty) {

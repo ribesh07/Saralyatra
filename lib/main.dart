@@ -10,9 +10,11 @@ import 'package:geolocator/geolocator.dart' as geolocator;
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
 import 'package:location/location.dart';
+// import 'package:mapbox/MyHomePage.dart';
 import 'package:mapbox/provider.dart';
 // import 'package:mapbox/routeMap.dart';
 import 'package:mapbox/route_map.dart';
+import 'package:mapbox/usercard/usercard.dart';
 
 import 'package:provider/provider.dart';
 
@@ -24,9 +26,8 @@ Future<void> main() async {
   runApp(
     ChangeNotifierProvider(
       create: (_) => RouteProvider(),
-      child: MaterialApp(
-        home: MyApp(),
-      ),
+      child:
+          MaterialApp(debugShowCheckedModeBanner: false, home: UserCardApp()),
     ),
   );
 
@@ -45,18 +46,6 @@ Future<void> main() async {
     }
     print("Function triggered at: ${DateTime.now()}");
   });
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Mapbox Directions',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: MapScreen(),
-      debugShowCheckedModeBanner: false,
-    );
-  }
 }
 
 class MapScreen extends StatefulWidget {
@@ -187,7 +176,7 @@ class _MapScreenState extends State<MapScreen> {
                   context,
                   MaterialPageRoute(
                     // builder: (context) => RouteMap(),
-                    builder: (context) => RouteMapPage(),
+                    builder: (context) => RouteMapPage(data: 'Chakrapath'),
                   ));
             },
           ),
