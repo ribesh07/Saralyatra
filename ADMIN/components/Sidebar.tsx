@@ -68,10 +68,10 @@ import { useState } from "react";
 const Sidebar = ({onSelect} : SidebarProps) => {
     const [activeTab, setActiveTab] = useState('customers');
     return (<>  
-      <div className="w-64 bg-white shadow-lg flex-shrink-0">
+      <div className="fixed top-0 left-0 h-screen w-60 bg-white shadow-lg z-50">
         
         {/* Sidebar Header */}
-        <div className="flex items-center justify-center h-16 px-6 border-b border-gray-200">
+        <div className="sticky flex items-center justify-center h-16 px-6 border-b border-gray-200">
           <div className="flex items-center space-x-2">
             <Bus className="h-8 w-8 text-blue-600" />
             <span className="text-xl font-bold text-gray-900">BusAdmin</span>

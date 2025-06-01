@@ -39,7 +39,7 @@ const DashboardPage = () => {
   return (
   <>
       {/* Main Content Area */}
-    <div className="min-h-screen bg-gray-100 flex">
+    <div className="min-h-screen bg-gray-100 flex overflow-auto">
       {/* Fixed Sidebar */}
       < Sidebar onSelect={setActiveTab}/>
 
@@ -48,7 +48,7 @@ const DashboardPage = () => {
        < Header />
         
         {/* Page Content */}
-        <main className="flex-1 p-6">
+        <main className="flex-1 ml-60 mt-16 overflow-auto">
           
           {renderContent()}
         </main>
