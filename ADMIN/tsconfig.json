@@ -26,8 +26,8 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
-    // "app/analytics/page.tsx",
+    ".next/types/**/*.ts",
+    "app/test/page.jsx" // "app/analytics/page.tsx",
     // "app/users/page.tsx"
   ],
   "exclude": ["node_modules"]

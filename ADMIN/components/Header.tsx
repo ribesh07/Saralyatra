@@ -27,7 +27,7 @@
 //     </div>
 //   );
 // "use client";
-import { ChevronDown } from "lucide-react";
+import {  ChevronDown } from "lucide-react";
 
 
   const Header = () => {
@@ -36,8 +36,8 @@ import { ChevronDown } from "lucide-react";
      {/* Top Navigation */}
       
         <header className="fixed top-0 left-60 right-0 h-16 bg-white shadow-sm border-b border-gray-200 z-40">
- 
           <div className="flex items-center justify-between h-16 px-6">
+
             <div className="flex items-center space-x-4">
             </div>
             {/* Right side */}

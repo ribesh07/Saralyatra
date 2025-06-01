@@ -10,6 +10,7 @@ import Bookings from "@/components/Bookings";
 import BusRoutes from "@/components/BusRoutes";
 import Analytics from "@/components/Analytics";
 import UsersPage from "@/components/Users";
+import ChatButton from "@/components/ChatButton";
 // import Analytics from "@/components/Analytics";
 
 const DashboardPage = () => {
@@ -49,7 +50,7 @@ const DashboardPage = () => {
         
         {/* Page Content */}
         <main className="flex-1 ml-60 mt-16 overflow-auto">
-          
+          <ChatButton />
           {renderContent()}
         </main>
       </div>
