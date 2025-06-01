@@ -2,6 +2,7 @@
 
 import 'package:device_apps/device_apps.dart';
 import 'package:driver/main.dart';
+import 'package:driver/mapbox/route_map.dart';
 import 'package:driver/setups.dart';
 import 'package:driver/toggleer.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +18,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool isSwitched = false;
   int selectedIndex = 0;
+  String selectedMap = '';
 
   final List<Map<String, String>> items = [
     {"title": "Koteshwar-Kalanki-satdobato", "label": " 1"},
@@ -171,6 +173,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             isSelected: index == selectedIndex,
                             onTap: () {
                               setState(() {
+                                selectedMap = items[index]['title']!;
+                                print(selectedMap);
                                 selectedIndex = index;
                               });
                             },
@@ -187,6 +191,25 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: ElevatedButton(
                       child: Text('Map'),
                       onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) {
+                            if (selectedMap == 'Koteshwar-Kalanki-satdobato') {
+                              return RouteMapPage(
+                                fileName: 'mahasagar',
+                              );
+                            } else if (selectedMap ==
+                                'Satdobato-Kalanki-koteshwar') {
+                              return RouteMapPage(fileName: 'mahasagar');
+                            } else if (selectedMap == 'Koteshwar-Thimi-Sanga') {
+                              return RouteMapPage(fileName: 'sanga');
+                            } else if (selectedMap == 'Thimi-Sanga-Koteshwar') {
+                              return RouteMapPage(fileName: 'sanga');
+                            } else {
+                              return RouteMapPage(fileName: 'mahasagar');
+                            }
+                          }),
+                        );
                         // Navigator.of(context).push(
                         //   MaterialPageRoute(
                         //       builder: (context) => const RouteMapPage()),
