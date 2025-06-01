@@ -1,103 +1,265 @@
-import Image from "next/image";
+"use client"
+import React, { useState, useEffect, useRef } from 'react';
+import { Send, Users, Shield, User, MessageCircle, Trash2, Circle } from 'lucide-react';
 
-export default function Home() {
+const AdminChat = () => {
+  const admin = { id: 1, name: 'Admin', role: 'admin', avatar: '👨‍💼' };
+  
+  const [users] = useState([
+    { id: 2, name: 'Alice Johnson', role: 'user', avatar: '👩', online: true, unread: 2 },
+    { id: 3, name: 'Bob Smith', role: 'user', avatar: '👨', online: true, unread: 0 },
+    { id: 4, name: 'Carol Davis', role: 'user', avatar: '👩‍🦱', online: false, unread: 1 },
+    { id: 5, name: 'David Wilson', role: 'user', avatar: '👨‍🦲', online: true, unread: 0 },
+    { id: 6, name: 'Emma Brown', role: 'user', avatar: '👩‍🦰', online: true, unread: 3 },
+  ]);
+  
+  const [conversations, setConversations] = useState({
+    2: [
+      { id: 1, senderId: 2, senderName: 'Alice Johnson', text: 'Hi! I need help with my account settings.', timestamp: Date.now() - 300000 },
+      { id: 2, senderId: 1, senderName: 'Admin', text: 'Hello Alice! I\'d be happy to help you with your account. What specifically do you need assistance with?', timestamp: Date.now() - 240000 },
+      { id: 3, senderId: 2, senderName: 'Alice Johnson', text: 'I can\'t seem to update my profile picture. It keeps giving me an error.', timestamp: Date.now() - 180000 },
+    ],
+    3: [
+      { id: 4, senderId: 3, senderName: 'Bob Smith', text: 'Thanks for the quick response earlier!', timestamp: Date.now() - 120000 },
+    ],
+    4: [
+      { id: 5, senderId: 4, senderName: 'Carol Davis', text: 'Is the maintenance scheduled for tonight still happening?', timestamp: Date.now() - 60000 },
+    ],
+    5: [],
+    6: [
+      { id: 6, senderId: 6, senderName: 'Emma Brown', text: 'Hi there!', timestamp: Date.now() - 400000 },
+      { id: 7, senderId: 6, senderName: 'Emma Brown', text: 'I have a billing question', timestamp: Date.now() - 395000 },
+      { id: 8, senderId: 6, senderName: 'Emma Brown', text: 'Could you help me understand the recent charges?', timestamp: Date.now() - 390000 },
+    ]
+  });
+  
+  const [selectedUser, setSelectedUser] = useState(users[0]);
+  const [newMessage, setNewMessage] = useState('');
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [conversations, selectedUser]);
+
+  const sendMessage = () => {
+    if (!newMessage.trim() || !selectedUser) return;
+
+    const message = {
+      id: Date.now(),
+      senderId: admin.id,
+      senderName: admin.name,
+      text: newMessage,
+      timestamp: Date.now()
+    };
+
+    setConversations(prev => ({
+      ...prev,
+      [selectedUser.id]: [...(prev[selectedUser.id] || []), message]
+    }));
+    
+    setNewMessage('');
+  };
+
+  const deleteMessage = (messageId) => {
+    setConversations(prev => ({
+      ...prev,
+      [selectedUser.id]: prev[selectedUser.id].filter(msg => msg.id !== messageId)
+    }));
+  };
+
+  const formatTime = (timestamp) => {
+    return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const getLastMessage = (userId) => {
+    const userMessages = conversations[userId] || [];
+    return userMessages[userMessages.length - 1];
+  };
+
+  const markAsRead = (userId) => {
+    // In a real app, this would update the unread count
+    console.log(`Marked conversation with user ${userId} as read`);
+  };
+
+  useEffect(() => {
+    if (selectedUser) {
+      markAsRead(selectedUser.id);
+    }
+  }, [selectedUser]);
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="flex h-screen bg-gray-50">
+      {/* Users Sidebar */}
+      <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+        {/* Admin Header */}
+        {/* <div className="p-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+          <div className="flex items-center space-x-3">
+            <span className="text-2xl">{admin.avatar}</span>
+            <div>
+              <div className="font-semibold">{admin.name}</div>
+              <div className="text-sm opacity-90 flex items-center">
+                <Shield size={14} className="mr-1" />
+                Administrator
+              </div>
+            </div>
+          </div>
+        </div> */}
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+        {/* Users List Header */}
+        <div className="p-4 border-b border-gray-200">
+          <div className="flex items-center space-x-2 text-gray-700">
+            <Users size={18} />
+            <span className="font-medium">Active Conversations</span>
+            <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">
+              {users.length}
+            </span>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        {/* Users List */}
+        <div className="flex-1 overflow-y-auto">
+          {users.map(user => {
+            const lastMessage = getLastMessage(user.id);
+            return (
+              <div
+                key={user.id}
+                onClick={() => setSelectedUser(user)}
+                className={`p-4 border-b border-gray-100 cursor-pointer transition-colors hover:bg-gray-50 ${
+                  selectedUser?.id === user.id ? 'bg-indigo-50 border-l-4 border-l-indigo-500' : ''
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="relative">
+                    <span className="text-xl">{user.avatar}</span>
+                    <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white ${
+                      user.online ? 'bg-green-400' : 'bg-gray-400'
+                    }`}></div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-gray-900 truncate">{user.name}</span>
+                      {user.unread > 0 && (
+                        <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-5 text-center">
+                          {user.unread}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center text-sm text-gray-500">
+                      <Circle size={8} className={`mr-2 ${user.online ? 'text-green-400' : 'text-gray-400'} fill-current`} />
+                      {user.online ? 'Online' : 'Offline'}
+                    </div>
+                    {lastMessage && (
+                      <p className="text-sm text-gray-600 truncate mt-1">
+                        {lastMessage.senderId === admin.id ? 'You: ' : ''}{lastMessage.text}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Chat Area */}
+      <div className="flex-1 flex flex-col">
+        {selectedUser ? (
+          <>
+            {/* Chat Header */}
+            <div className="p-4 bg-white border-b border-gray-200 shadow-sm">
+              <div className="flex items-center space-x-3">
+                <div className="relative">
+                  <span className="text-2xl">{selectedUser.avatar}</span>
+                  <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
+                    selectedUser.online ? 'bg-green-400' : 'bg-gray-400'
+                  }`}></div>
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-800">{selectedUser.name}</h2>
+                  <p className="text-sm text-gray-500">
+                    {selectedUser.online ? 'Online now' : 'Last seen recently'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+              {(conversations[selectedUser.id] || []).map(message => (
+                <div
+                  key={message.id}
+                  className={`flex group ${message.senderId === admin.id ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl relative ${
+                    message.senderId === admin.id
+                      ? 'bg-indigo-600 text-white rounded-br-md'
+                      : 'bg-white text-gray-800 rounded-bl-md shadow-sm border border-gray-100'
+                  }`}>
+                    <div className="text-sm leading-relaxed">{message.text}</div>
+                    <div className={`text-xs mt-1 ${
+                      message.senderId === admin.id ? 'text-indigo-200' : 'text-gray-500'
+                    }`}>
+                      {formatTime(message.timestamp)}
+                    </div>
+                    {message.senderId === admin.id && (
+                      <button
+                        onClick={() => deleteMessage(message.id)}
+                        className="absolute -top-2 -left-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Message Input */}
+            <div className="p-4 bg-white border-t border-gray-200">
+              <div className="flex space-x-3 items-end">
+                <div className="flex-1">
+                  <textarea
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage();
+                      }
+                    }}
+                    placeholder={`Message ${selectedUser.name}...`}
+                    className="w-full p-3 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none"
+                    rows="1"
+                    style={{ minHeight: '44px', maxHeight: '120px' }}
+                  />
+                </div>
+                <button
+                  onClick={sendMessage}
+                  disabled={!newMessage.trim()}
+                  className="p-3 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <Send size={20} />
+                </button>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="flex-1 flex items-center justify-center bg-gray-50">
+            <div className="text-center">
+              <MessageCircle size={48} className="mx-auto text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-600 mb-2">Select a conversation</h3>
+              <p className="text-gray-500">Choose a user from the sidebar to start chatting</p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
-}
+};
+
+export default AdminChat;
