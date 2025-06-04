@@ -21,74 +21,136 @@ const UsersPage = () => {
   const [filterStatus, setFilterStatus] = useState("all");
   const [showAddModal, setShowAddModal] = useState(false);
 
+const [name, setName] = useState("");
+const [email, setEmail] = useState("");
+const [phone, setPhone] = useState("");
+const [location, setLocation] = useState("");
+const [customers, setCustomers] = useState([
+  {
+    id: "C001",
+    name: "John Doe",
+    email: "john.doe@email.com",
+    phone: "+1 (555) 123-4567",
+    location: "New York, NY",
+    joinDate: "2024-01-15",
+    totalBookings: 12,
+    totalSpent: 2400,
+    status: "active",
+    lastBooking: "2024-05-20",
+    avatar: "JD",
+  },
+  {
+    id: "C002",
+    name: "Jane Smith",
+    email: "jane.smith@email.com",
+    phone: "+1 (555) 987-6543",
+    location: "Los Angeles, CA",
+    joinDate: "2024-02-03",
+    totalBookings: 8,
+    totalSpent: 1600,
+    status: "active",
+    lastBooking: "2024-05-18",
+    avatar: "JS",
+  },
+  {
+    id: "C003",
+    name: "Mike Johnson",
+    email: "mike.johnson@email.com",
+    phone: "+1 (555) 456-7890",
+    location: "Miami, FL",
+    joinDate: "2024-03-10",
+    totalBookings: 15,
+    totalSpent: 3000,
+    status: "active",
+    lastBooking: "2024-05-22",
+    avatar: "MJ",
+  },
+  {
+    id: "C004",
+    name: "Sarah Wilson",
+    email: "sarah.wilson@email.com",
+    phone: "+1 (555) 321-0987",
+    location: "Chicago, IL",
+    joinDate: "2024-01-28",
+    totalBookings: 3,
+    totalSpent: 450,
+    status: "inactive",
+    lastBooking: "2024-04-10",
+    avatar: "SW",
+  },
+  {
+    id: "C005",
+    name: "David Brown",
+    email: "david.brown@email.com",
+    phone: "+1 (555) 654-3210",
+    location: "Seattle, WA",
+    joinDate: "2024-04-05",
+    totalBookings: 6,
+    totalSpent: 1200,
+    status: "active",
+    lastBooking: "2024-05-19",
+    avatar: "DB",
+  },
+]);
 
-  const customers = [
-    {
-      id: "C001",
-      name: "John Doe",
-      email: "john.doe@email.com",
-      phone: "+1 (555) 123-4567",
-      location: "New York, NY",
-      joinDate: "2024-01-15",
-      totalBookings: 12,
-      totalSpent: 2400,
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  const customer = { name, email, phone, location };
+
+  if (!name || !email || !phone || !location) {
+    alert("Please fill in all fields.");
+    return;
+  }
+
+  console.log("Submitting customer:", customer);
+
+  try {
+    const res = await fetch("/api/users", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(customer),
+    });
+
+    const result = await res.json();
+    console.log("API Response:", result);
+
+    const newCustomer = {
+      id: `C${(customers.length + 1).toString().padStart(3, "0")}`,
+      name,
+      email,
+      phone,
+      location,
+      joinDate: new Date().toISOString().slice(0, 10),
+      totalBookings: 0,
+      totalSpent: 0,
       status: "active",
-      lastBooking: "2024-05-20",
-      avatar: "JD",
-    },
-    {
-      id: "C002",
-      name: "Jane Smith",
-      email: "jane.smith@email.com",
-      phone: "+1 (555) 987-6543",
-      location: "Los Angeles, CA",
-      joinDate: "2024-02-03",
-      totalBookings: 8,
-      totalSpent: 1600,
-      status: "active",
-      lastBooking: "2024-05-18",
-      avatar: "JS",
-    },
-    {
-      id: "C003",
-      name: "Mike Johnson",
-      email: "mike.johnson@email.com",
-      phone: "+1 (555) 456-7890",
-      location: "Miami, FL",
-      joinDate: "2024-03-10",
-      totalBookings: 15,
-      totalSpent: 3000,
-      status: "active",
-      lastBooking: "2024-05-22",
-      avatar: "MJ",
-    },
-    {
-      id: "C004",
-      name: "Sarah Wilson",
-      email: "sarah.wilson@email.com",
-      phone: "+1 (555) 321-0987",
-      location: "Chicago, IL",
-      joinDate: "2024-01-28",
-      totalBookings: 3,
-      totalSpent: 450,
-      status: "inactive",
-      lastBooking: "2024-04-10",
-      avatar: "SW",
-    },
-    {
-      id: "C005",
-      name: "David Brown",
-      email: "david.brown@email.com",
-      phone: "+1 (555) 654-3210",
-      location: "Seattle, WA",
-      joinDate: "2024-04-05",
-      totalBookings: 6,
-      totalSpent: 1200,
-      status: "active",
-      lastBooking: "2024-05-19",
-      avatar: "DB",
-    },
-  ];
+      lastBooking: "Not booked yet",
+      avatar: name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase(),
+    };
+
+    setCustomers([...customers, newCustomer]);
+    if (!res.ok) {
+      throw new Error(result.message || "Failed to add customer");
+    }
+    // customers = [customer, ...customers];
+    setName("");
+    setEmail("");
+    setPhone("");
+    setLocation("");
+
+    setShowAddModal(false);
+  } catch (err) {
+    console.error("Failed to add customer", err);
+  }
+};
+  // const customers = []
 
   const filteredCustomers = customers.filter((customer) => {
     const matchesSearch =
@@ -196,13 +258,19 @@ const UsersPage = () => {
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
         <div className="flex items-center space-x-2">
-          <button className="text-blue-600 hover:text-blue-900" title="View">
+          <button 
+            onClick={() => alert(`Viewing details for ${customer.name}`)}
+           className="text-blue-600 hover:text-blue-900" title="View">
             <Eye className="h-4 w-4" />
           </button>
-          <button className="text-gray-600 hover:text-gray-900" title="Edit">
+          <button
+            onClick={() => alert(`Editing ${customer.name}`)}
+          className="text-gray-600 hover:text-gray-900" title="Edit">
             <Edit className="h-4 w-4" />
           </button>
-          <button className="text-red-600 hover:text-red-900" title="Delete">
+          <button 
+          onClick={() => alert(`Deleting ${customer.name}`)} 
+          className="text-red-600 hover:text-red-900" title="Delete">
             <Trash2 className="h-4 w-4" />
           </button>
         </div>
@@ -341,23 +409,7 @@ const UsersPage = () => {
                 Showing 1 to {filteredCustomers.length} of {customers.length}{" "}
                 results
               </div>
-              <div className="flex items-center space-x-2">
-                <button className="px-3 py-1 border border-gray-300 text-sm rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
-                  Previous
-                </button>
-                <button className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">
-                  1
-                </button>
-                <button className="px-3 py-1 border border-gray-300 text-sm rounded-md hover:bg-gray-50">
-                  2
-                </button>
-                <button className="px-3 py-1 border border-gray-300 text-sm rounded-md hover:bg-gray-50">
-                  3
-                </button>
-                <button className="px-3 py-1 border border-gray-300 text-sm rounded-md hover:bg-gray-50">
-                  Next
-                </button>
-              </div>
+             
             </div>
           </div>
 
@@ -370,20 +422,25 @@ const UsersPage = () => {
                     Add New Customer
                   </h3>
                   <button
-                    onClick={() => setShowAddModal(false)}
+                    onClick={() =>{ setShowAddModal(false);
+                      console.log("Modal closed")
+                      }
+                    }
                     className="text-gray-400 hover:text-gray-600"
                   >
                     ×
                   </button>
                 </div>
 
-                <form className="space-y-4">
+                <form className="space-y-4" onSubmit={handleSubmit}>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Full Name
                     </label>
                     <input
                       type="text"
+                       value={name}
+                      onChange={(e) => setName(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Enter customer name"
                     />
@@ -395,6 +452,8 @@ const UsersPage = () => {
                     </label>
                     <input
                       type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Enter email address"
                     />
@@ -406,6 +465,8 @@ const UsersPage = () => {
                     </label>
                     <input
                       type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Enter phone number"
                     />
@@ -417,6 +478,8 @@ const UsersPage = () => {
                     </label>
                     <input
                       type="text"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Enter location"
                     />

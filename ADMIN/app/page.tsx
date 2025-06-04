@@ -10,6 +10,7 @@ import Bookings from "@/components/Bookings";
 import BusRoutes from "@/components/BusRoutes";
 import Analytics from "@/components/Analytics";
 import UsersPage from "@/components/Users";
+import ChatButton from "@/components/ChatButton";
 // import Analytics from "@/components/Analytics";
 
 const DashboardPage = () => {
@@ -39,7 +40,7 @@ const DashboardPage = () => {
   return (
   <>
       {/* Main Content Area */}
-    <div className="min-h-screen bg-gray-100 flex">
+    <div className="min-h-screen bg-gray-100 flex overflow-auto">
       {/* Fixed Sidebar */}
       < Sidebar onSelect={setActiveTab}/>
 
@@ -48,8 +49,8 @@ const DashboardPage = () => {
        < Header />
         
         {/* Page Content */}
-        <main className="flex-1 p-6">
-          
+        <main className="flex-1 ml-60 mt-16 overflow-auto">
+          <ChatButton />
           {renderContent()}
         </main>
       </div>
