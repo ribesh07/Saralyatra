@@ -1,7 +1,10 @@
+<<<<<<< HEAD
 // ignore_for_file: prefer_const_constructors
 
 import 'package:driver/payhistory.dart';
 import 'package:driver/setups.dart';
+=======
+>>>>>>> d40005e (feat: driver side UI)
 import 'package:flutter/material.dart';
 
 class History extends StatefulWidget {
@@ -12,6 +15,7 @@ class History extends StatefulWidget {
 }
 
 class _HistoryState extends State<History> {
+<<<<<<< HEAD
   List<Map<String, String>> tiles = [
     {
       "title": "Date1",
@@ -93,4 +97,12 @@ class _HistoryState extends State<History> {
           ),
         ),
       );
+=======
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Center(child: Text('History')),
+    );
+  }
+>>>>>>> d40005e (feat: driver side UI)
 }

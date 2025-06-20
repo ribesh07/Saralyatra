@@ -1,4 +1,5 @@
 // ignore_for_file: camel_case_types, sized_box_for_whitespace, prefer_const_constructors, prefer_const_literals_to_create_immutables
+<<<<<<< HEAD
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors, avoid_unnecessary_containers, camel_case_types, sized_box_for_whitespace
 
 //import 'dart:ffi';
@@ -477,5 +478,21 @@ class _profileSettingState extends State<profileSetting> {
         ),
       ),
     );
+=======
+
+import 'package:flutter/material.dart';
+
+class editDetails extends StatefulWidget {
+  const editDetails({super.key});
+
+  @override
+  State<editDetails> createState() => _editDetailsState();
+}
+
+class _editDetailsState extends State<editDetails> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold();
+>>>>>>> d40005e (feat: driver side UI)
   }
 }

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // ignore_for_file: prefer_const_literals
 import 'dart:async';
 
@@ -38,6 +39,16 @@ Future<void> main() async {
     }
     print("Function triggered at: ${DateTime.now()}");
   });
+=======
+// ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
+
+import 'package:flutter/material.dart';
+
+import 'mainpage.dart';
+
+void main() {
+  runApp(const MyApp());
+>>>>>>> d40005e (feat: driver side UI)
 }
 
 class MyApp extends StatelessWidget {
@@ -84,6 +95,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     MaterialPageRoute(builder: (context) => const MainPage()),
                   );
                 },
+<<<<<<< HEAD
                 child: Text('main page')),
             ElevatedButton(
                 onPressed: () {
@@ -100,6 +112,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   );
                 },
                 child: Text('login')),
+=======
+                child: Text('main page'))
+>>>>>>> d40005e (feat: driver side UI)
           ],
         ),
       ),

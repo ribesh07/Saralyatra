@@ -26,15 +26,22 @@ if (flutterVersionName == null) {
 android {
     namespace = "com.example.driver"
     compileSdk = flutter.compileSdkVersion
+<<<<<<< HEAD
       ndkVersion "26.1.10909125" 
+=======
+    ndkVersion = flutter.ndkVersion
+>>>>>>> d40005e (feat: driver side UI)
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+<<<<<<< HEAD
     kotlinOptions {
         jvmTarget = '1.8'
     }
+=======
+>>>>>>> d40005e (feat: driver side UI)
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
