@@ -4,12 +4,18 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   file_selector_windows
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 2b2b1a4 (updated history)
   geolocator_windows
   open_document
   printing
   share_plus
   smart_auth
   url_launcher_windows
+=======
+>>>>>>> d40005e (feat: driver side UI)
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST

@@ -40,7 +40,7 @@ class _SwipeToggleState extends State<SwipeToggle> {
         height: toggleHeight,
         padding: EdgeInsets.symmetric(horizontal: 5),
         decoration: BoxDecoration(
-          color: isOnline ? Colors.green[400] : Colors.grey[400],
+          color: isOnline ? Color.fromARGB(255, 3, 179, 255) : Colors.grey[400],
           borderRadius: BorderRadius.circular(30),
         ),
         child: Stack(

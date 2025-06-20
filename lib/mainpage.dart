@@ -21,7 +21,11 @@ class _MainPageState extends State<MainPage> {
   static final List<Widget> _widgetOptions = <Widget>[
     const HomeScreen(),
     const History(),
+<<<<<<< HEAD
     const profileSetting(),
+=======
+    const editDetails(),
+>>>>>>> d40005e (feat: driver side UI)
   ];
   void _onItemTapped(int Index) {
     setState(() {

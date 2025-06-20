@@ -9,7 +9,15 @@ const backgroundColor = Color.fromARGB(255, 213, 227, 239);
 const textcolor = Color.fromARGB(255, 17, 16, 17);
 const appbarcolor = Color.fromARGB(255, 39, 136, 228);
 const appbarfontcolor = Color.fromARGB(255, 17, 16, 17);
+<<<<<<< HEAD
+<<<<<<< HEAD
 const listColor = Color.fromARGB(255, 20, 220, 13);
+=======
+const listColor = Color.fromARGB(255, 153, 203, 238);
+>>>>>>> d40005e (feat: driver side UI)
+=======
+const listColor = Color.fromARGB(255, 3, 179, 255);
+>>>>>>> 2b2b1a4 (updated history)
 
 const TextStyle textStyle = TextStyle(
   color: textcolor,
