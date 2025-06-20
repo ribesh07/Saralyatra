@@ -115,6 +115,9 @@ packages:
     source: hosted
     version: "1.0.8"
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 2b2b1a4 (updated history)
   dart_earcut:
     dependency: transitive
     description:
@@ -273,6 +276,9 @@ packages:
     source: sdk
     version: "0.0.0"
 <<<<<<< HEAD
+<<<<<<< HEAD
+  flutter_dotenv:
+=======
   flutter_dotenv:
     dependency: "direct main"
     description:
@@ -280,6 +286,16 @@ packages:
       sha256: b7c7be5cd9f6ef7a78429cabd2774d3c4af50e79cb2b7593e3d5d763ef95c61b
       url: "https://pub.dev"
     source: hosted
+    version: "5.2.1"
+  flutter_lints:
+>>>>>>> 2b2b1a4 (updated history)
+    dependency: "direct main"
+    description:
+      name: flutter_dotenv
+      sha256: b7c7be5cd9f6ef7a78429cabd2774d3c4af50e79cb2b7593e3d5d763ef95c61b
+      url: "https://pub.dev"
+    source: hosted
+<<<<<<< HEAD
     version: "5.2.1"
 =======
 >>>>>>> d40005e (feat: driver side UI)
@@ -292,6 +308,9 @@ packages:
     source: hosted
     version: "3.0.2"
 <<<<<<< HEAD
+=======
+    version: "4.0.0"
+>>>>>>> 2b2b1a4 (updated history)
   flutter_map:
     dependency: "direct main"
     description:
@@ -430,10 +449,13 @@ packages:
     version: "5.0.7"
   http:
     dependency: "direct main"
+<<<<<<< HEAD
 =======
   http:
     dependency: transitive
 >>>>>>> d40005e (feat: driver side UI)
+=======
+>>>>>>> 2b2b1a4 (updated history)
     description:
       name: http
       sha256: "2c11f3f94c687ee9bad77c171151672986360b2b001d109814ee7140b2cf261b"
@@ -572,8 +594,11 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.9.1"
+<<<<<<< HEAD
 =======
 >>>>>>> d40005e (feat: driver side UI)
+=======
+>>>>>>> 2b2b1a4 (updated history)
   leak_tracker:
     dependency: transitive
     description:
@@ -605,8 +630,12 @@ packages:
       sha256: cbf8d4b858bb0134ef3ef87841abdf8d63bfc255c266b7bf6b39daa1085c4290
       url: "https://pub.dev"
     source: hosted
+<<<<<<< HEAD
     version: "3.0.0"
 <<<<<<< HEAD
+=======
+    version: "4.0.0"
+>>>>>>> 2b2b1a4 (updated history)
   lists:
     dependency: transitive
     description:
@@ -674,6 +703,9 @@ packages:
     source: hosted
     version: "1.12.0"
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 2b2b1a4 (updated history)
   mgrs_dart:
     dependency: transitive
     description:
@@ -682,8 +714,11 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
+<<<<<<< HEAD
 =======
 >>>>>>> d40005e (feat: driver side UI)
+=======
+>>>>>>> 2b2b1a4 (updated history)
   mime:
     dependency: transitive
     description:
@@ -855,6 +890,9 @@ packages:
     source: hosted
     version: "2.1.8"
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 2b2b1a4 (updated history)
   polylabel:
     dependency: transitive
     description:
@@ -1035,6 +1073,9 @@ packages:
     source: hosted
     version: "1.3.2"
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 2b2b1a4 (updated history)
   unicode:
     dependency: transitive
     description:
@@ -1249,5 +1290,5 @@ packages:
 =======
 >>>>>>> d40005e (feat: driver side UI)
 sdks:
-  dart: ">=3.4.1 <4.0.0"
+  dart: ">=3.4.0 <3.83.0"
   flutter: ">=3.22.0"

@@ -17,6 +17,7 @@ pluginManagement {
 }
 
 plugins {
+<<<<<<< HEAD
     id "dev.flutter.flutter-plugin-loader" version "1.0.0"
 <<<<<<< HEAD
     id "com.android.application" version "8.6.0" apply false
@@ -25,6 +26,11 @@ plugins {
     id "com.android.application" version "7.3.0" apply false
     id "org.jetbrains.kotlin.android" version "1.7.10" apply false
 >>>>>>> d40005e (feat: driver side UI)
+=======
+      id "dev.flutter.flutter-plugin-loader" version "1.0.0"
+    id "com.android.application" version "8.6.0" apply false
+    id "org.jetbrains.kotlin.android" version "1.8.22" apply false
+>>>>>>> 2b2b1a4 (updated history)
 }
 
 include ":app"

@@ -8,6 +8,9 @@
 
 #include <file_selector_windows/file_selector_windows.h>
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 2b2b1a4 (updated history)
 #include <geolocator_windows/geolocator_windows.h>
 #include <open_document/open_document_plugin.h>
 #include <printing/printing_plugin.h>
@@ -21,6 +24,9 @@ void RegisterPlugins(flutter::PluginRegistry* registry) {
   FileSelectorWindowsRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("FileSelectorWindows"));
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 2b2b1a4 (updated history)
   GeolocatorWindowsRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("GeolocatorWindows"));
   OpenDocumentPluginRegisterWithRegistrar(

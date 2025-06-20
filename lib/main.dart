@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 2b2b1a4 (updated history)
 // ignore_for_file: prefer_const_literals
 import 'dart:async';
 
@@ -9,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:driver/provider.dart';
+<<<<<<< HEAD
 
 import 'mainpage.dart';
 
@@ -49,6 +53,38 @@ import 'mainpage.dart';
 void main() {
   runApp(const MyApp());
 >>>>>>> d40005e (feat: driver side UI)
+=======
+
+import 'mainpage.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => RouteProvider(),
+      child: MaterialApp(
+        home: MyApp(), // MyApp(),
+      ),
+    ),
+  );
+
+  Geolocator.checkPermission().then((status) {
+    if (status == LocationPermission.denied) {
+      Geolocator.requestPermission();
+    }
+  });
+
+  Geolocator.requestPermission();
+  Timer.periodic(const Duration(seconds: 5), (timer) async {
+    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      await Geolocator.openLocationSettings();
+      return;
+    }
+    print("Function triggered at: ${DateTime.now()}");
+  });
+>>>>>>> 2b2b1a4 (updated history)
 }
 
 class MyApp extends StatelessWidget {

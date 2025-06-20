@@ -5,6 +5,9 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   file_selector_windows
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 2b2b1a4 (updated history)
   geolocator_windows
   open_document
   printing
