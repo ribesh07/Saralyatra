@@ -9,6 +9,12 @@ import 'package:mapbox/usercard/busroute.dart';
 import 'package:flutter/material.dart';
 import 'package:mapbox/usercard/topup.dart';
 
+const backgroundColor = Color.fromARGB(255, 213, 227, 239);
+const textcolor = Color.fromARGB(255, 17, 16, 17);
+const appbarcolor = Color.fromARGB(255, 39, 136, 228);
+const appbarfontcolor = Color.fromARGB(255, 17, 16, 17);
+const listColor = Color.fromARGB(255, 153, 203, 238);
+
 String generate16DigitNumber() {
   final random = Random();
   String number = '';
@@ -61,7 +67,7 @@ class UserCardApp extends StatelessWidget {
             children: [
               // Card Layout
               Card(
-                color: const Color.fromARGB(255, 203, 31, 128),
+                color: Color.fromARGB(255, 59, 154, 242),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16)),
                 elevation: 6,

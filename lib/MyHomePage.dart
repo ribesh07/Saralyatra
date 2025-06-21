@@ -2,6 +2,12 @@
 import 'package:mapbox/usercard/usercard.dart';
 import 'package:flutter/material.dart';
 
+const backgroundColor = Color.fromARGB(255, 213, 227, 239);
+const textcolor = Color.fromARGB(255, 17, 16, 17);
+const appbarcolor = Color.fromARGB(255, 39, 136, 228);
+const appbarfontcolor = Color.fromARGB(255, 17, 16, 17);
+const listColor = Color.fromARGB(255, 153, 203, 238);
+
 // void main() {
 //   runApp(const MyApp());
 // }

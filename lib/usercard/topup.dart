@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 
+const backgroundColor = Color.fromARGB(255, 213, 227, 239);
+const textcolor = Color.fromARGB(255, 17, 16, 17);
+const appbarcolor = Color.fromARGB(255, 39, 136, 228);
+const appbarfontcolor = Color.fromARGB(255, 17, 16, 17);
+const listColor = Color.fromARGB(255, 153, 203, 238);
+
 class TopUpPage extends StatefulWidget {
   @override
   _TopUpPageState createState() => _TopUpPageState();
@@ -29,7 +35,10 @@ class _TopUpPageState extends State<TopUpPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Top-Up Page')),
+      appBar: AppBar(
+          title: Text('Top-Up Page'),
+          backgroundColor: appbarcolor,
+          foregroundColor: appbarfontcolor),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
