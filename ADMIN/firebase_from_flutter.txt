@@ -1,0 +1,197 @@
+  await FirebaseFirestore.instance
+            .collection('saralyatra')
+            .doc('packageBookingDetails')
+            .collection('package')
+            .add(bookingDetails);
+
+
+            final CollectionReference busTicketDetailsCollection = FirebaseFirestore
+          .instance
+          .collection('saralyatra')
+          .doc('busTicketDetails')
+          .collection(widget.location); 
+
+ DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('saralyatra')
+          .doc('userDetailsDatabase')
+          .collection('users')
+          .doc(uid)
+          .get();
+
+ // Update Firestore document
+      await FirebaseFirestore.instance
+          .collection('saralyatra')
+          .doc('userDetailsDatabase')
+          .collection('users')
+          .doc(uid)
+          .update({
+        'password': newconfirmpassController.text,
+      });
+ // Get current image URL from Firestore
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance
+          .collection("saralyatra")
+          .doc("userDetailsDatabase")
+          .collection("users")
+          .doc(uid)
+          .get();
+
+  // Update Firestore with the new image URL
+        await FirebaseFirestore.instance
+            .collection("saralyatra")
+            .doc("userDetailsDatabase")
+            .collection("users")
+            .doc(uid)
+            .update({
+          'imageUrl': newImageUrl,
+        });
+
+// Fetch the email from Firestore
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('saralyatra')
+          .doc('userDetailsDatabase')
+          .collection('users')
+          .doc(uid)
+          .get();
+//delete
+await FirebaseFirestore.instance
+          .collection('saralyatra')
+          .doc('userDetailsDatabase')
+          .collection('users')
+          .doc(uid)
+          .delete();
+
+          //chat
+          FirebaseFirestore.instance
+                    .collection('messages')
+                    .orderBy('timestamp', descending: true)
+                    .snapshots(),
+        await FirebaseFirestore.instance.collection('messages').add({
+          'text': text,
+          'userid': widget.uid,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+ await FirebaseFirestore.instance
+            .collection('saralyatra')
+            .doc('reservation')
+            .collection(vehicleType)
+            .add(data);
+
+            //seats
+              // Reference the document in the Firestore database
+    DocumentReference documentReference = firestore
+        .collection('saralyatra')
+        .doc('busTicketDetails')
+        .collection('buses')
+        .doc(widget.uniqueIDs).set(data);
+
+ Future<void> addUserDetails(
+      Map<String, dynamic> userInfoMap, String id) async {
+    return await FirebaseFirestore.instance
+        .collection("saralyatra")
+        .doc("userDetailsDatabase")
+        .collection("users")
+        .doc(id)
+        .set(userInfoMap);
+  }
+
+
+  //users
+  // Read
+  Future<Stream<QuerySnapshot>> getEmployeeDetails() async {
+    return FirebaseFirestore.instance.collection("Employee").snapshots();
+  }
+
+// Update
+  Future updateUserDetail(
+      String id, Map<String, dynamic> updateUserInfo) async {
+    return await FirebaseFirestore.instance
+        .collection("saralyatra")
+        .doc("userDetailsDatabase")
+        .collection("users")
+        .doc(id)
+        .update(updateUserInfo);
+  }
+
+ 
+
+
+          //FOR Bus
+          {
+  "arrTimeHr":
+"15",
+"arrTimeMin":
+"8",
+"availableSeat":
+29,
+
+
+"busName":
+"Yatra"
+,
+"busNumber":
+"genda 98 p 8888"
+,
+"busType":
+"DELUXE",
+
+"depTimeHr":
+"8",
+"depTimeMin":
+"15",
+"location":
+"JKR-POK",
+"price":
+"6969",
+"reservedSeat":
+0,
+"shift":
+"Mor"
+}
+
+//FOR seats
+{
+  "uniqueID": "49C8E5eTVn9B8YHnq8gL",
+  "seats": {
+    "bookC1": false,
+    "bookL1": false,
+    "bookL2": false,
+    "bookL3": false,
+    "bookL4": false,
+    "bookL5": false,
+    "bookL6": false,
+    "bookL7": false,
+    "bookL8": false,
+    "bookL9": false,
+    "bookL10": false,
+    "bookL11": false,
+    "bookL12": false,
+    "bookL13": false,
+    "bookL14": false,
+    "bookR1": false,
+    "bookR2": false,
+    "bookR3": false,
+    "bookR4": false,
+    "bookR5": false,
+    "bookR6": false,
+    "bookR7": false,
+    "bookR8": false,
+    "bookR9": false,
+    "bookR10": false,
+    "bookR11": false,
+    "bookR12": false,
+    "bookR13": false,
+    "bookR14": false
+  }
+}
+
+//send messages
+{
+  "chatRoomId": "Agent_test1@gmail.com",
+  "messageInfoMap": {
+    "Data": "Image",
+    "message": "Ji",
+    "SendBy": "Agent",
+    "ts": "2025-06-19T12:00:00Z",
+    "imgUrl": "https://example.com/myProfile.jpg"
+  }
+}
