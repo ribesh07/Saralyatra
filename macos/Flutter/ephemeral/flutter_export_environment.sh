@@ -3,7 +3,6 @@
 export "FLUTTER_ROOT=C:\Users\Dell\fvm\versions\3.24.3"
 export "FLUTTER_APPLICATION_PATH=E:\devapps\projects\SaralYatra\Saralyatra"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
-export "FLUTTER_TARGET=lib\main.dart"
 export "FLUTTER_BUILD_DIR=build"
 export "FLUTTER_BUILD_NAME=1.0.0"
 export "FLUTTER_BUILD_NUMBER=1"

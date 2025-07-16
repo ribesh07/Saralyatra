@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:saralyatra/UserCard/lib/usercard.dart';
+import 'package:saralyatra/UserCard/UserCard.dart';
+// import 'package:saralyatra/UserCard/lib/usercard.dart';
 import 'package:saralyatra/pages/botton_nav_bar.dart';
 
 class Serviceselection extends StatefulWidget {
@@ -24,7 +25,7 @@ class _ServiceselectionState extends State<Serviceselection> {
           child: Column(
             children: [
               Padding(
-                padding: EdgeInsetsGeometry.all(10),
+                padding: EdgeInsets.all(10),
                 child: GestureDetector(
                   child: Card(
                     child: Text("LOCAL BUS"),
@@ -32,12 +33,12 @@ class _ServiceselectionState extends State<Serviceselection> {
                   onTap: () {
                     debugPrint("Local Bus Selected");
                     Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => UserCardApp()));
+                        MaterialPageRoute(builder: (context) => Usercard()));
                   },
                 ),
               ),
               Padding(
-                padding: EdgeInsetsGeometry.all(10),
+                padding: EdgeInsets.all(10),
                 child: GestureDetector(
                   child: Card(
                     child: Text("RESERVATION"),
