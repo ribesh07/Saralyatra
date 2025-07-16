@@ -35,15 +35,21 @@
 
 //
 
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'
+    as riverpod; // for ProviderScope
+import 'package:geolocator/geolocator.dart';
+import 'package:provider/provider.dart';
 // import 'package:saralyatra/UserCard/lib/init.dart';
 
 import 'package:saralyatra/firebase_options.dart';
+import 'package:saralyatra/mapbox/provider.dart';
 import 'package:saralyatra/pages/login-page.dart';
 import 'package:saralyatra/pages/botton_nav_bar.dart';
 import 'package:saralyatra/pages/serviceSelection.dart';
@@ -57,13 +63,50 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await dotenv.load(fileName: ".env");
-  // await InitCard();
 
-  runApp(const ProviderScope(child: App()));
+  runApp(
+    riverpod.ProviderScope(
+      child: MultiProvider(
+        providers: [
+          ChangeNotifierProvider<RouteProvider>(create: (_) => RouteProvider()),
+        ],
+        child: const App(),
+      ),
+    ),
+  );
 }
 
-class App extends StatelessWidget {
+Future<void> onTheLoad() async {
+  Geolocator.checkPermission().then((status) {
+    if (status == LocationPermission.denied) {
+      Geolocator.requestPermission();
+    }
+  });
+
+  Geolocator.requestPermission();
+  Timer.periodic(const Duration(seconds: 5), (timer) async {
+    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      await Geolocator.openLocationSettings();
+      return;
+    }
+    print("Function triggered at: ${DateTime.now()}");
+  });
+}
+
+class App extends StatefulWidget {
   const App({super.key});
+
+  @override
+  State<App> createState() => _AppState();
+}
+
+class _AppState extends State<App> {
+  @override
+  void initState() {
+    super.initState();
+    onTheLoad();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -107,7 +150,6 @@ class AuthCheck extends StatelessWidget {
           );
         }
 
-        // ✅ If user is logged in, go to main screen
         if (snapshot.hasData) {
           return const BottomBar();
         }

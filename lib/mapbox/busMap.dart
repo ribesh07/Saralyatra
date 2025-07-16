@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 // import 'dart:ui';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -20,17 +21,8 @@ import 'package:saralyatra/mapbox/route_map.dart';
 import 'map_services.dart';
 
 Future<void> onTheLoad() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env");
-  runApp(
-    ChangeNotifierProvider(
-      create: (_) => RouteProvider(),
-      child: MaterialApp(
-        home: MyApp(), // MyApp(),
-      ),
-    ),
-  );
-
+  // WidgetsFlutterBinding.ensureInitialized();
+  // await dotenv.load(fileName: ".env");
   Geolocator.checkPermission().then((status) {
     if (status == LocationPermission.denied) {
       Geolocator.requestPermission();
@@ -75,12 +67,42 @@ class _MapScreenState extends State<MapScreen> {
 
   late LocationSettings locationSettings;
 
-  String accessToken = dotenv.get('MAPBOX_API', fallback: 'default_token');
+  String? accessToken;
   @override
   void initState() {
     super.initState();
+    loadToken();
     _initLocation();
     onTheLoad();
+  }
+
+  Future<String?> getMapboxToken() async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('tokens')
+          .doc('mapbox')
+          .get();
+
+      if (doc.exists) {
+        final data = doc.data();
+        final token = data?['MAPBOX_API'];
+        print("Mapbox Token: $token");
+        return token;
+      } else {
+        print("Document does not exist");
+        return null;
+      }
+    } catch (e) {
+      print("Error fetching token: $e");
+      return null;
+    }
+  }
+
+  Future<void> loadToken() async {
+    final token = await getMapboxToken();
+    setState(() {
+      accessToken = token;
+    });
   }
 
   Future<void> _initLocation() async {
@@ -225,7 +247,7 @@ class _MapScreenState extends State<MapScreen> {
                   urlTemplate:
                       "https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=$accessToken",
                   additionalOptions: {
-                    'access_token': accessToken,
+                    'access_token': accessToken!,
                   },
                 ),
                 MarkerLayer(

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -20,11 +21,12 @@ class RouteMapPage extends StatefulWidget {
 class _RouteMapPageState extends State<RouteMapPage> {
   late final MapController _mapController;
 
-  String accessToken = dotenv.get('MAPBOX_API', fallback: 'default_token');
+  String accessToken = dotenv.get('MAPBOX_API');
 
   @override
   void initState() {
     super.initState();
+    loadToken();
     _mapController = MapController();
 
     // Load route points on startup
@@ -37,6 +39,36 @@ class _RouteMapPageState extends State<RouteMapPage> {
     });
 
     _determinePosition();
+  }
+
+  Future<String?> getMapboxToken() async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('tokens')
+          .doc('mapbox')
+          .get();
+
+      if (doc.exists) {
+        final data = doc.data();
+        final token = data?['MAPBOX_API'];
+        print("Mapbox Token: $token");
+        return token;
+      } else {
+        print("Document does not exist");
+        return null;
+      }
+    } catch (e) {
+      print("Error fetching token: $e");
+      return null;
+    }
+  }
+
+  Future<void> loadToken() async {
+    final token = await getMapboxToken();
+    print(token);
+    // setState(() {
+    //   accessToken = token;
+    // });
   }
 
   Future<void> _determinePosition() async {

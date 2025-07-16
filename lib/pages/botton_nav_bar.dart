@@ -68,21 +68,6 @@ class _BottomBarState extends State<BottomBar> {
     });
   }
 
-  // Future<void> _fetchUserData() async {
-  //   _currentUser = _auth.currentUser;
-  //   if (_currentUser != null) {
-  //     DocumentSnapshot userDoc = await FirebaseFirestore.instance
-  //         .collection('saralyatra')
-  //         .doc('userDetailsDatabase')
-  //         .collection('users')
-  //         .doc(_currentUser!.uid)
-  //         .get();
-  //     setState(() {
-  //       uID = userDoc['uid']!.toString();
-  //     });
-  //   }
-  // }
-
   Future<void> _fetchUserData() async {
     _currentUser = _auth.currentUser;
     if (_currentUser != null) {

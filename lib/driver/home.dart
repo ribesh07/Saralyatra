@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:saralyatra/driver/toggleer.dart';
+import 'package:saralyatra/mapbox/route_map.dart';
 import 'package:saralyatra/setups.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -98,22 +99,6 @@ class _HomeState extends State<Home> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Text('Offline  '),
-                    // Switch(
-                    //   value: isSwitched,
-                    //   onChanged: (bool newValue) {
-                    //     setState(() {
-                    //       isSwitched = newValue;
-                    //     });
-                    //   },
-                    //   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    //   activeColor: Colors.green, // Thumb color when ON
-                    //   activeTrackColor: Colors.green[200], // Track color when ON
-                    //   inactiveThumbColor: Colors.grey, // Thumb color when OFF
-                    //   inactiveTrackColor:
-                    //       Colors.grey[300], // Track color when OFF
-                    // ),
-                    // Text('  Online'),
                     SwipeToggle(),
                   ],
                 ),
@@ -190,25 +175,25 @@ class _HomeState extends State<Home> {
                     child: ElevatedButton(
                       child: Text('Map'),
                       onPressed: () {
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(builder: (context) {
-                        //     if (selectedMap == 'Koteshwar-Kalanki-satdobato') {
-                        //       return RouteMapPage(
-                        //         fileName: 'mahasagar',
-                        //       );
-                        //     } else if (selectedMap ==
-                        //         'Satdobato-Kalanki-koteshwar') {
-                        //       return RouteMapPage(fileName: 'mahasagar');
-                        //     } else if (selectedMap == 'Koteshwar-Thimi-Sanga') {
-                        //       return RouteMapPage(fileName: 'sanga');
-                        //     } else if (selectedMap == 'Thimi-Sanga-Koteshwar') {
-                        //       return RouteMapPage(fileName: 'sanga');
-                        //     } else {
-                        //       return RouteMapPage(fileName: 'mahasagar');
-                        //     }
-                        //   }),
-                        // );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) {
+                            if (selectedMap == 'Koteshwar-Kalanki-satdobato') {
+                              return RouteMapPage(
+                                fileName: 'mahasagar',
+                              );
+                            } else if (selectedMap ==
+                                'Satdobato-Kalanki-koteshwar') {
+                              return RouteMapPage(fileName: 'mahasagar');
+                            } else if (selectedMap == 'Koteshwar-Thimi-Sanga') {
+                              return RouteMapPage(fileName: 'sanga');
+                            } else if (selectedMap == 'Thimi-Sanga-Koteshwar') {
+                              return RouteMapPage(fileName: 'sanga');
+                            } else {
+                              return RouteMapPage(fileName: 'mahasagar');
+                            }
+                          }),
+                        );
 
                         //Map navigations
                       },
