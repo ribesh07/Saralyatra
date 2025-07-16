@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 // import 'package:saralyatra/pages/HomeDefScreen.dart';
 import 'package:saralyatra/pages/Home_screen.dart';
 import 'package:saralyatra/pages/history.dart';
+import 'package:saralyatra/pages/serviceSelection.dart';
 import 'package:saralyatra/pages/setting_profile.dart';
 import 'package:saralyatra/services/shared_pref.dart';
 import 'package:saralyatra/setups.dart';
@@ -53,7 +54,8 @@ class _BottomBarState extends State<BottomBar> {
     return [
       // HomeScreen(userUId: uID),
       if (uID != null)
-        HomeScreen(userUId: uID!)
+        Serviceselection(userUId: uID!)
+      // HomeScreen(userUId: uID!)
       else
         const CircularProgressIndicator(),
       const MyTabbedPage(),

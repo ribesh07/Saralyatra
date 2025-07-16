@@ -7,8 +7,11 @@ import 'package:flutter/services.dart';
 import 'package:saralyatra/Booking/input_field.dart';
 import 'package:saralyatra/Booking/provide.dart';
 import 'package:saralyatra/driver/driverPage.dart';
+// import 'package:saralyatra/driver/driverPage.dart';
+import 'package:saralyatra/driver/home.dart';
 import 'package:saralyatra/pages/ForgotPassword.dart';
-import 'package:saralyatra/pages/serviceSelection.dart';
+import 'package:saralyatra/pages/botton_nav_bar.dart';
+// import 'package:saralyatra/pages/serviceSelection.dart';
 import 'package:saralyatra/pages/setups/snackbar_message.dart';
 import 'package:saralyatra/pages/signup-page.dart';
 import 'package:saralyatra/services/shared_pref.dart';
@@ -116,11 +119,11 @@ class _Login_pageState extends State<Login_page> {
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => Serviceselection()),
+          MaterialPageRoute(builder: (_) => BottomBar()),
         );
       }
     } catch (e) {
-showSnackBarMsg(
+      showSnackBarMsg(
         context: context,
         message: "Login error: ${e.toString()}",
         bgColor: Colors.red,

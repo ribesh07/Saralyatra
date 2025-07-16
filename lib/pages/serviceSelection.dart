@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 // import 'package:saralyatra/UserCard/UserCard.dart';
 import 'package:saralyatra/UserCard/usercard/usercard.dart';
+import 'package:saralyatra/pages/Home_screen.dart';
 // import 'package:saralyatra/UserCard/lib/usercard.dart';
 import 'package:saralyatra/pages/botton_nav_bar.dart';
 
 class Serviceselection extends StatefulWidget {
-  const Serviceselection({super.key});
+  final String userUId;
+
+  const Serviceselection({
+    Key? key,
+    required this.userUId,
+  }) : super(key: key);
 
   @override
   State<Serviceselection> createState() => _ServiceselectionState();
@@ -45,8 +51,12 @@ class _ServiceselectionState extends State<Serviceselection> {
                     child: Text("RESERVATION"),
                   ),
                   onTap: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => BottomBar()));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => HomeScreen(
+                                  userUId: widget.userUId,
+                                )));
                   },
                 ),
               )

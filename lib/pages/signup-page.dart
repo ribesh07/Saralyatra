@@ -120,7 +120,8 @@ class _Signup_pageState extends State<Signup_page> {
     try {
       // Run Firebase Auth and image upload in parallel
       final results = await Future.wait([
-        FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password),
+        FirebaseAuth.instance
+            .createUserWithEmailAndPassword(email: email, password: password),
         _uploadImage(_image!),
       ]);
 
@@ -148,7 +149,8 @@ class _Signup_pageState extends State<Signup_page> {
         'sessionToken': sessionToken
       };
 
-      var chatRoomId = getChatRoomIdbyUsername("Agent", userInfoMap["username"]);
+      var chatRoomId =
+          getChatRoomIdbyUsername("Agent", userInfoMap["username"]);
       Map<String, dynamic> chatInfoMap = {
         "users": ["Agent", userInfoMap["username"]],
       };
@@ -165,8 +167,8 @@ class _Signup_pageState extends State<Signup_page> {
 
       // Navigate to BottomBar
       if (mounted) {
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => const BottomBar()));
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => const BottomBar()));
       }
     } on FirebaseAuthException catch (e) {
       _hideLoadingDialog();
@@ -191,7 +193,8 @@ class _Signup_pageState extends State<Signup_page> {
     try {
       // Run Firebase Auth and image upload in parallel
       final results = await Future.wait([
-        FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password),
+        FirebaseAuth.instance
+            .createUserWithEmailAndPassword(email: email, password: password),
         _uploadImage(_image!),
       ]);
 
@@ -219,7 +222,8 @@ class _Signup_pageState extends State<Signup_page> {
         'sessionToken': sessionToken
       };
 
-      var chatRoomId = getChatRoomIdbyUsername("Agent", userInfoMap["username"]);
+      var chatRoomId =
+          getChatRoomIdbyUsername("Agent", userInfoMap["username"]);
       Map<String, dynamic> chatInfoMap = {
         "users": ["Agent", userInfoMap["username"]],
       };
@@ -236,8 +240,8 @@ class _Signup_pageState extends State<Signup_page> {
 
       // Navigate to BottomBar
       if (mounted) {
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => const Serviceselection()));
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => const BottomBar()));
       }
     } on FirebaseAuthException catch (e) {
       _hideLoadingDialog();
@@ -318,7 +322,8 @@ class _Signup_pageState extends State<Signup_page> {
   }
 
   // Helper methods for saving preferences
-  Future<void> _saveUserPreferences(String uid, String sessionToken, String imageUrl) async {
+  Future<void> _saveUserPreferences(
+      String uid, String sessionToken, String imageUrl) async {
     await Future.wait<bool>([
       SharedpreferenceHelper().saveUserName(usernamecontroller.text.trim()),
       SharedpreferenceHelper().saveUserEmail(emailcontroller.text.trim()),
@@ -329,7 +334,8 @@ class _Signup_pageState extends State<Signup_page> {
     ]);
   }
 
-  Future<void> _saveDriverPreferences(String uid, String sessionToken, String imageUrl) async {
+  Future<void> _saveDriverPreferences(
+      String uid, String sessionToken, String imageUrl) async {
     await Future.wait<bool>([
       SharedpreferenceHelper().saveDriverName(usernamecontroller.text.trim()),
       SharedpreferenceHelper().saveDriverEmail(emailcontroller.text.trim()),

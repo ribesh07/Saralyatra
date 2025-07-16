@@ -176,7 +176,7 @@ Future<Widget> checkSession() async {
           .get();
 
       if (snapshot.exists && snapshot['sessionToken'] == sessionToken) {
-        return Serviceselection(); // Valid session
+        return BottomBar(); // Valid session
       }
     }
 
