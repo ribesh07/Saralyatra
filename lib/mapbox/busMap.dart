@@ -67,7 +67,7 @@ class _MapScreenState extends State<MapScreen> {
 
   late LocationSettings locationSettings;
 
-  String? accessToken;
+  String accessToken = dotenv.get('MAPBOX_API');
   @override
   void initState() {
     super.initState();
@@ -101,7 +101,7 @@ class _MapScreenState extends State<MapScreen> {
   Future<void> loadToken() async {
     final token = await getMapboxToken();
     setState(() {
-      accessToken = token;
+      // accessToken = token;
     });
   }
 
@@ -247,7 +247,7 @@ class _MapScreenState extends State<MapScreen> {
                   urlTemplate:
                       "https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=$accessToken",
                   additionalOptions: {
-                    'access_token': accessToken!,
+                    'access_token': accessToken,
                   },
                 ),
                 MarkerLayer(

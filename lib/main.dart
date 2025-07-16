@@ -46,6 +46,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart'
     as riverpod; // for ProviderScope
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
+import 'package:saralyatra/driver/home.dart';
 // import 'package:saralyatra/UserCard/lib/init.dart';
 
 import 'package:saralyatra/firebase_options.dart';
@@ -175,7 +176,7 @@ Future<Widget> checkSession() async {
           .get();
 
       if (snapshot.exists && snapshot['sessionToken'] == sessionToken) {
-        return BottomBar(); // Valid session
+        return Serviceselection(); // Valid session
       }
     }
 
@@ -190,7 +191,7 @@ Future<Widget> checkSession() async {
           .get();
 
       if (snapshot.exists && snapshot['sessionToken'] == sessionToken) {
-        return Serviceselection(); // Valid session
+        return Home(); // Valid session
       }
     }
   }

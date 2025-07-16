@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:saralyatra/UserCard/UserCard.dart';
+// import 'package:saralyatra/UserCard/UserCard.dart';
+import 'package:saralyatra/UserCard/usercard/usercard.dart';
 // import 'package:saralyatra/UserCard/lib/usercard.dart';
 import 'package:saralyatra/pages/botton_nav_bar.dart';
 
@@ -33,7 +34,7 @@ class _ServiceselectionState extends State<Serviceselection> {
                   onTap: () {
                     debugPrint("Local Bus Selected");
                     Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => Usercard()));
+                        MaterialPageRoute(builder: (context) => UserCardApp()));
                   },
                 ),
               ),
