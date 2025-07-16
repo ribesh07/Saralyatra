@@ -212,6 +212,64 @@ class _Login_pageState extends State<Login_page> {
                   const SizedBox(
                     height: 10,
                   ),
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          height: MediaQuery.of(context).size.height / 20,
+                          child: ToggleButtons(
+                            isSelected: isSelected,
+                            borderRadius: BorderRadius.circular(8),
+                            selectedColor: Colors.white,
+                            fillColor: Colors.blue,
+                            children: [
+                              Container(
+                                width: MediaQuery.of(context).size.width / 3,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16),
+                                  child: Text(
+                                    "I am User",
+                                    textAlign: TextAlign.center,
+                                    style:
+                                        TextStyle(fontStyle: FontStyle.italic),
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                width: MediaQuery.of(context).size.width / 3,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16),
+                                  child: Text(
+                                    "I am Driver",
+                                    textAlign: TextAlign.center,
+                                    style:
+                                        TextStyle(fontStyle: FontStyle.italic),
+                                  ),
+                                ),
+                              ),
+                            ],
+                            onPressed: (int index) {
+                              setState(() {
+                                // Set only the clicked index to true, others false
+                                for (int i = 0; i < isSelected.length; i++) {
+                                  isSelected[i] = i == index;
+                                }
+                              });
+                            },
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        Text(
+                          "Selected: ${isSelected[0] ? "I am User" : "I am driver"}",
+                          style: TextStyle(fontStyle: FontStyle.italic),
+                        ),
+                      ],
+                    ),
+                  ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -245,6 +303,7 @@ class _Login_pageState extends State<Login_page> {
                                 builder: (context) => const ForgotPassword()));
                       },
                       child: Text("Forgot Password ??")),
+
                   Padding(
                     padding: const EdgeInsets.only(top: 30),
                     child: ElevatedButton(
