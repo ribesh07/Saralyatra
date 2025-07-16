@@ -54,10 +54,22 @@
 @import flutter_sound;
 #endif
 
+#if __has_include(<geolocator_apple/GeolocatorPlugin.h>)
+#import <geolocator_apple/GeolocatorPlugin.h>
+#else
+@import geolocator_apple;
+#endif
+
 #if __has_include(<image_picker_ios/FLTImagePickerPlugin.h>)
 #import <image_picker_ios/FLTImagePickerPlugin.h>
 #else
 @import image_picker_ios;
+#endif
+
+#if __has_include(<location/LocationPlugin.h>)
+#import <location/LocationPlugin.h>
+#else
+@import location;
 #endif
 
 #if __has_include(<package_info_plus/FPPPackageInfoPlusPlugin.h>)
@@ -119,7 +131,9 @@
   [FLTFirebaseCorePlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTFirebaseCorePlugin"]];
   [FLTFirebaseStoragePlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTFirebaseStoragePlugin"]];
   [FlutterSound registerWithRegistrar:[registry registrarForPlugin:@"FlutterSound"]];
+  [GeolocatorPlugin registerWithRegistrar:[registry registrarForPlugin:@"GeolocatorPlugin"]];
   [FLTImagePickerPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTImagePickerPlugin"]];
+  [LocationPlugin registerWithRegistrar:[registry registrarForPlugin:@"LocationPlugin"]];
   [FPPPackageInfoPlusPlugin registerWithRegistrar:[registry registrarForPlugin:@"FPPPackageInfoPlusPlugin"]];
   [PathProviderPlugin registerWithRegistrar:[registry registrarForPlugin:@"PathProviderPlugin"]];
   [PermissionHandlerPlugin registerWithRegistrar:[registry registrarForPlugin:@"PermissionHandlerPlugin"]];

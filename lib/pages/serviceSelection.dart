@@ -20,7 +20,7 @@ class _ServiceselectionState extends State<Serviceselection> {
               padding: EdgeInsetsGeometry.all(10),
               child: GestureDetector(
                 child: Card(
-                  child: Text("hola"),
+                  child: Text("LOCAL BUS"),
                 ),
                 onTap: () {
                   Navigator.push(context,
@@ -32,7 +32,7 @@ class _ServiceselectionState extends State<Serviceselection> {
               padding: EdgeInsetsGeometry.all(10),
               child: GestureDetector(
                 child: Card(
-                  child: Text("gola"),
+                  child: Text("RESERVATION"),
                 ),
                 onTap: () {
                   Navigator.push(context,

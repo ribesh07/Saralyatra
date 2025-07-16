@@ -4,18 +4,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-// import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:saralyatra/Booking/input_field.dart';
 import 'package:saralyatra/Booking/provide.dart';
+import 'package:saralyatra/driver/driverPage.dart';
 import 'package:saralyatra/pages/ForgotPassword.dart';
-import 'package:saralyatra/pages/botton_nav_bar.dart';
+import 'package:saralyatra/pages/serviceSelection.dart';
 import 'package:saralyatra/pages/setups/snackbar_message.dart';
 import 'package:saralyatra/pages/signup-page.dart';
-import 'package:saralyatra/services/auth.dart';
 import 'package:saralyatra/services/shared_pref.dart';
 import 'package:saralyatra/setups.dart';
+import 'package:uuid/uuid.dart';
 
 class Login_page extends StatefulWidget {
   const Login_page({super.key});
@@ -48,52 +46,161 @@ class _Login_pageState extends State<Login_page> {
   //   }
   // }
 
-  login(String email, String password) async {
+  // userLogin(String email, String password) async {
+  //   try {
+  //     UserCredential userCredential = await FirebaseAuth.instance
+  //         .signInWithEmailAndPassword(email: email, password: password);
+
+  //     final uid = userCredential.user?.uid;
+
+  //     if (uid != null) {
+  //       // 🔽 Fetch user data from Firestore
+  //       final userDoc = await FirebaseFirestore.instance
+  //           .collection('saralyatra')
+  //           .doc('userDetailsDatabase')
+  //           .collection('users')
+  //           .doc(uid)
+  //           .get();
+
+  //       if (userDoc.exists) {
+  //         final userData = userDoc.data();
+
+  //         if (userData != null) {
+  //           // 🔽 Save to Shared Preferences
+  //           await SharedpreferenceHelper()
+  //               .saveUserName(userData['username'] ?? '');
+  //           await SharedpreferenceHelper()
+  //               .saveUserEmail(userData['email'] ?? '');
+  //           await SharedpreferenceHelper()
+  //               .saveUserImage(userData['imageUrl'] ?? '');
+  //           await SharedpreferenceHelper().saveUserId(uid);
+  //           await SharedpreferenceHelper().saveRole("user");
+  //         }
+  //       }
+
+  //       // Optional: Store password back to Firestore (not recommended generally)
+  //       await _storePassword();
+  //       if (!context.mounted) return;
+  //       // 🔽 Navigate
+  //       Navigator.pushReplacement(context,
+  //           MaterialPageRoute(builder: (context) => Serviceselection()));
+  //     }
+  //   } on FirebaseAuthException catch (e) {
+  //     if (!context.mounted) return;
+  //     showSnackBarMsg(
+  //       context: context,
+  //       message: e.message ?? "Login failed",
+  //       bgColor: Colors.red,
+  //     );
+  //   }
+  // }
+
+  Future<void> userLogin(
+      String email, String password, BuildContext context) async {
     try {
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
-
       final uid = userCredential.user?.uid;
 
       if (uid != null) {
-        // 🔽 Fetch user data from Firestore
-        final userDoc = await FirebaseFirestore.instance
+        final sessionToken = const Uuid().v4();
+
+        await FirebaseFirestore.instance
             .collection('saralyatra')
             .doc('userDetailsDatabase')
             .collection('users')
             .doc(uid)
-            .get();
+            .update({'sessionToken': sessionToken});
 
-        if (userDoc.exists) {
-          final userData = userDoc.data();
+        await SharedpreferenceHelper().saveSessionToken(sessionToken);
 
-          if (userData != null) {
-            // 🔽 Save to Shared Preferences
-            await SharedpreferenceHelper()
-                .saveUserName(userData['username'] ?? '');
-            await SharedpreferenceHelper()
-                .saveUserEmail(userData['email'] ?? '');
-            await SharedpreferenceHelper()
-                .saveUserImage(userData['imageUrl'] ?? '');
-            await SharedpreferenceHelper().saveUserId(uid);
-          }
-        }
-
-        // Optional: Store password back to Firestore (not recommended generally)
-        await _storePassword();
-
-        // 🔽 Navigate
         Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => BottomBar()));
+          context,
+          MaterialPageRoute(builder: (_) => Serviceselection()),
+        );
       }
-    } on FirebaseAuthException catch (e) {
-      showSnackBarMsg(
-        context: context,
-        message: e.message ?? "Login failed",
-        bgColor: Colors.red,
-      );
+    } catch (e) {
+      print("Login error: $e");
     }
   }
+
+  Future<void> driverLogin(
+      String email, String password, BuildContext context) async {
+    try {
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
+      final uid = userCredential.user?.uid;
+
+      if (uid != null) {
+        final sessionToken = const Uuid().v4();
+
+        await FirebaseFirestore.instance
+            .collection('saralyatra')
+            .doc('driverDetailsDatabase')
+            .collection('users')
+            .doc(uid)
+            .update({'sessionToken': sessionToken});
+
+        await SharedpreferenceHelper().saveSessionToken(sessionToken);
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => DriverPage()),
+        );
+      }
+    } catch (e) {
+      print("Login error: $e");
+    }
+  }
+
+  // driverLogin(String email, String password) async {
+  //   try {
+  //     UserCredential userCredential = await FirebaseAuth.instance
+  //         .signInWithEmailAndPassword(email: email, password: password);
+
+  //     final uid = userCredential.user?.uid;
+
+  //     if (uid != null) {
+  //       // 🔽 Fetch user data from Firestore
+  //       final userDoc = await FirebaseFirestore.instance
+  //           .collection('saralyatra')
+  //           .doc('driverDetailsDatabase')
+  //           .collection('drivers')
+  //           .doc(uid)
+  //           .get();
+
+  //       if (userDoc.exists) {
+  //         final userData = userDoc.data();
+
+  //         if (userData != null) {
+  //           // 🔽 Save to Shared Preferences
+  //           await SharedpreferenceHelper()
+  //               .saveDriverName(userData['username'] ?? '');
+  //           await SharedpreferenceHelper()
+  //               .saveDriverEmail(userData['email'] ?? '');
+  //           await SharedpreferenceHelper()
+  //               .saveDriverImage(userData['imageUrl'] ?? '');
+  //           await SharedpreferenceHelper().saveUserId(uid);
+  //           await SharedpreferenceHelper().saveRole("driver");
+  //         }
+  //       }
+
+  //       // Optional: Store password back to Firestore (not recommended generally)
+  //       await _storeDriverPassword();
+  //       if (!context.mounted) return;
+  //       // 🔽 Navigate
+  //       Navigator.pushReplacement(
+  //           context, MaterialPageRoute(builder: (context) => DriverPage()));
+  //     }
+  //   } on FirebaseAuthException catch (e) {
+  //     if (!context.mounted) return;
+  //     showSnackBarMsg(
+  //       context: context,
+  //       message: e.message ?? "Login failed",
+  //       bgColor: Colors.red,
+  //     );
+  //   }
+  // }
 
   Future<void> _storePassword() async {
     final currentUser = FirebaseAuth.instance.currentUser;
@@ -105,6 +212,23 @@ class _Login_pageState extends State<Login_page> {
           .collection('saralyatra')
           .doc('userDetailsDatabase')
           .collection('users')
+          .doc(uid)
+          .update({
+        'password': passcontroller.text,
+      });
+    } catch (e) {}
+  }
+
+  Future<void> _storeDriverPassword() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    final uid = currentUser?.uid;
+
+    try {
+      // Update Firestore document
+      await FirebaseFirestore.instance
+          .collection('saralyatra')
+          .doc('driverDetailsDatabase')
+          .collection('driver')
           .doc(uid)
           .update({
         'password': passcontroller.text,
@@ -125,6 +249,7 @@ class _Login_pageState extends State<Login_page> {
     super.dispose();
   }
 
+  List<bool> isSelected = [true, false];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -258,15 +383,16 @@ class _Login_pageState extends State<Login_page> {
                                 for (int i = 0; i < isSelected.length; i++) {
                                   isSelected[i] = i == index;
                                 }
+                                print("ID:$isSelected");
                               });
                             },
                           ),
                         ),
-                        SizedBox(height: 20),
-                        Text(
-                          "Selected: ${isSelected[0] ? "I am User" : "I am driver"}",
-                          style: TextStyle(fontStyle: FontStyle.italic),
-                        ),
+                        // SizedBox(height: 20),
+                        // Text(
+                        //   "Selected: ${isSelected[0] ? "I am User" : "I am driver"}",
+                        //   style: TextStyle(fontStyle: FontStyle.italic),
+                        // ),
                       ],
                     ),
                   ),
@@ -309,13 +435,18 @@ class _Login_pageState extends State<Login_page> {
                     child: ElevatedButton(
                       onPressed: () {
                         if (formkey.currentState!.validate()) {
-                          login(emailcontroller.text.toString(),
-                              passcontroller.text.toString());
-                          // AuthMethods().signInWithEmailAndPassword(context,
-                          //     emailcontroller.text, passcontroller.text);
-                        } else {}
-                        debugPrint(emailcontroller.text);
-                        debugPrint(passcontroller.text);
+                          if (isSelected[0]) {
+                            userLogin(emailcontroller.text.toString(),
+                                passcontroller.text.toString(), context);
+                            // AuthMethods().signInWithEmailAndPassword(context,
+                            //     emailcontroller.text, passcontroller.text);
+                          } else if (isSelected[1]) {
+                            driverLogin(emailcontroller.text.toString(),
+                                passcontroller.text.toString(), context);
+                          }
+                          debugPrint(emailcontroller.text);
+                          debugPrint(passcontroller.text);
+                        }
                       },
                       child: const Text(
                         'Submit',

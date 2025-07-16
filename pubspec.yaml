@@ -71,6 +71,14 @@ dependencies:
   win32: ^5.5.5
   pdf: ^3.11.3
   printing: ^5.13.1
+  location:
+  latlong2:
+  http:
+  geolocator:
+  flutter_map:
+  flutter_dotenv:
+  device_apps:
+  uuid:
   # khalti_checkout_flutter: ^1.0.0-dev.4
 
 dev_dependencies:

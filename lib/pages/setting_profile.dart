@@ -352,6 +352,7 @@ import 'package:saralyatra/EditDetails/delete_account.dart';
 import 'package:saralyatra/EditDetails/edit-details.dart';
 import 'package:saralyatra/EditDetails/help_line.dart';
 import 'package:saralyatra/pages/login-page.dart';
+import 'package:saralyatra/services/shared_pref.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 import 'package:app_linkster/app_linkster.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -368,11 +369,13 @@ class _ProfileSettingState extends State<ProfileSetting> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   User? _currentUser;
   Map<String, dynamic>? _userData;
+  Map<String, dynamic>? _driverData;
 
   @override
   void initState() {
     super.initState();
     _fetchUserData();
+    _fetchDriverData();
   }
 
   Future<void> _fetchUserData() async {
@@ -387,6 +390,53 @@ class _ProfileSettingState extends State<ProfileSetting> {
       setState(() {
         _userData = userDoc.data() as Map<String, dynamic>?;
       });
+    }
+    final localToken = await SharedpreferenceHelper().getSessionToken();
+    final doc = await FirebaseFirestore.instance
+        .collection('saralyatra')
+        .doc('userDetailsDatabase')
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get();
+
+    final serverToken = doc['sessionToken'];
+
+    if (localToken != serverToken) {
+      // Force logout — session is invalidated
+      await FirebaseAuth.instance.signOut();
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (_) => Login_page()));
+    }
+  }
+
+  Future<void> _fetchDriverData() async {
+    _currentUser = _auth.currentUser;
+    if (_currentUser != null) {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('saralyatra')
+          .doc('driverDetailsDatabase')
+          .collection('drivers')
+          .doc(_currentUser!.uid)
+          .get();
+      setState(() {
+        _driverData = userDoc.data() as Map<String, dynamic>?;
+      });
+    }
+    final localToken = await SharedpreferenceHelper().getSessionToken();
+    final doc = await FirebaseFirestore.instance
+        .collection('saralyatra')
+        .doc('userDetailsDatabase')
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get();
+
+    final serverToken = doc['sessionToken'];
+
+    if (localToken != serverToken) {
+      // Force logout — session is invalidated
+      await FirebaseAuth.instance.signOut();
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (_) => Login_page()));
     }
   }
 
@@ -458,29 +508,55 @@ class _ProfileSettingState extends State<ProfileSetting> {
                   ),
                 ],
               ),
-              FittedBox(
-                child: _userData?['imageUrl'] != null
-                    ? CircleAvatar(
-                        backgroundImage: NetworkImage(
-                          _userData!['imageUrl'],
-                        ),
-                        radius: 46,
-                      )
-                    : CircleAvatar(
-                        backgroundColor: Colors
-                            .blue, // replace 'appbarcolor' with an actual color
-                        radius: 46,
-                        child: Icon(
-                          Icons.person,
-                          size: 50,
-                        ),
-                      ),
-              ),
+              _userData?['role'] == "user"
+                  ? FittedBox(
+                      child: _userData?['imageUrl'] != null
+                          ? CircleAvatar(
+                              backgroundImage: NetworkImage(
+                                _userData!['imageUrl'],
+                              ),
+                              radius: 46,
+                            )
+                          : CircleAvatar(
+                              backgroundColor: Colors
+                                  .blue, // replace 'appbarcolor' with an actual color
+                              radius: 46,
+                              child: Icon(
+                                Icons.person,
+                                size: 50,
+                              ),
+                            ),
+                    )
+                  : FittedBox(
+                      child: _driverData?['imageUrl'] != null
+                          ? CircleAvatar(
+                              backgroundImage: NetworkImage(
+                                _driverData!['imageUrl'],
+                              ),
+                              radius: 46,
+                            )
+                          : CircleAvatar(
+                              backgroundColor: Colors
+                                  .blue, // replace 'appbarcolor' with an actual color
+                              radius: 46,
+                              child: Icon(
+                                Icons.person,
+                                size: 50,
+                              ),
+                            ),
+                    ),
               const SizedBox(height: 10),
-              Text(
-                _userData?['username'] ?? 'Loading...',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
+              _userData?['role'] == "user"
+                  ? Text(
+                      _userData?['username'] ?? 'Loading...',
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    )
+                  : Text(
+                      _driverData?['username'] ?? 'Loading...',
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
               const SizedBox(height: 15),
               _buildOptionCard(
                 context,
@@ -546,13 +622,86 @@ class _ProfileSettingState extends State<ProfileSetting> {
                               children: [
                                 TextButton(
                                   onPressed: () {
-                                    FirebaseAuth.instance.signOut();
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                Login_page()));
+                                    if (_userData?['role'] == "user") {
+                                      FirebaseFirestore.instance
+                                          .collection('saralyatra')
+                                          .doc('userDetailsDatabase')
+                                          .collection('users')
+                                          .doc('id')
+                                          .update({'sessionToken': ''});
+                                      FirebaseAuth.instance.signOut();
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  Login_page()));
+                                    } else if (_driverData?['role'] ==
+                                        "driver") {
+                                      FirebaseFirestore.instance
+                                          .collection('saralyatra')
+                                          .doc('driverDetailsDatabase')
+                                          .collection('users')
+                                          .doc('id')
+                                          .update({'sessionToken': ''});
+                                      FirebaseAuth.instance.signOut();
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  Login_page()));
+                                    }
+                                    // Need to edit based on role
+                                    // _userData?['role']=="user"??
+
+                                    // FirebaseFirestore.instance
+                                    //     .collection('saralyatra')
+                                    //     .doc('userDetailsDatabase')
+                                    //     .collection('users')
+                                    //     .doc('id')
+                                    //     .update({'sessionToken': ''});
+                                    // FirebaseAuth.instance.signOut();
+                                    // Navigator.push(
+                                    //     context,
+                                    //     MaterialPageRoute(
+                                    //         builder: (context) =>
+                                    //             Login_page()));
+                                    // :FirebaseFirestore.instance
+                                    //     .collection('saralyatra')
+                                    //     .doc('userDetailsDatabase')
+                                    //     .collection('users')
+                                    //     .doc('id')
+                                    //     .update({'sessionToken': ''});
+                                    // FirebaseAuth.instance.signOut();
+                                    // Navigator.push(
+                                    //     context,
+                                    //     MaterialPageRoute(
+                                    //         builder: (context) =>
+                                    //             Login_page()));
                                   },
+                                  // onPressed: () async {
+                                  //   final uid =
+                                  //       FirebaseAuth.instance.currentUser?.uid;
+                                  //   if (uid != null) {
+                                  //     await FirebaseFirestore.instance
+                                  //         .collection('saralyatra')
+                                  //         .doc('userDetailsDatabase')
+                                  //         .collection('users')
+                                  //         .doc(uid)
+                                  //         .update({
+                                  //       'sessionToken': null
+                                  //     }); // ❌ Invalidate token
+                                  //   }
+
+                                  //   await SharedpreferenceHelper()
+                                  //       .clearSessionToken(); // Optional: Clear local prefs
+                                  //   await FirebaseAuth.instance.signOut();
+
+                                  //   if (!context.mounted) return;
+                                  //   Navigator.pushReplacement(
+                                  //       context,
+                                  //       MaterialPageRoute(
+                                  //           builder: (_) => Login_page()));
+                                  // },
                                   child: Text('Yes'),
                                 ),
                                 TextButton(
@@ -598,52 +747,52 @@ class _ProfileSettingState extends State<ProfileSetting> {
                   ),
                 ),
               ),
-              SizedBox(height: 10),
-              Text('Connect with us'),
-              SizedBox(height: 10),
-              FittedBox(
-                child: Container(
-                  width: MediaQuery.of(context).size.width,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      GestureDetector(
-                        onTap: () async {
-                          await launcher.launchThisGuy(
-                            'https://www.instagram.com/yatra_sadak?igsh=MTBweHNyYWM2YXlkNQ==',
-                            fallbackLaunchMode: LaunchMode.externalApplication,
-                          );
-                        },
-                        child: FittedBox(
-                          child: Container(
-                            height: 30,
-                            width: 30,
-                            child:
-                                Image.asset('assets/logos/instagram_icon.png'),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 10),
-                      GestureDetector(
-                        onTap: () async {
-                          await launcher.launchThisGuy(
-                            'https://www.facebook.com/profile.php?id=61560997229729&mibextid=ZbWKwL',
-                            fallbackLaunchMode: LaunchMode.externalApplication,
-                          );
-                        },
-                        child: FittedBox(
-                          child: Container(
-                            height: 30,
-                            width: 30,
-                            child:
-                                Image.asset('assets/logos/Facebook_icon.png'),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              // SizedBox(height: 10),
+              // Text('Connect with us'),
+              // SizedBox(height: 10),
+              // FittedBox(
+              //   child: Container(
+              //     width: MediaQuery.of(context).size.width,
+              //     child: Row(
+              //       mainAxisAlignment: MainAxisAlignment.center,
+              //       children: [
+              //         GestureDetector(
+              //           onTap: () async {
+              //             await launcher.launchThisGuy(
+              //               'https://www.instagram.com/yatra_sadak?igsh=MTBweHNyYWM2YXlkNQ==',
+              //               fallbackLaunchMode: LaunchMode.externalApplication,
+              //             );
+              //           },
+              //           child: FittedBox(
+              //             child: Container(
+              //               height: 30,
+              //               width: 30,
+              //               child:
+              //                   Image.asset('assets/logos/instagram_icon.png'),
+              //             ),
+              //           ),
+              //         ),
+              //         SizedBox(width: 10),
+              //         GestureDetector(
+              //           onTap: () async {
+              //             await launcher.launchThisGuy(
+              //               'https://www.facebook.com/profile.php?id=61560997229729&mibextid=ZbWKwL',
+              //               fallbackLaunchMode: LaunchMode.externalApplication,
+              //             );
+              //           },
+              //           child: FittedBox(
+              //             child: Container(
+              //               height: 30,
+              //               width: 30,
+              //               child:
+              //                   Image.asset('assets/logos/Facebook_icon.png'),
+              //             ),
+              //           ),
+              //         ),
+              //       ],
+              //     ),
+              //   ),
+              // ),
             ],
           ),
         ),

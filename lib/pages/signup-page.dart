@@ -9,9 +9,11 @@ import 'package:image_picker/image_picker.dart';
 import 'package:saralyatra/Booking/input_field.dart';
 import 'package:saralyatra/Booking/provide.dart';
 import 'package:saralyatra/pages/botton_nav_bar.dart';
+import 'package:saralyatra/pages/serviceSelection.dart';
 import 'package:saralyatra/services/database.dart';
 import 'package:saralyatra/services/shared_pref.dart';
 import 'package:saralyatra/setups.dart';
+import 'package:uuid/uuid.dart';
 
 class Signup_page extends StatefulWidget {
   const Signup_page({super.key});
@@ -105,7 +107,7 @@ class _Signup_pageState extends State<Signup_page> {
   //   }
   // }
 
-  signUp(String email, String password) async {
+  userSignUp(String email, String password) async {
     String messageUserName = email.replaceAll("@gmail.com", "");
     if (_image == null) {
       print('No image selected');
@@ -125,6 +127,7 @@ class _Signup_pageState extends State<Signup_page> {
           .createUserWithEmailAndPassword(email: email, password: password);
 
       String? uid = usercredential.user?.uid;
+      final sessionToken = Uuid().v4();
 
       Map<String, dynamic> userInfoMap = {
         'username': usernamecontroller.text.toString(),
@@ -134,6 +137,8 @@ class _Signup_pageState extends State<Signup_page> {
         'password': passcontroller.text.toString(),
         'imageUrl': imageUrl,
         'messageUsername': messageUserName,
+        'role': "user",
+        'sessionToken': sessionToken
       };
 
       await DatabaseMethod().addUserDetails(userInfoMap, uid!);
@@ -144,26 +149,6 @@ class _Signup_pageState extends State<Signup_page> {
         "users": ["Agent", userInfoMap["username"]],
       };
       await DatabaseMethod().createChatRoom(chatRoomId, chatInfoMap);
-      // Navigator.push(
-      //   // ignore: use_build_context_synchronously
-      //   context,
-      //   MaterialPageRoute(
-      //     builder:
-      //         (context) => ChatPage(
-      //           name: data["Name"],
-      //           profileUrl: data["Image"],
-      //           username: data["username"],
-      //         ),
-      //   ),
-      // ).then((value) {
-      //   if (value == 'refresh') {
-      //     setState(() {
-      //       Home();
-      //     });
-      //   }
-      // }
-
-      // );
 
       // 🔽 Save to Shared Preferences
       await SharedpreferenceHelper()
@@ -171,10 +156,73 @@ class _Signup_pageState extends State<Signup_page> {
       await SharedpreferenceHelper().saveUserEmail(emailcontroller.text.trim());
       await SharedpreferenceHelper().saveUserImage(imageUrl);
       await SharedpreferenceHelper().saveUserId(uid);
+      await SharedpreferenceHelper().saveRole('user');
+      await SharedpreferenceHelper().saveSessionToken('sessionToken');
 
       // Navigate to BottomBar
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => BottomBar()));
+    } on FirebaseAuthException catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  driverSignUp(String email, String password) async {
+    String messageUserName = email.replaceAll("@gmail.com", "");
+    if (_image == null) {
+      print('No image selected');
+      return;
+    }
+
+    final imageUrl = await _uploadImage(_image!);
+
+    if (imageUrl == null) {
+      print('Failed to upload image');
+      return;
+    }
+
+    UserCredential? usercredential;
+    try {
+      usercredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
+
+      String? uid = usercredential.user?.uid;
+      final sessionToken = Uuid().v4();
+
+      Map<String, dynamic> userInfoMap = {
+        'username': usernamecontroller.text.toString(),
+        'email': emailcontroller.text.toString(),
+        'contact': contactnumcontroller.text.toString(),
+        'uid': uid,
+        'password': passcontroller.text.toString(),
+        'imageUrl': imageUrl,
+        'messageUsername': messageUserName,
+        'role': "driver",
+        'sessionToken': sessionToken
+      };
+
+      await DatabaseMethod().addDriverDetails(userInfoMap, uid!);
+
+      var chatRoomId =
+          getChatRoomIdbyUsername("Agent", userInfoMap["username"]);
+      Map<String, dynamic> chatInfoMap = {
+        "users": ["Agent", userInfoMap["username"]],
+      };
+      await DatabaseMethod().createChatRoom(chatRoomId, chatInfoMap);
+
+      // 🔽 Save to Shared Preferences
+      await SharedpreferenceHelper()
+          .saveDriverName(usernamecontroller.text.trim());
+      await SharedpreferenceHelper()
+          .saveDriverEmail(emailcontroller.text.trim());
+      await SharedpreferenceHelper().saveDriverImage(imageUrl);
+      await SharedpreferenceHelper().saveDriverId(uid);
+      await SharedpreferenceHelper().saveRole('driver');
+      await SharedpreferenceHelper().saveSessionToken('sessionToken');
+
+      // Navigate to BottomBar
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => Serviceselection()));
     } on FirebaseAuthException catch (e) {
       print('Error: $e');
     }
@@ -195,6 +243,7 @@ class _Signup_pageState extends State<Signup_page> {
     super.dispose();
   }
 
+  List<bool> isSelected = [true, false];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -371,72 +420,76 @@ class _Signup_pageState extends State<Signup_page> {
                     },
                     icon: Icon(Icons.privacy_tip_outlined),
                   ),
-                  // Padding(
-                  //   padding: const EdgeInsets.all(16.0),
-                  //   child: Column(
-                  //     mainAxisAlignment: MainAxisAlignment.center,
-                  //     children: [
-                  //       Container(
-                  //         height: MediaQuery.of(context).size.height / 20,
-                  //         child: ToggleButtons(
-                  //           isSelected: isSelected,
-                  //           borderRadius: BorderRadius.circular(8),
-                  //           selectedColor: Colors.white,
-                  //           fillColor: Colors.blue,
-                  //           children: [
-                  //             Container(
-                  //               width: MediaQuery.of(context).size.width / 3,
-                  //               child: Padding(
-                  //                 padding: const EdgeInsets.symmetric(
-                  //                     horizontal: 16),
-                  //                 child: Text(
-                  //                   "I am User",
-                  //                   textAlign: TextAlign.center,
-                  //                   style:
-                  //                       TextStyle(fontStyle: FontStyle.italic),
-                  //                 ),
-                  //               ),
-                  //             ),
-                  //             Container(
-                  //               width: MediaQuery.of(context).size.width / 3,
-                  //               child: Padding(
-                  //                 padding: const EdgeInsets.symmetric(
-                  //                     horizontal: 16),
-                  //                 child: Text(
-                  //                   "I am Driver",
-                  //                   textAlign: TextAlign.center,
-                  //                   style:
-                  //                       TextStyle(fontStyle: FontStyle.italic),
-                  //                 ),
-                  //               ),
-                  //             ),
-                  //           ],
-                  //           onPressed: (int index) {
-                  //             setState(() {
-                  //               // Set only the clicked index to true, others false
-                  //               for (int i = 0; i < isSelected.length; i++) {
-                  //                 isSelected[i] = i == index;
-                  //               }
-                  //             });
-                  //           },
-                  //         ),
-                  //       ),
-                  //       SizedBox(height: 20),
-                  //       Text(
-                  //         "Selected: ${isSelected[0] ? "I am User" : "I am driver"}",
-                  //         style: TextStyle(fontStyle: FontStyle.italic),
-                  //       ),
-                  //     ],
-                  //   ),
-                  // ),
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          height: MediaQuery.of(context).size.height / 20,
+                          child: ToggleButtons(
+                            isSelected: isSelected,
+                            borderRadius: BorderRadius.circular(8),
+                            selectedColor: Colors.white,
+                            fillColor: Colors.blue,
+                            children: [
+                              Container(
+                                width: MediaQuery.of(context).size.width / 3,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16),
+                                  child: Text(
+                                    "I am User",
+                                    textAlign: TextAlign.center,
+                                    style:
+                                        TextStyle(fontStyle: FontStyle.italic),
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                width: MediaQuery.of(context).size.width / 3,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16),
+                                  child: Text(
+                                    "I am Driver",
+                                    textAlign: TextAlign.center,
+                                    style:
+                                        TextStyle(fontStyle: FontStyle.italic),
+                                  ),
+                                ),
+                              ),
+                            ],
+                            onPressed: (int index) {
+                              setState(() {
+                                // Set only the clicked index to true, others false
+                                for (int i = 0; i < isSelected.length; i++) {
+                                  isSelected[i] = i == index;
+                                }
+                              });
+                            },
+                          ),
+                        ),
+                        // SizedBox(height: 20),
+                        // Text(
+                        //   "Selected: ${isSelected[0] ? "I am User" : "I am driver"}",
+                        //   style: TextStyle(fontStyle: FontStyle.italic),
+                        // ),
+                      ],
+                    ),
+                  ),
                   Padding(
                     padding: const EdgeInsets.only(top: 15),
                     child: ElevatedButton(
                       onPressed: () {
-                        if (formkey.currentState!.validate()) {
-                          signUp(emailcontroller.text.toString(),
+                        if (formkey.currentState!.validate() && isSelected[0]) {
+                          userSignUp(emailcontroller.text.toString(),
                               passcontroller.text.toString());
-                        } else {}
+                        } else if (formkey.currentState!.validate() &&
+                            isSelected[1]) {
+                          driverSignUp(emailcontroller.text.toString(),
+                              passcontroller.text.toString());
+                        }
                       },
                       child: Text(
                         'Submit',

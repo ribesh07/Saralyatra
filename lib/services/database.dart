@@ -20,6 +20,16 @@ class DatabaseMethod {
         .set(userInfoMap);
   }
 
+  Future<void> addDriverDetails(
+      Map<String, dynamic> userInfoMap, String id) async {
+    return await FirebaseFirestore.instance
+        .collection("saralyatra")
+        .doc("driverDetailsDatabase")
+        .collection("drivers")
+        .doc(id)
+        .set(userInfoMap);
+  }
+
 // Read
   Future<Stream<QuerySnapshot>> getEmployeeDetails() async {
     return FirebaseFirestore.instance.collection("Employee").snapshots();

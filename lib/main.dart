@@ -35,6 +35,7 @@
 
 //
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -43,6 +44,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:saralyatra/firebase_options.dart';
 import 'package:saralyatra/pages/login-page.dart';
 import 'package:saralyatra/pages/botton_nav_bar.dart';
+import 'package:saralyatra/pages/serviceSelection.dart';
+import 'package:saralyatra/services/shared_pref.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -109,4 +113,40 @@ class AuthCheck extends StatelessWidget {
       },
     );
   }
+}
+
+Future<Widget> checkSession() async {
+  String? uid = await SharedpreferenceHelper().getUserId();
+  final sessionToken = await SharedpreferenceHelper().getSessionToken();
+  final role = await SharedpreferenceHelper().getRole();
+  if (role == "user") {
+    if (uid != null && sessionToken != null) {
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance
+          .collection('saralyatra')
+          .doc('userDetailsDatabase')
+          .collection('user')
+          .doc(uid)
+          .get();
+
+      if (snapshot.exists && snapshot['sessionToken'] == sessionToken) {
+        return BottomBar(); // Valid session
+      }
+    }
+
+    return Login_page(); // No session or invalid
+  } else if (role == "driver") {
+    if (uid != null && sessionToken != null) {
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance
+          .collection('saralyatra')
+          .doc('driverDetailsDatabase')
+          .collection('user')
+          .doc(uid)
+          .get();
+
+      if (snapshot.exists && snapshot['sessionToken'] == sessionToken) {
+        return Serviceselection(); // Valid session
+      }
+    }
+  }
+  return Login_page(); // No session or invalid
 }
