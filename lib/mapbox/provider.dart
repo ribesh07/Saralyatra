@@ -14,4 +14,9 @@ class RouteProvider extends ChangeNotifier {
     userLocation = location;
     notifyListeners();
   }
+
+  void setDriverLocation(LatLng location) {
+    userLocation = location;
+    notifyListeners();
+  }
 }
