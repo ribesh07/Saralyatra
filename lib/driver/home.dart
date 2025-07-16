@@ -1,10 +1,22 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geolocator/geolocator.dart' as geolocator;
+import 'package:latlong2/latlong.dart';
 import 'package:saralyatra/driver/toggleer.dart';
 import 'package:saralyatra/mapbox/route_map.dart';
+import 'package:saralyatra/pages/login-page.dart';
+import 'package:saralyatra/services/shared_pref.dart';
 import 'package:saralyatra/setups.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -14,9 +26,14 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  bool isSwitched = false;
+  Timer? timer;
+  late WebSocketChannel channel;
   int selectedIndex = 0;
   String selectedMap = "";
+  bool isConnected = false;
+  bool isOnline = false;
+  String? address = "";
+  List<dynamic> drivers = [];
   final List<Map<String, String>> items = [
     {"title": "Koteshwar-Kalanki-satdobato", "label": " 1"},
     {"title": "Satdobato-Kalanki-koteshwar", "label": "2"},
@@ -32,6 +49,187 @@ class _HomeState extends State<Home> {
   //     print("App not installed");
   //   }
   // }
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  User? _currentUser;
+  Map<String, dynamic>? _userData;
+  Map<String, dynamic>? _driverData;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchDriverData();
+    connectToWebSocket();
+    onTheLoad();
+  }
+
+  void connectToWebSocket() async {
+    const serverUrl =
+        'wss://saralyatra-socket.onrender.com'; // Replace with your server URL
+    if (isConnected) {
+      print("Already connected to $serverUrl");
+      return;
+    }
+    try {
+      Geolocator.requestPermission();
+      Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
+          .then((position) {
+        setState(() {
+          currentLocation = LatLng(position.latitude, position.longitude);
+          print(currentLocation);
+        });
+        print(
+          "Current Position: ${position.latitude}, ${position.longitude}",
+        );
+      }).catchError((e) {
+        print("Error getting location: $e");
+      });
+      channel = WebSocketChannel.connect(Uri.parse(serverUrl));
+      isConnected = true;
+      print("Connected to $serverUrl");
+      channel.sink.add(jsonEncode({
+        "type": "IDENTIFY",
+        "role": "Driver",
+        "phone": "9999999999",
+        "latitude": currentLocation!.latitude,
+        "longitude": currentLocation!.longitude
+      }));
+
+      channel.stream.listen(
+        (message) async {
+          print(" Received response : $message");
+        },
+      );
+    } catch (e) {
+      print(" Connection failed: $e. Retrying...");
+      await Future.delayed(const Duration(seconds: 5));
+      connectToWebSocket();
+    }
+  }
+
+  @override
+  void dispose() {
+    // timer?.cancel();
+    channel.sink.close();
+    super.dispose();
+  }
+
+  void startSending() {
+    // int count = 0;
+    timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      var message = jsonEncode({
+        "type": "IDENTIFY",
+        "role": "Driver",
+        "phone": _driverData?['contact'],
+        "username": _driverData?['username'],
+        "latitude": currentLocation!.latitude,
+        "longitude": currentLocation!.longitude
+      });
+      channel.sink.add(message);
+      // count++;
+      // print('Sent: $message');
+      debugPrint("Message sent: $message");
+    });
+
+    channel.stream.listen((data) {
+      final message = jsonDecode(data);
+      if (message['type'] == 'DRIVER_LIST') {
+        setState(() {
+          drivers = message['drivers'];
+        });
+        debugPrint("Drivers: $drivers");
+      }
+    });
+    // channel.sink.add(message);
+    setState(() => isOnline = true);
+  }
+
+  void stopSending() {
+    timer?.cancel();
+    channel.sink.close();
+    setState(() => isOnline = false);
+  }
+
+  LatLng? currentLocation;
+  late LocationSettings locationSettings;
+
+  Future<void> _fetchDriverData() async {
+    _currentUser = _auth.currentUser;
+    if (_currentUser != null) {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('saralyatra')
+          .doc('driverDetailsDatabase')
+          .collection('drivers')
+          .doc(_currentUser!.uid)
+          .get();
+      setState(() {
+        _driverData = userDoc.data() as Map<String, dynamic>?;
+      });
+    }
+    final localToken = await SharedpreferenceHelper().getSessionToken();
+    final doc = await FirebaseFirestore.instance
+        .collection('saralyatra')
+        .doc('driverDetailsDatabase')
+        .collection('drivers')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get();
+
+    final serverToken = doc['sessionToken'];
+
+    if (localToken != serverToken) {
+      // Force logout — session is invalidated
+      await FirebaseAuth.instance.signOut();
+      if (!context.mounted) return;
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (_) => Login_page()));
+    }
+  }
+
+  Future<void> onTheLoad() async {
+    Geolocator.checkPermission().then((status) {
+      if (status == LocationPermission.denied) {
+        Geolocator.requestPermission();
+      }
+    });
+
+    Geolocator.requestPermission();
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      locationSettings = AndroidSettings(
+          accuracy: geolocator.LocationAccuracy.high,
+          distanceFilter: 10,
+          forceLocationManager: true,
+          //(Optional) Set foreground notification config to keep the app alive
+          //when going to the background
+          foregroundNotificationConfig: const ForegroundNotificationConfig(
+            notificationText: "Getting location in background",
+            notificationTitle: "Location Service",
+            enableWakeLock: true,
+          ));
+    }
+    Geolocator.getPositionStream(locationSettings: locationSettings)
+        .listen((Position position) {
+      setState(() {
+        currentLocation = LatLng(position.latitude, position.longitude);
+      });
+    });
+
+    Timer.periodic(const Duration(seconds: 1), (timer) async {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        await Geolocator.openLocationSettings();
+        return;
+      }
+      Geolocator.getPositionStream(locationSettings: locationSettings)
+          .listen((Position position) {
+        setState(() {
+          currentLocation = LatLng(position.latitude, position.longitude);
+        });
+      });
+      // debugPrint("Function triggered at: ${DateTime.now()}");
+      // debugPrint(
+      //     " Current Location is : ${currentLocation!.latitude} , ${currentLocation!.longitude}");
+    });
+  }
 
   Widget customCard({
     required String title,
@@ -81,8 +279,13 @@ class _HomeState extends State<Home> {
     );
   }
 
+  // bool isOnline = false;
+  double dragPosition = .0;
   @override
   Widget build(BuildContext context) {
+    const double toggleWidth = 300;
+    const double toggleHeight = 50;
+    const double knobSize = 35;
     return Scaffold(
       backgroundColor: backgroundColor,
       body: Padding(
@@ -99,7 +302,68 @@ class _HomeState extends State<Home> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SwipeToggle(),
+                    // SwipeToggle(),
+                    GestureDetector(
+                      onHorizontalDragUpdate: (details) {
+                        setState(() {
+                          dragPosition += details.delta.dx;
+                          dragPosition =
+                              dragPosition.clamp(0, toggleWidth - knobSize);
+                        });
+                      },
+                      onHorizontalDragEnd: (details) {
+                        setState(() {
+                          isOnline =
+                              dragPosition > (toggleWidth - knobSize) / 2;
+                          dragPosition =
+                              isOnline ? toggleWidth - 1.5 * knobSize : 0;
+                          if (isOnline) {
+                            startSending();
+                          } else {
+                            stopSending();
+                          }
+                          //update database
+                        });
+                      },
+                      child: Container(
+                        alignment: Alignment.center,
+                        width: toggleWidth,
+                        height: toggleHeight,
+                        padding: EdgeInsets.symmetric(horizontal: 5),
+                        decoration: BoxDecoration(
+                          color: isOnline
+                              ? Color.fromARGB(255, 3, 179, 255)
+                              : Colors.grey[400],
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Center(
+                              child: Text(
+                                isOnline ? "Online" : "Offline",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            AnimatedPositioned(
+                              duration: Duration(milliseconds: 100),
+                              left: dragPosition,
+                              child: Container(
+                                alignment: Alignment.center,
+                                width: knobSize,
+                                height: knobSize,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
                 Padding(

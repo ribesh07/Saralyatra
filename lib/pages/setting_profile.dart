@@ -623,7 +623,8 @@ class _ProfileSettingState extends State<ProfileSetting> {
                               children: [
                                 TextButton(
                                   onPressed: () async {
-                                    final uid = FirebaseAuth.instance.currentUser?.uid;
+                                    final uid =
+                                        FirebaseAuth.instance.currentUser?.uid;
                                     if (uid != null) {
                                       if (_userData?['role'] == "user") {
                                         await FirebaseFirestore.instance
@@ -632,7 +633,8 @@ class _ProfileSettingState extends State<ProfileSetting> {
                                             .collection('users')
                                             .doc(uid)
                                             .update({'sessionToken': ''});
-                                      } else if (_driverData?['role'] == "driver") {
+                                      } else if (_driverData?['role'] ==
+                                          "driver") {
                                         await FirebaseFirestore.instance
                                             .collection('saralyatra')
                                             .doc('driverDetailsDatabase')
@@ -640,15 +642,17 @@ class _ProfileSettingState extends State<ProfileSetting> {
                                             .doc(uid)
                                             .update({'sessionToken': ''});
                                       }
-                                      
-                                      await SharedpreferenceHelper().clearSessionToken();
+
+                                      await SharedpreferenceHelper()
+                                          .clearSessionToken();
                                       await FirebaseAuth.instance.signOut();
-                                      
+
                                       if (!context.mounted) return;
                                       Navigator.pushAndRemoveUntil(
                                           context,
                                           MaterialPageRoute(
-                                              builder: (context) => const Login_page()),
+                                              builder: (context) =>
+                                                  const Login_page()),
                                           (route) => false);
                                     }
                                     // Need to edit based on role

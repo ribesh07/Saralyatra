@@ -86,7 +86,7 @@ Future<void> onTheLoad() async {
   });
 
   Geolocator.requestPermission();
-  Timer.periodic(const Duration(seconds: 5), (timer) async {
+  Timer.periodic(const Duration(seconds: 10), (timer) async {
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       await Geolocator.openLocationSettings();
