@@ -6,7 +6,7 @@ class SharedpreferenceHelper {
   static String userEmailKey = "USEREMAILKEY";
   static String userImageKey = "USERIMAGEKEY";
   static String userUserNameKey = "USERUSERNAMEKEY";
-  static String driverIdKey = "USERKEY";
+static String driverIdKey = "DRIVERKEY";
   static String driverEmailKey = "USEREMAILKEY";
   static String driverImageKey = "USERIMAGEKEY";
   static String driverDriverNameKey = "USERUSERNAMEKEY";
@@ -99,9 +99,9 @@ class SharedpreferenceHelper {
 
   static String sessionTokenKey = "SESSION_TOKEN";
 
-  Future<void> saveSessionToken(String token) async {
+  Future<bool> saveSessionToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(sessionTokenKey, token);
+    return prefs.setString(sessionTokenKey, token);
   }
 
   Future<String?> getSessionToken() async {

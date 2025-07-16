@@ -85,8 +85,8 @@ class _DriverPageState extends State<DriverPage> {
     final localToken = await SharedpreferenceHelper().getSessionToken();
     final doc = await FirebaseFirestore.instance
         .collection('saralyatra')
-        .doc('userDetailsDatabase')
-        .collection('users')
+        .doc('driverDetailsDatabase')
+        .collection('drivers')
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .get();
 
@@ -95,6 +95,7 @@ class _DriverPageState extends State<DriverPage> {
     if (localToken != serverToken) {
       // Force logout — session is invalidated
       await FirebaseAuth.instance.signOut();
+      if (!mounted) return;
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (_) => Login_page()));
     }

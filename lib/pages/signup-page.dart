@@ -110,24 +110,31 @@ class _Signup_pageState extends State<Signup_page> {
   userSignUp(String email, String password) async {
     String messageUserName = email.replaceAll("@gmail.com", "");
     if (_image == null) {
-      print('No image selected');
+      _showErrorSnackBar('Please select an image');
       return;
     }
 
-    final imageUrl = await _uploadImage(_image!);
+    // Show loading indicator
+    _showLoadingDialog();
 
-    if (imageUrl == null) {
-      print('Failed to upload image');
-      return;
-    }
-
-    UserCredential? usercredential;
     try {
-      usercredential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(email: email, password: password);
+      // Run Firebase Auth and image upload in parallel
+      final results = await Future.wait([
+        FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password),
+        _uploadImage(_image!),
+      ]);
+
+      final UserCredential usercredential = results[0] as UserCredential;
+      final String? imageUrl = results[1] as String?;
+
+      if (imageUrl == null) {
+        _hideLoadingDialog();
+        _showErrorSnackBar('Failed to upload image');
+        return;
+      }
 
       String? uid = usercredential.user?.uid;
-      final sessionToken = Uuid().v4();
+      final sessionToken = const Uuid().v4();
 
       Map<String, dynamic> userInfoMap = {
         'username': usernamecontroller.text.toString(),
@@ -141,53 +148,64 @@ class _Signup_pageState extends State<Signup_page> {
         'sessionToken': sessionToken
       };
 
-      await DatabaseMethod().addUserDetails(userInfoMap, uid!);
-
-      var chatRoomId =
-          getChatRoomIdbyUsername("Agent", userInfoMap["username"]);
+      var chatRoomId = getChatRoomIdbyUsername("Agent", userInfoMap["username"]);
       Map<String, dynamic> chatInfoMap = {
         "users": ["Agent", userInfoMap["username"]],
       };
-      await DatabaseMethod().createChatRoom(chatRoomId, chatInfoMap);
 
-      // 🔽 Save to Shared Preferences
-      await SharedpreferenceHelper()
-          .saveUserName(usernamecontroller.text.trim());
-      await SharedpreferenceHelper().saveUserEmail(emailcontroller.text.trim());
-      await SharedpreferenceHelper().saveUserImage(imageUrl);
-      await SharedpreferenceHelper().saveUserId(uid);
-      await SharedpreferenceHelper().saveRole('user');
-      await SharedpreferenceHelper().saveSessionToken('sessionToken');
+      // Run database operations in parallel
+      await Future.wait<void>([
+        DatabaseMethod().addUserDetails(userInfoMap, uid!),
+        DatabaseMethod().createChatRoom(chatRoomId, chatInfoMap),
+        _saveUserPreferences(uid, sessionToken, imageUrl),
+      ]);
+
+      _hideLoadingDialog();
+      _showSuccessSnackBar('User account created successfully!');
 
       // Navigate to BottomBar
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => BottomBar()));
+      if (mounted) {
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => const BottomBar()));
+      }
     } on FirebaseAuthException catch (e) {
-      print('Error: $e');
+      _hideLoadingDialog();
+      _showErrorSnackBar(_getFirebaseErrorMessage(e.code));
+    } catch (e) {
+      _hideLoadingDialog();
+      _showErrorSnackBar('An unexpected error occurred. Please try again.');
+      debugPrint('User signup error: $e');
     }
   }
 
   driverSignUp(String email, String password) async {
     String messageUserName = email.replaceAll("@gmail.com", "");
     if (_image == null) {
-      print('No image selected');
+      _showErrorSnackBar('Please select an image');
       return;
     }
 
-    final imageUrl = await _uploadImage(_image!);
+    // Show loading indicator
+    _showLoadingDialog();
 
-    if (imageUrl == null) {
-      print('Failed to upload image');
-      return;
-    }
-
-    UserCredential? usercredential;
     try {
-      usercredential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(email: email, password: password);
+      // Run Firebase Auth and image upload in parallel
+      final results = await Future.wait([
+        FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password),
+        _uploadImage(_image!),
+      ]);
+
+      final UserCredential usercredential = results[0] as UserCredential;
+      final String? imageUrl = results[1] as String?;
+
+      if (imageUrl == null) {
+        _hideLoadingDialog();
+        _showErrorSnackBar('Failed to upload image');
+        return;
+      }
 
       String? uid = usercredential.user?.uid;
-      final sessionToken = Uuid().v4();
+      final sessionToken = const Uuid().v4();
 
       Map<String, dynamic> userInfoMap = {
         'username': usernamecontroller.text.toString(),
@@ -201,31 +219,125 @@ class _Signup_pageState extends State<Signup_page> {
         'sessionToken': sessionToken
       };
 
-      await DatabaseMethod().addDriverDetails(userInfoMap, uid!);
-
-      var chatRoomId =
-          getChatRoomIdbyUsername("Agent", userInfoMap["username"]);
+      var chatRoomId = getChatRoomIdbyUsername("Agent", userInfoMap["username"]);
       Map<String, dynamic> chatInfoMap = {
         "users": ["Agent", userInfoMap["username"]],
       };
-      await DatabaseMethod().createChatRoom(chatRoomId, chatInfoMap);
 
-      // 🔽 Save to Shared Preferences
-      await SharedpreferenceHelper()
-          .saveDriverName(usernamecontroller.text.trim());
-      await SharedpreferenceHelper()
-          .saveDriverEmail(emailcontroller.text.trim());
-      await SharedpreferenceHelper().saveDriverImage(imageUrl);
-      await SharedpreferenceHelper().saveDriverId(uid);
-      await SharedpreferenceHelper().saveRole('driver');
-      await SharedpreferenceHelper().saveSessionToken('sessionToken');
+      // Run database operations in parallel
+      await Future.wait<void>([
+        DatabaseMethod().addDriverDetails(userInfoMap, uid!),
+        DatabaseMethod().createChatRoom(chatRoomId, chatInfoMap),
+        _saveDriverPreferences(uid, sessionToken, imageUrl),
+      ]);
+
+      _hideLoadingDialog();
+      _showSuccessSnackBar('Driver account created successfully!');
 
       // Navigate to BottomBar
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => Serviceselection()));
+      if (mounted) {
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => const Serviceselection()));
+      }
     } on FirebaseAuthException catch (e) {
-      print('Error: $e');
+      _hideLoadingDialog();
+      _showErrorSnackBar(_getFirebaseErrorMessage(e.code));
+    } catch (e) {
+      _hideLoadingDialog();
+      _showErrorSnackBar('An unexpected error occurred. Please try again.');
+      debugPrint('Driver signup error: $e');
     }
+  }
+
+  // Helper methods for UI feedback
+  void _showLoadingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const AlertDialog(
+          content: Row(
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 20),
+              Text("Creating account..."),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _hideLoadingDialog() {
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+    }
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.red,
+        content: Text(
+          message,
+          style: const TextStyle(color: Colors.white),
+        ),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.green,
+        content: Text(
+          message,
+          style: const TextStyle(color: Colors.white),
+        ),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  String _getFirebaseErrorMessage(String errorCode) {
+    switch (errorCode) {
+      case 'weak-password':
+        return 'The password provided is too weak.';
+      case 'email-already-in-use':
+        return 'The account already exists for that email.';
+      case 'invalid-email':
+        return 'The email address is not valid.';
+      case 'operation-not-allowed':
+        return 'Email/password accounts are not enabled.';
+      case 'too-many-requests':
+        return 'Too many requests. Please try again later.';
+      default:
+        return 'An error occurred during sign up. Please try again.';
+    }
+  }
+
+  // Helper methods for saving preferences
+  Future<void> _saveUserPreferences(String uid, String sessionToken, String imageUrl) async {
+    await Future.wait<bool>([
+      SharedpreferenceHelper().saveUserName(usernamecontroller.text.trim()),
+      SharedpreferenceHelper().saveUserEmail(emailcontroller.text.trim()),
+      SharedpreferenceHelper().saveUserImage(imageUrl),
+      SharedpreferenceHelper().saveUserId(uid),
+      SharedpreferenceHelper().saveRole('user'),
+      SharedpreferenceHelper().saveSessionToken(sessionToken),
+    ]);
+  }
+
+  Future<void> _saveDriverPreferences(String uid, String sessionToken, String imageUrl) async {
+    await Future.wait<bool>([
+      SharedpreferenceHelper().saveDriverName(usernamecontroller.text.trim()),
+      SharedpreferenceHelper().saveDriverEmail(emailcontroller.text.trim()),
+      SharedpreferenceHelper().saveDriverImage(imageUrl),
+      SharedpreferenceHelper().saveDriverId(uid),
+      SharedpreferenceHelper().saveRole('driver'),
+      SharedpreferenceHelper().saveSessionToken(sessionToken),
+    ]);
   }
 
   @override

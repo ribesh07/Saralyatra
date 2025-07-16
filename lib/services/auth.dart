@@ -1,17 +1,38 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:saralyatra/pages/botton_nav_bar.dart';
 import 'package:saralyatra/services/database.dart';
 import 'package:saralyatra/services/shared_pref.dart';
+import 'package:uuid/uuid.dart';
 
 class AuthMethods {
   final FirebaseAuth auth = FirebaseAuth.instance;
+
+  Future<void> _refreshToken() async {
+    try {
+      User? user = auth.currentUser;
+      if (user != null) {
+        String newToken = const Uuid().v4();
+        await FirebaseFirestore.instance
+            .collection('saralyatra')
+            .doc('userDetailsDatabase')
+            .collection('users')
+            .doc(user.uid)
+            .update({'sessionToken': newToken});
+        await SharedpreferenceHelper().saveSessionToken(newToken);
+      }
+    } catch (e) {
+      debugPrint('Token refresh error: $e');
+    }
+  }
   getCurrentUser() async {
     return auth.currentUser;
   }
 
-  signInWithEmailAndPassword(
+signInWithEmailAndPassword(
       BuildContext context, String email, String password) async {
+    await _refreshToken();
     try {
       UserCredential result = await auth.signInWithEmailAndPassword(
         email: email,

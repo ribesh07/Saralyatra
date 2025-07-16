@@ -425,8 +425,8 @@ class _ProfileSettingState extends State<ProfileSetting> {
     final localToken = await SharedpreferenceHelper().getSessionToken();
     final doc = await FirebaseFirestore.instance
         .collection('saralyatra')
-        .doc('userDetailsDatabase')
-        .collection('users')
+        .doc('driverDetailsDatabase')
+        .collection('drivers')
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .get();
 
@@ -435,6 +435,7 @@ class _ProfileSettingState extends State<ProfileSetting> {
     if (localToken != serverToken) {
       // Force logout — session is invalidated
       await FirebaseAuth.instance.signOut();
+      if (!context.mounted) return;
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (_) => Login_page()));
     }
@@ -621,34 +622,34 @@ class _ProfileSettingState extends State<ProfileSetting> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 TextButton(
-                                  onPressed: () {
-                                    if (_userData?['role'] == "user") {
-                                      FirebaseFirestore.instance
-                                          .collection('saralyatra')
-                                          .doc('userDetailsDatabase')
-                                          .collection('users')
-                                          .doc('id')
-                                          .update({'sessionToken': ''});
-                                      FirebaseAuth.instance.signOut();
-                                      Navigator.push(
+                                  onPressed: () async {
+                                    final uid = FirebaseAuth.instance.currentUser?.uid;
+                                    if (uid != null) {
+                                      if (_userData?['role'] == "user") {
+                                        await FirebaseFirestore.instance
+                                            .collection('saralyatra')
+                                            .doc('userDetailsDatabase')
+                                            .collection('users')
+                                            .doc(uid)
+                                            .update({'sessionToken': ''});
+                                      } else if (_driverData?['role'] == "driver") {
+                                        await FirebaseFirestore.instance
+                                            .collection('saralyatra')
+                                            .doc('driverDetailsDatabase')
+                                            .collection('drivers')
+                                            .doc(uid)
+                                            .update({'sessionToken': ''});
+                                      }
+                                      
+                                      await SharedpreferenceHelper().clearSessionToken();
+                                      await FirebaseAuth.instance.signOut();
+                                      
+                                      if (!context.mounted) return;
+                                      Navigator.pushAndRemoveUntil(
                                           context,
                                           MaterialPageRoute(
-                                              builder: (context) =>
-                                                  Login_page()));
-                                    } else if (_driverData?['role'] ==
-                                        "driver") {
-                                      FirebaseFirestore.instance
-                                          .collection('saralyatra')
-                                          .doc('driverDetailsDatabase')
-                                          .collection('users')
-                                          .doc('id')
-                                          .update({'sessionToken': ''});
-                                      FirebaseAuth.instance.signOut();
-                                      Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  Login_page()));
+                                              builder: (context) => const Login_page()),
+                                          (route) => false);
                                     }
                                     // Need to edit based on role
                                     // _userData?['role']=="user"??

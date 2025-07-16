@@ -120,7 +120,11 @@ class _Login_pageState extends State<Login_page> {
         );
       }
     } catch (e) {
-      print("Login error: $e");
+showSnackBarMsg(
+        context: context,
+        message: "Login error: ${e.toString()}",
+        bgColor: Colors.red,
+      );
     }
   }
 
@@ -134,22 +138,45 @@ class _Login_pageState extends State<Login_page> {
       if (uid != null) {
         final sessionToken = const Uuid().v4();
 
-        await FirebaseFirestore.instance
+        // Check if the driver document exists first
+        final driverDoc = await FirebaseFirestore.instance
             .collection('saralyatra')
             .doc('driverDetailsDatabase')
-            .collection('users')
+            .collection('drivers')
             .doc(uid)
-            .update({'sessionToken': sessionToken});
+            .get();
 
-        await SharedpreferenceHelper().saveSessionToken(sessionToken);
+        if (driverDoc.exists) {
+          // Update existing document
+          await FirebaseFirestore.instance
+              .collection('saralyatra')
+              .doc('driverDetailsDatabase')
+              .collection('drivers')
+              .doc(uid)
+              .update({'sessionToken': sessionToken});
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => DriverPage()),
-        );
+          await SharedpreferenceHelper().saveSessionToken(sessionToken);
+          await SharedpreferenceHelper().saveRole('driver');
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => DriverPage()),
+          );
+        } else {
+          // Document doesn't exist - this shouldn't happen for valid drivers
+          showSnackBarMsg(
+            context: context,
+            message: "Driver account not found. Please contact support.",
+            bgColor: Colors.red,
+          );
+        }
       }
     } catch (e) {
-      print("Login error: $e");
+      showSnackBarMsg(
+        context: context,
+        message: "Login error: ${e.toString()}",
+        bgColor: Colors.red,
+      );
     }
   }
 
@@ -228,7 +255,7 @@ class _Login_pageState extends State<Login_page> {
       await FirebaseFirestore.instance
           .collection('saralyatra')
           .doc('driverDetailsDatabase')
-          .collection('driver')
+          .collection('drivers')
           .doc(uid)
           .update({
         'password': passcontroller.text,
