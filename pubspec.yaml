@@ -28,28 +28,30 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  UserCard:
+    path: ./lib/UserCard
   flutter:
     sdk: flutter
 
-  firebase_core: ^2.30.0
-  firebase_auth: ^4.19.2
-  cloud_firestore: ^4.17.0
-  firebase_storage: ^11.7.4
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+  cloud_firestore: ^5.4.3
+  firebase_storage: ^12.3.2
   google_nav_bar: ^5.0.6
-  image_picker: ^1.1.1
+  image_picker: ^1.1.2
   flutter_riverpod: ^2.5.1
-  shared_preferences:
-  random_string:
-  flutter_sound:
-  path_provider:
-  permission_handler:
+  shared_preferences: ^2.3.2
+  random_string: ^2.3.1
+  flutter_sound: ^9.11.2
+  path_provider: ^2.1.4
+  permission_handler: ^11.3.1
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
-  webview_flutter: ^4.8.0
+  webview_flutter: ^4.10.0
   fluentui_icons: ^1.0.0
   khalti_flutter: ^3.0.0
-  dio: ^5.1.2
+  dio: ^5.7.0
   esewa_flutter_sdk:
     path: ./external_sdk/esewa_sdk/esewa_flutter_sdk
   toggle_switch: ^2.3.0
@@ -58,7 +60,7 @@ dependencies:
   intl: ^0.18.1
   provider: ^6.1.2
   flutter_lints: ^4.0.0
-  url_launcher: ^6.3.0
+  url_launcher: ^6.3.1
   external_app_launcher: ^4.0.3
   app_linkster: ^0.0.5
   # flutter_rating_bar: ^4.0.1
@@ -71,14 +73,14 @@ dependencies:
   win32: ^5.5.5
   pdf: ^3.11.3
   printing: ^5.13.1
-  location:
-  latlong2:
-  http:
-  geolocator:
-  flutter_map:
-  flutter_dotenv:
-  device_apps:
-  uuid:
+  location: ^7.0.0
+  latlong2: ^0.9.1
+  http: ^1.2.2
+  geolocator: ^14.0.0
+  flutter_map: ^7.0.2
+  flutter_dotenv: ^5.2.1
+  device_apps: ^2.2.0
+  uuid: ^4.5.1
   # khalti_checkout_flutter: ^1.0.0-dev.4
 
 dev_dependencies:

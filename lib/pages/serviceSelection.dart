@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:saralyatra/UserCard/lib/usercard.dart';
 import 'package:saralyatra/pages/botton_nav_bar.dart';
 
 class Serviceselection extends StatefulWidget {
@@ -12,35 +13,43 @@ class _ServiceselectionState extends State<Serviceselection> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        padding: EdgeInsets.all(10),
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsetsGeometry.all(10),
-              child: GestureDetector(
-                child: Card(
-                  child: Text("LOCAL BUS"),
+      appBar: AppBar(
+        title: Text("Service Selection"),
+        centerTitle: true,
+        backgroundColor: Colors.red,
+      ),
+      body: SafeArea(
+        child: Container(
+          padding: EdgeInsets.all(10),
+          child: Column(
+            children: [
+              Padding(
+                padding: EdgeInsetsGeometry.all(10),
+                child: GestureDetector(
+                  child: Card(
+                    child: Text("LOCAL BUS"),
+                  ),
+                  onTap: () {
+                    debugPrint("Local Bus Selected");
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => UserCardApp()));
+                  },
                 ),
-                onTap: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => BottomBar()));
-                },
               ),
-            ),
-            Padding(
-              padding: EdgeInsetsGeometry.all(10),
-              child: GestureDetector(
-                child: Card(
-                  child: Text("RESERVATION"),
+              Padding(
+                padding: EdgeInsetsGeometry.all(10),
+                child: GestureDetector(
+                  child: Card(
+                    child: Text("RESERVATION"),
+                  ),
+                  onTap: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => BottomBar()));
+                  },
                 ),
-                onTap: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => BottomBar()));
-                },
-              ),
-            )
-          ],
+              )
+            ],
+          ),
         ),
       ),
     );
