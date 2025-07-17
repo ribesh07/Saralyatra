@@ -146,6 +146,16 @@ class _HomeState extends State<Home> {
 
   void stopSending() {
     timer?.cancel();
+    var message = jsonEncode({
+      "type": "IDENTIFY",
+      "role": "Driver",
+      "phone": _driverData?['contact'],
+      "username": _driverData?['username'],
+      "latitude": currentLocation!.latitude,
+      "longitude": currentLocation!.longitude,
+      "offline": "true"
+    });
+    channel.sink.add(message);
     channel.sink.close();
     setState(() => isOnline = false);
   }
