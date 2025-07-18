@@ -110,7 +110,7 @@ class _HomeState extends State<Home> {
   @override
   void dispose() {
     // timer?.cancel();
-    channel.sink.close();
+    channel.sink.close(); //should only stop with toggle need to work
     super.dispose();
   }
 
