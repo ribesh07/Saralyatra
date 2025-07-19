@@ -10,7 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geolocator/geolocator.dart' as geolocator;
 import 'package:saralyatra/mapbox/provider.dart';
-
+import 'package:permission_handler/permission_handler.dart';
 import 'map_services.dart';
 
 class RouteMapPage extends StatefulWidget {
@@ -43,7 +43,17 @@ class _RouteMapPageState extends State<RouteMapPage> {
       }
     });
     _initLocation();
+    _requestLocationPermission();
     _determinePosition();
+  }
+
+  Future<void> _requestLocationPermission() async {
+    final status = await Permission.location.request();
+    if (status.isGranted) {
+      _determinePosition();
+    } else {
+      print("Location permission denied");
+    }
   }
 
   Future<String?> getMapboxToken() async {
@@ -117,10 +127,10 @@ class _RouteMapPageState extends State<RouteMapPage> {
       if (!(await location.requestService())) return;
     }
 
-    if (await location.hasPermission() == PermissionStatus.denied) {
-      if (await location.requestPermission() != PermissionStatus.granted)
-        return;
-    }
+    // if (await location.hasPermission() == PermissionStatus.denied) {
+    //   if (await location.requestPermission() != PermissionStatus.granted)
+    //     return;
+    // }
 
     // final loc = await location.getLocation();
 
@@ -129,6 +139,13 @@ class _RouteMapPageState extends State<RouteMapPage> {
         accuracy: geolocator.LocationAccuracy.high,
         distanceFilter: 5,
         forceLocationManager: true,
+        //(Optional) Set foreground notification config to keep the app alive
+        //when going to the background
+        foregroundNotificationConfig: const ForegroundNotificationConfig(
+          notificationText: "Getting location in background",
+          notificationTitle: "Location Service",
+          enableWakeLock: true,
+        ),
       );
     }
     Geolocator.getCurrentPosition(locationSettings: locationSettings)
@@ -172,7 +189,7 @@ class _RouteMapPageState extends State<RouteMapPage> {
         if (userLoc != null && userLoc != previousLoc) {
           previousLoc = userLoc;
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            _mapController.move(userLoc, 15.0);
+            _mapController.move(userLoc, 20.0);
           });
         }
         return Scaffold(
@@ -182,6 +199,7 @@ class _RouteMapPageState extends State<RouteMapPage> {
               onPressed: () {
                 // _initLocation();
                 _determinePosition();
+                debugPrint("User location: $userLoc");
                 if (userLoc != null) {
                   _mapController.move(currentLocation!, 13.0);
                 }
