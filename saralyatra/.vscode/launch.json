@@ -1,0 +1,51 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Flutter: Debug Development",
+      "request": "launch",
+      "type": "dart",
+      "args": ["build", "apk", "--debug", "-v"]
+    },
+    {
+      "name": "saralyatra",
+      "request": "launch",
+      "type": "dart"
+    },
+    {
+      "name": "saralyatra (profile mode)",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "profile"
+    },
+    {
+      "name": "saralyatra (release mode)",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "release"
+    },
+    {
+      "name": "esewa_flutter_sdk",
+      "cwd": "external_sdk\\esewa_sdk\\esewa_flutter_sdk",
+      "request": "launch",
+      "type": "dart"
+    },
+    {
+      "name": "esewa_flutter_sdk (profile mode)",
+      "cwd": "external_sdk\\esewa_sdk\\esewa_flutter_sdk",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "profile"
+    },
+    {
+      "name": "esewa_flutter_sdk (release mode)",
+      "cwd": "external_sdk\\esewa_sdk\\esewa_flutter_sdk",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "release"
+    }
+  ]
+}
