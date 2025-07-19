@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 // import 'package:saralyatra/UserCard/UserCard.dart';
-import 'package:saralyatra/UserCard/usercard/usercard.dart';
+import 'package:saralyatra/user_location/usercard/usercard.dart';
 import 'package:saralyatra/pages/Home_screen.dart';
 // import 'package:saralyatra/UserCard/lib/usercard.dart';
 import 'package:saralyatra/pages/botton_nav_bar.dart';
