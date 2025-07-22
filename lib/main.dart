@@ -172,7 +172,7 @@ Future<Widget> checkSession() async {
       DocumentSnapshot snapshot = await FirebaseFirestore.instance
           .collection('saralyatra')
           .doc('userDetailsDatabase')
-          .collection('user')
+          .collection('users')
           .doc(uid)
           .get();
 

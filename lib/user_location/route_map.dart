@@ -13,6 +13,11 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 import 'map_services.dart';
 
+const textcolor = Color.fromARGB(255, 17, 16, 17);
+const appbarcolor = Color.fromARGB(255, 39, 136, 228);
+const appbarfontcolor = Color.fromARGB(255, 17, 16, 17);
+const listColor = Color.fromARGB(255, 153, 203, 238);
+
 class RouteMapPage extends StatefulWidget {
   final String data;
   RouteMapPage({required this.data});
@@ -149,7 +154,8 @@ class _RouteMapPageState extends State<RouteMapPage> {
         }
         return Scaffold(
           appBar: AppBar(
-            title: Text("Mapbox route"),
+            title: Text('map route'),
+            backgroundColor: appbarcolor,
             actions: [
               IconButton(
                 icon: Icon(Icons.gps_fixed_rounded),

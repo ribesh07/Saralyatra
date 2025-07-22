@@ -1,6 +1,7 @@
 // ignore_for_file: camel_case_types, prefer_const_constructors, sized_box_for_whitespace, prefer_const_literals_to_create_immutables
 
 import 'dart:io';
+import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,23 @@ import 'package:saralyatra/services/database.dart';
 import 'package:saralyatra/services/shared_pref.dart';
 import 'package:saralyatra/setups.dart';
 import 'package:uuid/uuid.dart';
+
+final String balance = '0.0'; // Default balance for new users
+String generate16DigitNumber() {
+  final random = Random();
+  String number = '';
+
+  // Ensure the first digit is not 0
+  number += (random.nextInt(9) + 1).toString();
+
+  // Add 15 more digits
+  for (int i = 0; i < 15; i++) {
+    number += random.nextInt(10).toString();
+  }
+
+  print(number); // Debugging line to check the generated number
+  return number; // This is a String
+}
 
 class Signup_page extends StatefulWidget {
   const Signup_page({super.key});
@@ -145,9 +163,12 @@ class _Signup_pageState extends State<Signup_page> {
         'password': passcontroller.text.toString(),
         'imageUrl': imageUrl,
         'messageUsername': messageUserName,
+        'cardID': generate16DigitNumber(),
+        'balance': balance,
         'role': "user",
         'sessionToken': sessionToken
       };
+      print(userInfoMap);
 
       var chatRoomId =
           getChatRoomIdbyUsername("Agent", userInfoMap["username"]);

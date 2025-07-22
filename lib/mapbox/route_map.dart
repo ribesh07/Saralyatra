@@ -26,7 +26,7 @@ class _RouteMapPageState extends State<RouteMapPage> {
   MapController _mapController = MapController();
   LatLng? currentLocation;
   String accessToken = dotenv.get('MAPBOX_API');
-  late LocationSettings locationSettings;
+  // late LocationSettings locationSettings; // Not available in geolocator 9.0.2
 
   @override
   void initState() {
@@ -102,11 +102,8 @@ class _RouteMapPageState extends State<RouteMapPage> {
     }
     if (permission == LocationPermission.deniedForever) return;
 
-    // Get current position and listen to updates
-    Geolocator.getPositionStream(
-      locationSettings: LocationSettings(
-          accuracy: geolocator.LocationAccuracy.high, distanceFilter: 5),
-    ).listen((Position position) {
+    // Get current position and listen to updates (compatible with geolocator 9.0.2)
+    Geolocator.getPositionStream().listen((Position position) {
       if (position.longitude != 0.0 &&
           position.latitude != 0.0 &&
           context.mounted) {
@@ -127,44 +124,19 @@ class _RouteMapPageState extends State<RouteMapPage> {
       if (!(await location.requestService())) return;
     }
 
-    // if (await location.hasPermission() == PermissionStatus.denied) {
-    //   if (await location.requestPermission() != PermissionStatus.granted)
-    //     return;
-    // }
-
-    // final loc = await location.getLocation();
-
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      locationSettings = AndroidSettings(
-        accuracy: geolocator.LocationAccuracy.high,
-        distanceFilter: 5,
-        forceLocationManager: true,
-        //(Optional) Set foreground notification config to keep the app alive
-        //when going to the background
-        foregroundNotificationConfig: const ForegroundNotificationConfig(
-          notificationText: "Getting location in background",
-          notificationTitle: "Location Service",
-          enableWakeLock: true,
-        ),
-      );
-    }
-    Geolocator.getCurrentPosition(locationSettings: locationSettings)
-        .then((position) async {
-      var accuracy = await Geolocator.getLocationAccuracy();
-      print("Accuracy: $accuracy");
+    // Get current position using geolocator 9.0.2 compatible API
+    Geolocator.getCurrentPosition().then((position) async {
+      print("Current Position: ${position.latitude}, ${position.longitude}");
 
       setState(() {
         currentLocation = LatLng(position.latitude, position.longitude);
       });
-      // _getRoute(currentLocation!, destination);
-
-      print("Current Position: ${position.latitude}, ${position.longitude}");
     }).catchError((e) {
       print("Error getting location: $e");
     });
 
-    Geolocator.getPositionStream(locationSettings: locationSettings)
-        .listen((Position position) {
+    // Listen to position stream using compatible API
+    Geolocator.getPositionStream().listen((Position position) {
       setState(() {
         currentLocation = LatLng(position.latitude, position.longitude);
       });

@@ -116,6 +116,7 @@ class _Login_pageState extends State<Login_page> {
             .update({'sessionToken': sessionToken});
 
         await SharedpreferenceHelper().saveSessionToken(sessionToken);
+        await SharedpreferenceHelper().saveUserId(uid);
 
         Navigator.pushReplacement(
           context,

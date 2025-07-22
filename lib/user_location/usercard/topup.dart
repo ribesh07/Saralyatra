@@ -1,15 +1,42 @@
 import 'package:flutter/material.dart';
+//import 'package:flutter/material.dart';
+//import 'package:saralyatra/payments/esewa-pay.dart';
+import 'package:saralyatra/payments/esewalocal-pay.dart';
+import 'package:saralyatra/payments/khalti-pay.dart';
+//import 'package:saralyatra/setups.dart';
+
+const backgroundColor = Color.fromARGB(255, 213, 227, 239);
+const textcolor = Color.fromARGB(255, 17, 16, 17);
+const appbarcolor = Color.fromARGB(255, 39, 136, 228);
+const appbarfontcolor = Color.fromARGB(255, 17, 16, 17);
+const listColor = Color.fromARGB(255, 153, 203, 238);
 
 class TopUpPage extends StatefulWidget {
+  final String userName;
+  final String contact;
+  final String date;
+  // final String price;
+  final String email;
+  final String userID;
+
+  const TopUpPage(
+      {super.key,
+      required this.userName,
+      required this.contact,
+      required this.date,
+      // required this.price,
+      required this.email,
+      required this.userID});
+
   @override
   _TopUpPageState createState() => _TopUpPageState();
 }
 
 class _TopUpPageState extends State<TopUpPage> {
   final TextEditingController _amountController = TextEditingController();
-
+  String amount = '';
   void _handleTopUp(String method) {
-    String amount = _amountController.text;
+    amount = _amountController.text;
     if (amount.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Please enter an amount')),
@@ -29,7 +56,10 @@ class _TopUpPageState extends State<TopUpPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Top-Up Page')),
+      appBar: AppBar(
+          title: Text('Top-Up Page'),
+          backgroundColor: appbarcolor,
+          foregroundColor: appbarfontcolor),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -50,13 +80,31 @@ class _TopUpPageState extends State<TopUpPage> {
               children: [
                 PaymentButton(
                   label: 'eSewa',
-                  imagePath: 'assets/images/esewa.png',
-                  onTap: () => _handleTopUp('eSewa'),
+                  imagePath: 'assets/logos/esewa_logo.png',
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        // String userName,String busName,String deptHr,String deptMin, String contact,String date
+                        MaterialPageRoute(
+                            builder: (context) => EsewaLocalScreen(
+                                  userName: widget.userName,
+                                  contact: widget.contact,
+                                  date: widget.date,
+                                  price: amount,
+                                  email: widget.email,
+                                  userID: widget.userID,
+                                )));
+                  },
                 ),
                 PaymentButton(
                   label: 'Khalti',
-                  imagePath: 'assets/images/khalti.png',
-                  onTap: () => _handleTopUp('Khalti'),
+                  imagePath: 'assets/logos/khalti.png',
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const PaymentKhalti()));
+                  },
                 ),
               ],
             ),

@@ -75,19 +75,17 @@ class _PaymentKhaltiState extends State<PaymentKhalti> {
         ),
         body: Container(
           child: Center(
-            child: GestureDetector(
-              onTap: () {
-                openKhaltiPaymentView();
-              },
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.paid,
-                    size: 300,
-                  ),
-                  Text("Pay with khalti")
-                ],
-              ),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.paid,
+                  size: 300,
+                ),
+                ElevatedButton(
+                  onPressed: openKhaltiPaymentView,
+                  child: Text("Pay with khalti"),
+                )
+              ],
             ),
           ),
         ),
