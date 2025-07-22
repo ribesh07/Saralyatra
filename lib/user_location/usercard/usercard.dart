@@ -134,6 +134,11 @@ class _UserCardAppState extends State<UserCardApp> {
 
     // ✅ Now safe to use cardID!
     return Scaffold(
+      appBar: AppBar(
+        title: Text('SaralYatra'),
+        backgroundColor: appbarcolor,
+        centerTitle: true,
+      ),
       backgroundColor: Colors.grey[100],
       body: SafeArea(
         child: Padding(

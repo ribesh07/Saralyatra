@@ -3,6 +3,7 @@
 // import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:saralyatra/pages/HomeDefScreen.dart';
+import 'package:saralyatra/pages/history.dart';
 // import 'package:saralyatra/main.dart';
 import 'package:saralyatra/pages/package_screen.dart';
 import 'package:saralyatra/pages/reservation_screen.dart';
@@ -40,6 +41,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       appBar: AppBar(
         title: Text('Home'),
         backgroundColor: appbarcolor,
+        centerTitle: true,
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MyTabbedPage(),
+                  ));
+            },
+            icon: Icon(Icons.history),
+            iconSize: 30,
+          )
+        ],
       ),
       body: Container(
         color: backgroundColor,

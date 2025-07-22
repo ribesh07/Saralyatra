@@ -58,7 +58,7 @@ class _BottomBarState extends State<BottomBar> {
       // HomeScreen(userUId: uID!)
       else
         const CircularProgressIndicator(),
-      const MyTabbedPage(),
+      // const MyTabbedPage(),
       const ProfileSetting(),
       // the argument tyoe 'String?' can;t be assigned to parameter type 'string'
     ];
@@ -143,11 +143,11 @@ class _BottomBarState extends State<BottomBar> {
             activeIcon: Icon(FluentSystemIcons.ic_fluent_home_filled),
             label: 'Home',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(FluentSystemIcons.ic_fluent_ticket_regular),
-            activeIcon: Icon(FluentSystemIcons.ic_fluent_ticket_filled),
-            label: 'Tickets',
-          ),
+          // BottomNavigationBarItem(
+          //   icon: Icon(FluentSystemIcons.ic_fluent_ticket_regular),
+          //   activeIcon: Icon(FluentSystemIcons.ic_fluent_ticket_filled),
+          //   label: 'Tickets',
+          // ),
           BottomNavigationBarItem(
             icon: Icon(FluentSystemIcons.ic_fluent_person_regular),
             activeIcon: Icon(FluentSystemIcons.ic_fluent_person_filled),
