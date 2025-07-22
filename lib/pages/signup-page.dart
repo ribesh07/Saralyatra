@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:saralyatra/Booking/input_field.dart';
 import 'package:saralyatra/Booking/provide.dart';
+import 'package:saralyatra/driver/driverPage.dart';
 import 'package:saralyatra/pages/botton_nav_bar.dart';
 import 'package:saralyatra/pages/serviceSelection.dart';
 import 'package:saralyatra/services/database.dart';
@@ -262,7 +263,7 @@ class _Signup_pageState extends State<Signup_page> {
       // Navigate to BottomBar
       if (mounted) {
         Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => const BottomBar()));
+            MaterialPageRoute(builder: (context) => const DriverPage()));
       }
     } on FirebaseAuthException catch (e) {
       _hideLoadingDialog();

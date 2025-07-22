@@ -1,6 +1,6 @@
 //
 
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, avoid_print
 
 import 'dart:convert';
 
@@ -40,7 +40,7 @@ class Esewalocal {
     DocumentReference documentReference = firestore
         .collection('saralyatra')
         .doc('paymentDetails')
-        .collection('forAdmin')
+        .collection('forUser')
         .doc('$userName$date');
 //
     // String departureTime = "$deptHr : $deptMin";
