@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "264911707486",
+    "firebase_url": "https://sadakyatra-fd6de-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "sadakyatra-fd6de",
+    "storage_bucket": "sadakyatra-fd6de.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:264911707486:android:569c32c7eef41c197803cf",
+        "android_client_info": {
+          "package_name": "com.example.sadakyatra"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAOlEuEWxnNTkpjCZj5s_TPoef7swTNppc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:264911707486:android:9df1e74e68c05f087803cf",
+        "android_client_info": {
+          "package_name": "com.example.saralyatra"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAOlEuEWxnNTkpjCZj5s_TPoef7swTNppc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
