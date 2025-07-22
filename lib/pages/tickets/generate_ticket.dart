@@ -224,7 +224,8 @@ class _generateTicketState extends State<generateTicket> {
                   height: 40,
                 ),
                 Text(
-                  "contact us: 9844499531",
+                  "contact us: 9844499531"
+                  "contact us: 9812075707",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       fontSize: 15,
