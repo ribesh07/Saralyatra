@@ -68,6 +68,7 @@ class _Signup_pageState extends State<Signup_page> {
   final cpasscontroller = TextEditingController();
   final usernamecontroller = TextEditingController();
   final contactnumcontroller = TextEditingController();
+  final busnumbercontroller = TextEditingController();
   final formkey = GlobalKey<FormState>();
 
   final ImagePicker _picker = ImagePicker();
@@ -230,7 +231,6 @@ class _Signup_pageState extends State<Signup_page> {
     _showLoadingDialog();
 
     try {
-      // Run Firebase Auth and image upload in parallel
       final results = await Future.wait([
         FirebaseAuth.instance
             .createUserWithEmailAndPassword(email: email, password: password),
@@ -259,7 +259,8 @@ class _Signup_pageState extends State<Signup_page> {
         'imageUrl': imageUrl,
         'messageUsername': messageUserName,
         'role': "driver",
-        'sessionToken': sessionToken
+        'sessionToken': sessionToken,
+        'bus_number': busnumbercontroller.text.toString(), // 👈 UPDATED
       };
 
       var chatRoomId =
@@ -268,7 +269,6 @@ class _Signup_pageState extends State<Signup_page> {
         "users": ["Agent", userInfoMap["username"]],
       };
 
-      // Run database operations in parallel
       await Future.wait<void>([
         DatabaseMethod().addDriverDetails(userInfoMap, uid!),
         DatabaseMethod().createChatRoom(chatRoomId, chatInfoMap),
@@ -278,7 +278,6 @@ class _Signup_pageState extends State<Signup_page> {
       _hideLoadingDialog();
       _showSuccessSnackBar('Driver account created successfully!');
 
-      // Navigate to BottomBar
       if (mounted) {
         Navigator.pushReplacement(context,
             MaterialPageRoute(builder: (context) => const DriverPage()));
@@ -392,12 +391,14 @@ class _Signup_pageState extends State<Signup_page> {
   }
 
   @override
+  @override
   void dispose() {
     emailcontroller.dispose();
     passcontroller.dispose();
     cpasscontroller.dispose();
     usernamecontroller.dispose();
     contactnumcontroller.dispose();
+    busnumbercontroller.dispose(); // 👈 NEW
     super.dispose();
   }
 
@@ -542,6 +543,75 @@ class _Signup_pageState extends State<Signup_page> {
                     validator: (value) => provider.cpasswordValidator(
                         passcontroller.text, cpasscontroller.text),
                   ),
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            height: MediaQuery.of(context).size.height / 20,
+                            child: ToggleButtons(
+                              isSelected: isSelected,
+                              borderRadius: BorderRadius.circular(8),
+                              selectedColor: Colors.white,
+                              fillColor: Colors.blue,
+                              children: [
+                                Container(
+                                  width: MediaQuery.of(context).size.width / 3,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16),
+                                    child: Text(
+                                      "I am User",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                          fontStyle: FontStyle.italic),
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  width: MediaQuery.of(context).size.width / 3,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16),
+                                    child: Text(
+                                      "I am Driver",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                          fontStyle: FontStyle.italic),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              onPressed: (int index) {
+                                setState(() {
+                                  // Set only the clicked index to true, others false
+                                  for (int i = 0; i < isSelected.length; i++) {
+                                    isSelected[i] = i == index;
+                                  }
+                                });
+                              },
+                            ),
+                            // SizedBox(height: 20),
+                            // Text(
+                            //   "Selected: ${isSelected[0] ? "I am User" : "I am driver"}",
+                            //   style: TextStyle(fontStyle: FontStyle.italic),
+                            // ),
+                          )
+                        ]),
+                  ),
+                  if (isSelected[1])
+                    InputField(
+                      icon: Icons.directions_bus,
+                      label: "Bus Number (e.g. BA-01-PA-1234)",
+                      controller: busnumbercontroller,
+                      inputFormat: [
+                        FilteringTextInputFormatter.allow(
+                            RegExp(r'[A-Z0-9\-]')), // ✅ FIXED
+                        LengthLimitingTextInputFormatter(13),
+                      ],
+                      validator: (value) => provider.busValidator(value),
+                    ),
                   IconButton(
                     onPressed: () {
                       showDialog(
@@ -579,74 +649,17 @@ class _Signup_pageState extends State<Signup_page> {
                     icon: Icon(Icons.privacy_tip_outlined),
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          height: MediaQuery.of(context).size.height / 20,
-                          child: ToggleButtons(
-                            isSelected: isSelected,
-                            borderRadius: BorderRadius.circular(8),
-                            selectedColor: Colors.white,
-                            fillColor: Colors.blue,
-                            children: [
-                              Container(
-                                width: MediaQuery.of(context).size.width / 3,
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16),
-                                  child: Text(
-                                    "I am User",
-                                    textAlign: TextAlign.center,
-                                    style:
-                                        TextStyle(fontStyle: FontStyle.italic),
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                width: MediaQuery.of(context).size.width / 3,
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16),
-                                  child: Text(
-                                    "I am Driver",
-                                    textAlign: TextAlign.center,
-                                    style:
-                                        TextStyle(fontStyle: FontStyle.italic),
-                                  ),
-                                ),
-                              ),
-                            ],
-                            onPressed: (int index) {
-                              setState(() {
-                                // Set only the clicked index to true, others false
-                                for (int i = 0; i < isSelected.length; i++) {
-                                  isSelected[i] = i == index;
-                                }
-                              });
-                            },
-                          ),
-                        ),
-                        // SizedBox(height: 20),
-                        // Text(
-                        //   "Selected: ${isSelected[0] ? "I am User" : "I am driver"}",
-                        //   style: TextStyle(fontStyle: FontStyle.italic),
-                        // ),
-                      ],
-                    ),
-                  ),
-                  Padding(
                     padding: const EdgeInsets.only(top: 15),
                     child: ElevatedButton(
                       onPressed: () {
-                        if (formkey.currentState!.validate() && isSelected[0]) {
-                          userSignUp(emailcontroller.text.toString(),
-                              passcontroller.text.toString());
-                        } else if (formkey.currentState!.validate() &&
-                            isSelected[1]) {
-                          driverSignUp(emailcontroller.text.toString(),
-                              passcontroller.text.toString());
+                        if (formkey.currentState!.validate()) {
+                          if (isSelected[0]) {
+                            userSignUp(emailcontroller.text.trim(),
+                                passcontroller.text.trim());
+                          } else {
+                            driverSignUp(emailcontroller.text.trim(),
+                                passcontroller.text.trim());
+                          }
                         }
                       },
                       child: Text(

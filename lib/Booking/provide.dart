@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 
 class settingProvider extends ChangeNotifier {
   static final RegExp passValid = RegExp(
-      r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$');
+      //r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$');
+      r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,16}$');
+
   // general validator
   validator(String value, String message) {
     if (value.isEmpty) {
@@ -83,5 +85,17 @@ class settingProvider extends ChangeNotifier {
     } else {
       return "invalid mail";
     }
+  }
+
+  busValidator(String value) {
+    if (value.isEmpty) {
+      return "Bus number is required";
+    }
+    final pattern = r'^[A-Z]{2}-[0-9]{2}-[A-Z]{2}-[0-9]{1,4}$';
+    final regex = RegExp(pattern);
+    if (!regex.hasMatch(value)) {
+      return "Enter a valid bus number (e.g., BA-01-PA-1234)";
+    }
+    return null;
   }
 }
