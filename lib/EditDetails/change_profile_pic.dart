@@ -247,6 +247,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:saralyatra/services/shared_pref.dart';
 import 'package:saralyatra/setups.dart';
 
 // ignore: camel_case_types
@@ -310,14 +311,18 @@ class _changeProfilePicState extends State<changeProfilePic> {
       if (user == null) {
         throw Exception('User not logged in');
       }
-
+      final String? user_id = await SharedpreferenceHelper().getUserId();
+      final String? user_role = await SharedpreferenceHelper().getRole();
+      if (user_role != 'user') {}
       String uid = user.uid;
 
       // Get current image URL from Firestore
       DocumentSnapshot snapshot = await FirebaseFirestore.instance
           .collection("saralyatra")
-          .doc("userDetailsDatabase")
-          .collection("users")
+          .doc(user_role == "user"
+              ? "userDetailsDatabase"
+              : "driverDetailsDatabase")
+          .collection(user_role == "user" ? "users" : "drivers")
           .doc(uid)
           .get();
       // String? oldImageUrl = snapshot.data()?['imageUrl'];
@@ -346,8 +351,10 @@ class _changeProfilePicState extends State<changeProfilePic> {
         // Update Firestore with the new image URL
         await FirebaseFirestore.instance
             .collection("saralyatra")
-            .doc("userDetailsDatabase")
-            .collection("users")
+            .doc(user_role == "user"
+                ? "userDetailsDatabase"
+                : "driverDetailsDatabase")
+            .collection(user_role == "user" ? "users" : "drivers")
             .doc(uid)
             .update({
           'imageUrl': newImageUrl,

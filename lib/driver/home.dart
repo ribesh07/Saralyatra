@@ -26,6 +26,16 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  String uid = FirebaseAuth.instance.currentUser!.uid;
+  String? name;
+  String? drivername;
+  String? userid;
+  String? driverID;
+
+  // ADD THIS LINE
+
+  bool isLoading = true;
+
   Timer? timer;
   late WebSocketChannel channel;
   int selectedIndex = 0;
@@ -87,15 +97,40 @@ class _HomeState extends State<Home> {
   User? _currentUser;
   Map<String, dynamic>? _userData;
   Map<String, dynamic>? _driverData;
+  LatLng? currentLocation;
+  late LocationSettings locationSettings;
+
+  void getdata() async {
+    final usern = await SharedpreferenceHelper().getUserName1();
+    final useid = await SharedpreferenceHelper().getDriverId();
+    final driveriDD = await SharedpreferenceHelper().getDriverIdd();
+    print("Driver ID is : $driveriDD");
+    print("name : $usern");
+    print("User ID is : $useid");
+    setState(() {
+      name = usern;
+      driverID = driveriDD;
+      userid = useid;
+    });
+    print("Driver ID is : $driverID");
+    print("name : $name");
+  }
 
   @override
   void initState() {
     super.initState();
-    _fetchDriverData();
     connectToWebSocket();
+    _fetchDriverData();
     onTheLoad();
     // addDetails();
   }
+
+  @override
+  // void initState() {
+  //   super.initState();
+
+  //   getdata();
+  // }
 
   void connectToWebSocket() async {
     const serverUrl =
@@ -194,9 +229,6 @@ class _HomeState extends State<Home> {
     setState(() => isOnline = false);
   }
 
-  LatLng? currentLocation;
-  late LocationSettings locationSettings;
-
   Future<void> _fetchDriverData() async {
     _currentUser = _auth.currentUser;
     if (_currentUser != null) {
@@ -208,7 +240,15 @@ class _HomeState extends State<Home> {
           .get();
       setState(() {
         _driverData = userDoc.data() as Map<String, dynamic>?;
+        if (_driverData != null) {
+          name = _driverData!['username'];
+          driverID = _driverData!['dcardId'];
+          print("Driver ID is : $driverID");
+        } else {
+          print("No driver data found for user: ${_driverData}");
+        }
       });
+      print("Driver Data: $_driverData");
     }
     final localToken = await SharedpreferenceHelper().getSessionToken();
     final doc = await FirebaseFirestore.instance
@@ -485,14 +525,18 @@ class _HomeState extends State<Home> {
                       child: Column(
                         children: [
                           Row(
-                            children: [Text('Name: '), Text("XXXXX")],
+                            children: [
+                              Text('Name : ${name?.toUpperCase()}'),
+                            ],
                           ),
                           Row(
-                            children: [Text('Driver ID : '), Text("XXXXX")],
+                            children: [
+                              Text('Driver ID : ${driverID ?? 'N/A'}'),
+                            ],
                           ),
-                          Row(
-                            children: [Text('Bus ID: '), Text('XXXXXX')],
-                          ),
+                          // Row(
+                          //   children: [Text('Bus ID: '), Text('XXXXXX')],
+                          // ),
                           Row(
                             children: [Text('Route: '), Text('XXXXXX')],
                           ),
