@@ -260,7 +260,7 @@ class _Signup_pageState extends State<Signup_page> {
         'messageUsername': messageUserName,
         'role': "driver",
         'sessionToken': sessionToken,
-        'bus_number': busnumbercontroller.text.toString(), // 👈 UPDATED
+        'busNumber': busnumbercontroller.text.toString(), // 👈 UPDATED
       };
 
       var chatRoomId =
@@ -382,6 +382,7 @@ class _Signup_pageState extends State<Signup_page> {
       SharedpreferenceHelper().saveDriverId(uid),
       SharedpreferenceHelper().saveRole('driver'),
       SharedpreferenceHelper().saveSessionToken(sessionToken),
+      SharedpreferenceHelper().saveBusNumber(busnumbercontroller.text.trim()),
     ]);
   }
 
