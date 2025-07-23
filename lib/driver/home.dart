@@ -34,13 +34,46 @@ class _HomeState extends State<Home> {
   bool isOnline = false;
   String? address = "";
   List<dynamic> drivers = [];
-  final List<Map<String, String>> items = [
-    {"title": "Koteshwar-Kalanki-satdobato", "label": " 1"},
-    {"title": "Satdobato-Kalanki-koteshwar", "label": "2"},
-    {"title": "Koteshwar-Thimi-Sanga", "label": " 3"},
-    {"title": "Thimi-Sanga-Koteshwar", "label": "4"},
+  final List<Map<String, dynamic>> items = [
+    {
+      'busNo': 'BA-01-1234',
+      'label': "1",
+      'title': 'Pashupati - Kalanki - Koteshwor',
+      'driverId': 'DRV001',
+      'active': true,
+    },
+    {
+      'busNo': 'BA-02-5678',
+      'label': '2',
+      'title': 'Koteshwor - Bhaktapur - Sanga',
+      'driverId': 'DRV002',
+      'active': false,
+    },
+    {
+      'busNo': 'BA-03-4321',
+      'label': '3',
+      'title': 'Koteshwor - Kalanki - Pashupati',
+      'driverId': 'DRV003',
+      'active': true,
+    },
+    {
+      'busNo': 'BA-04-8765',
+      'label': '4',
+      'title': 'Sanga - Bhaktapur - Koteshwor',
+      'driverId': 'DRV004',
+      'active': true,
+    },
   ];
 
+  late String selectedRoute;
+  addDetails() async {
+    return await FirebaseFirestore.instance
+        .collection('saralyatra')
+        .doc('driverDetailsDatabase')
+        .collection('driverRoute')
+        .doc(selectedRoute)
+        .update({'routes': items});
+  }
   // void openOtherApp() async {
   //   bool isInstalled = await DeviceApps.isAppInstalled('com.example.mapbox');
   //   if (isInstalled) {
@@ -61,6 +94,7 @@ class _HomeState extends State<Home> {
     _fetchDriverData();
     connectToWebSocket();
     onTheLoad();
+    // addDetails();
   }
 
   void connectToWebSocket() async {
@@ -241,46 +275,101 @@ class _HomeState extends State<Home> {
     });
   }
 
+  // Widget customCard({
+  //   required String title,
+  //   required VoidCallback onTap,
+  //   required String label,
+  //   bool isSelected = false,
+  // }) {
+  //   return Card(
+  //     shape: RoundedRectangleBorder(
+  //       borderRadius: BorderRadius.circular(12),
+  //     ),
+  //     elevation: 4,
+  //     // margin: EdgeInsets.all(16),
+  //     child:
+
+  //         // padding: EdgeInsets.all(16),
+  //         InkWell(
+  //       onTap: onTap,
+  //       child: Container(
+  //         width: MediaQuery.of(context).size.width / 0.2,
+  //         decoration: BoxDecoration(
+  //           shape: BoxShape.rectangle,
+  //           borderRadius: BorderRadius.circular(12),
+  //           border:
+  //               Border.all(color: Color.fromARGB(255, 223, 231, 239), width: 3),
+  //           color: isSelected ? listColor : Colors.white,
+  //         ),
+  //         child: Column(
+  //           mainAxisSize: MainAxisSize.min,
+  //           crossAxisAlignment: CrossAxisAlignment.center,
+  //           mainAxisAlignment: MainAxisAlignment.center,
+  //           children: [
+  //             Text(
+  //               "Route No: $label",
+  //               textAlign: TextAlign.center,
+  //               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+  //             ),
+  //             // SizedBox(height: 8),
+  //             Text(
+  //               title,
+  //               style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
+
   Widget customCard({
     required String title,
     required VoidCallback onTap,
     required String label,
-    bool isSelected = false,
+    required int index,
+    required int selectedIndex,
+    required ValueChanged<int?> onChanged,
   }) {
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
       elevation: 4,
-      // margin: EdgeInsets.all(16),
-      child:
-
-          // padding: EdgeInsets.all(16),
-          InkWell(
+      child: InkWell(
         onTap: onTap,
         child: Container(
-          width: MediaQuery.of(context).size.width / 0.2,
+          padding: EdgeInsets.all(16),
           decoration: BoxDecoration(
-            shape: BoxShape.rectangle,
+            border: Border.all(color: Colors.grey.shade300, width: 2),
             borderRadius: BorderRadius.circular(12),
-            border:
-                Border.all(color: Color.fromARGB(255, 223, 231, 239), width: 3),
-            color: isSelected ? listColor : Colors.white,
+            color: index == selectedIndex
+                ? Color.fromARGB(255, 185, 221, 255)
+                : Colors.white,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Row(
             children: [
-              Text(
-                "Route No: $label",
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              Radio<int>(
+                value: index,
+                groupValue: selectedIndex,
+                onChanged: onChanged,
               ),
-              // SizedBox(height: 8),
-              Text(
-                title,
-                style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+              SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Route No: $label",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      title,
+                      style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -328,8 +417,10 @@ class _HomeState extends State<Home> {
                           dragPosition =
                               isOnline ? toggleWidth - 1.5 * knobSize : 0;
                           if (isOnline) {
+                            addDetails();
                             startSending();
                           } else {
+                            addDetails();
                             stopSending();
                           }
                           //update database
@@ -429,14 +520,22 @@ class _HomeState extends State<Home> {
                         itemBuilder: (context, index) {
                           return customCard(
                             title: items[index]['title']!,
-                            isSelected: index == selectedIndex,
+                            label: items[index]['label'] ?? '',
+                            index: index,
+                            selectedIndex: selectedIndex,
                             onTap: () {
                               setState(() {
-                                selectedMap = items[index]['title']!;
                                 selectedIndex = index;
+                                selectedRoute = items[index]['busNo']!;
+                                selectedMap = items[index]['title']!;
                               });
                             },
-                            label: items[index]['label'] ?? "",
+                            onChanged: (int? value) {
+                              setState(() {
+                                selectedIndex = value!;
+                                selectedMap = items[value]['title']!;
+                              });
+                            },
                           );
                         },
                       ),
