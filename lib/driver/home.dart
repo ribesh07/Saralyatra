@@ -32,7 +32,9 @@ class _HomeState extends State<Home> {
   String? userid;
   String? driverID;
   String? driverBus;
-
+  double toggleWidth = 300;
+  double toggleHeight = 50;
+  double knobSize = 35;
   // ADD THIS LINE
 
   bool isLoading = true;
@@ -79,7 +81,7 @@ class _HomeState extends State<Home> {
   late String selectedRoute;
   late String labelid = "0";
 
-  Future<void> addDetails() async {
+  Future<void> addDetails(checkonline) async {
     debugPrint(
         "Adding details to Firestore... {selectedRoute: $selectedRoute, driverBus: $driverBus}");
     final docRef = FirebaseFirestore.instance
@@ -93,13 +95,21 @@ class _HomeState extends State<Home> {
     if (snapshot.exists) {
       // 🔄 Document exists → update only the field
       debugPrint("Document exists, updating...");
-      await docRef.update(
-          {'title': selectedRoute, 'busNo': driverBus, 'label': labelid});
+      await docRef.update({
+        'title': selectedRoute,
+        'busNo': driverBus,
+        'label': labelid,
+        'status': checkonline
+      });
     } else {
       debugPrint("Document does not exist, creating new...");
       // 📄 Document doesn't exist → create new
-      await docRef
-          .set({'title': selectedRoute, 'busNo': driverBus, 'label': labelid});
+      await docRef.set({
+        'title': selectedRoute,
+        'busNo': driverBus,
+        'label': labelid,
+        'status': checkonline
+      });
     }
   }
 
@@ -116,6 +126,7 @@ class _HomeState extends State<Home> {
   User? _currentUser;
   Map<String, dynamic>? _userData;
   Map<String, dynamic>? _driverData;
+  Map<String, dynamic>? _driverBusData;
   LatLng? currentLocation;
   late LocationSettings locationSettings;
 
@@ -140,6 +151,7 @@ class _HomeState extends State<Home> {
     super.initState();
     connectToWebSocket();
     _fetchDriverData();
+    _fetchBusData();
     onTheLoad();
     setState(() {
       print("Setting initial values");
@@ -262,6 +274,9 @@ class _HomeState extends State<Home> {
           .get();
       if (_driverData != null) {
         print("Driver data already fetched: $_driverData");
+        setState(() {
+          isLoading = false;
+        });
       }
       setState(() {
         _driverData = userDoc.data() as Map<String, dynamic>?;
@@ -269,15 +284,70 @@ class _HomeState extends State<Home> {
           name = _driverData!['username'];
           driverID = _driverData!['dcardId'];
           driverBus = _driverData!['busNumber'];
-          labelid = _driverData!['label'];
+          // labelid = _driverData!['label'];
           print("Driver ID is : $driverID");
           print("Driver Bus is : $driverBus");
-          print("Driver Name is : $labelid");
+          // print("Driver Name is : $labelid");
         } else {
-          print("No driver data found for user: ${_driverData}");
+          print("No driver data: ${_driverData}");
         }
       });
       print("Driver Data: $_driverData");
+    }
+    final localToken = await SharedpreferenceHelper().getSessionToken();
+    final doc = await FirebaseFirestore.instance
+        .collection('saralyatra')
+        .doc('driverDetailsDatabase')
+        .collection('drivers')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get();
+
+    final serverToken = doc['sessionToken'];
+
+    if (localToken != serverToken) {
+      // Force logout — session is invalidated
+      await FirebaseAuth.instance.signOut();
+      if (!context.mounted) return;
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (_) => Login_page()));
+    }
+  }
+
+  Future<void> _fetchBusData() async {
+    final bus_number = await SharedpreferenceHelper().getBusNumber();
+
+    _currentUser = _auth.currentUser;
+    if (_currentUser != null) {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('saralyatra')
+          .doc('driverDetailsDatabase')
+          .collection('driverRoute')
+          .doc(bus_number)
+          .get();
+      // _driverBusData = userDoc.data() as Map<String, dynamic>?;
+      if (userDoc.exists) {
+        // print("\n\n\nBus Number from buss : $driverBus");
+        print("Driver data already fetched: $_driverBusData");
+        setState(() {
+          isLoading = false;
+          _driverBusData = userDoc.data() as Map<String, dynamic>?;
+          if (_driverBusData != null) {
+            labelid = _driverBusData!['label'];
+            final checkon = _driverBusData!['status'];
+            isOnline = checkon ?? false;
+            dragPosition = isOnline ? toggleWidth - 1.5 * knobSize : 0;
+            selectedRoute = _driverBusData!['title'];
+            // print("Driver ID is : $driverID");
+            print("Driver lable is : $labelid");
+          } else {
+            print("Driver Bus is : $driverBus");
+            print("No driver bus data found for user: ${_driverBusData}");
+          }
+        });
+      }
+      print("Driver Busnumber is : $bus_number");
+
+      print("Driverbus Data: $_driverBusData");
     }
     final localToken = await SharedpreferenceHelper().getSessionToken();
     final doc = await FirebaseFirestore.instance
@@ -448,12 +518,17 @@ class _HomeState extends State<Home> {
   }
 
   // bool isOnline = false;
-  double dragPosition = .0;
+  double dragPosition = 0.0;
   @override
   Widget build(BuildContext context) {
-    const double toggleWidth = 300;
-    const double toggleHeight = 50;
-    const double knobSize = 35;
+    if (_driverData == null && _driverBusData == null) {
+      setState(() {
+        isLoading = true;
+      });
+      _fetchDriverData();
+      _fetchBusData();
+      return const Center(child: CircularProgressIndicator());
+    }
     return Scaffold(
       backgroundColor: backgroundColor,
       body: Padding(
@@ -486,10 +561,10 @@ class _HomeState extends State<Home> {
                           dragPosition =
                               isOnline ? toggleWidth - 1.5 * knobSize : 0;
                           if (isOnline) {
-                            addDetails();
+                            addDetails(isOnline);
                             startSending();
                           } else {
-                            addDetails();
+                            addDetails(isOnline);
                             stopSending();
                           }
                           //update database
@@ -537,7 +612,7 @@ class _HomeState extends State<Home> {
                   ],
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(top: 20, right: 10, left: 10),
+                  padding: const EdgeInsets.only(top: 20, right: 4, left: 4),
                   child: Container(
                     padding: EdgeInsets.all(20),
                     //height: MediaQuery.of(context).size.height / 6,
@@ -550,7 +625,7 @@ class _HomeState extends State<Home> {
                           width: 3),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.all(1.0),
                       child: Column(
                         children: [
                           Row(

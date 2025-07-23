@@ -16,6 +16,17 @@ class SharedpreferenceHelper {
   static String driverDriverNameKey = "USERUSERNAMEKEY";
   static String role = "ROLE";
   static String contact = "CONTACT";
+  static String driverBusNumberKey = "DRIVERBUSNUMBERKEY";
+
+  Future<bool> saveBusNumber(String busNumber) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setString(driverBusNumberKey, busNumber);
+  }
+
+  Future<String?> getBusNumber() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString(driverBusNumberKey);
+  }
 
   Future<bool> saveUserId(String getUserId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();

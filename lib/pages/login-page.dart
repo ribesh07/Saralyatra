@@ -160,6 +160,7 @@ class _Login_pageState extends State<Login_page> {
               .doc(uid)
               .update({'sessionToken': sessionToken});
 
+          await SharedpreferenceHelper().saveBusNumber(driverDoc['busNumber']);
           await SharedpreferenceHelper().saveSessionToken(sessionToken);
           await SharedpreferenceHelper().saveUserId(uid);
           await SharedpreferenceHelper().saveRole('driver');
