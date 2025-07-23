@@ -31,6 +31,7 @@ class _HomeState extends State<Home> {
   String? drivername;
   String? userid;
   String? driverID;
+  String? driverBus;
 
   // ADD THIS LINE
 
@@ -47,28 +48,28 @@ class _HomeState extends State<Home> {
   final List<Map<String, dynamic>> items = [
     {
       'busNo': 'BA-01-1234',
-      'label': "1",
+      'label': "0",
       'title': 'Pashupati - Kalanki - Koteshwor',
       'driverId': 'DRV001',
       'active': true,
     },
     {
       'busNo': 'BA-02-5678',
-      'label': '2',
+      'label': "1",
       'title': 'Koteshwor - Bhaktapur - Sanga',
       'driverId': 'DRV002',
       'active': false,
     },
     {
       'busNo': 'BA-03-4321',
-      'label': '3',
+      'label': "2",
       'title': 'Koteshwor - Kalanki - Pashupati',
       'driverId': 'DRV003',
       'active': true,
     },
     {
       'busNo': 'BA-04-8765',
-      'label': '4',
+      'label': "3",
       'title': 'Sanga - Bhaktapur - Koteshwor',
       'driverId': 'DRV004',
       'active': true,
@@ -76,14 +77,32 @@ class _HomeState extends State<Home> {
   ];
 
   late String selectedRoute;
-  addDetails() async {
-    return await FirebaseFirestore.instance
+  late String labelid = "0";
+
+  Future<void> addDetails() async {
+    debugPrint(
+        "Adding details to Firestore... {selectedRoute: $selectedRoute, driverBus: $driverBus}");
+    final docRef = FirebaseFirestore.instance
         .collection('saralyatra')
         .doc('driverDetailsDatabase')
         .collection('driverRoute')
-        .doc(selectedRoute)
-        .update({'routes': items});
+        .doc(driverBus); // 'driverBus' is the doc ID
+
+    final snapshot = await docRef.get();
+
+    if (snapshot.exists) {
+      // 🔄 Document exists → update only the field
+      debugPrint("Document exists, updating...");
+      await docRef.update(
+          {'title': selectedRoute, 'busNo': driverBus, 'label': labelid});
+    } else {
+      debugPrint("Document does not exist, creating new...");
+      // 📄 Document doesn't exist → create new
+      await docRef
+          .set({'title': selectedRoute, 'busNo': driverBus, 'label': labelid});
+    }
   }
+
   // void openOtherApp() async {
   //   bool isInstalled = await DeviceApps.isAppInstalled('com.example.mapbox');
   //   if (isInstalled) {
@@ -122,10 +141,12 @@ class _HomeState extends State<Home> {
     connectToWebSocket();
     _fetchDriverData();
     onTheLoad();
+    setState(() {
+      print("Setting initial values");
+    });
     // addDetails();
   }
 
-  @override
   // void initState() {
   //   super.initState();
 
@@ -229,6 +250,7 @@ class _HomeState extends State<Home> {
     setState(() => isOnline = false);
   }
 
+//get details of driver
   Future<void> _fetchDriverData() async {
     _currentUser = _auth.currentUser;
     if (_currentUser != null) {
@@ -238,12 +260,19 @@ class _HomeState extends State<Home> {
           .collection('drivers')
           .doc(_currentUser!.uid)
           .get();
+      if (_driverData != null) {
+        print("Driver data already fetched: $_driverData");
+      }
       setState(() {
         _driverData = userDoc.data() as Map<String, dynamic>?;
         if (_driverData != null) {
           name = _driverData!['username'];
           driverID = _driverData!['dcardId'];
+          driverBus = _driverData!['busNumber'];
+          labelid = _driverData!['label'];
           print("Driver ID is : $driverID");
+          print("Driver Bus is : $driverBus");
+          print("Driver Name is : $labelid");
         } else {
           print("No driver data found for user: ${_driverData}");
         }
@@ -400,7 +429,7 @@ class _HomeState extends State<Home> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Route No: $label",
+                      "Route : ${int.parse(label) + 1}",
                       style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
@@ -538,7 +567,9 @@ class _HomeState extends State<Home> {
                           //   children: [Text('Bus ID: '), Text('XXXXXX')],
                           // ),
                           Row(
-                            children: [Text('Route: '), Text('XXXXXX')],
+                            children: [
+                              Text('My Bus: ${driverBus ?? 'XXXXXX'}'),
+                            ],
                           ),
                         ],
                       ),
@@ -566,12 +597,14 @@ class _HomeState extends State<Home> {
                             title: items[index]['title']!,
                             label: items[index]['label'] ?? '',
                             index: index,
-                            selectedIndex: selectedIndex,
+                            selectedIndex: int.parse(labelid),
                             onTap: () {
                               setState(() {
                                 selectedIndex = index;
-                                selectedRoute = items[index]['busNo']!;
+                                selectedRoute = items[index]['title']!;
                                 selectedMap = items[index]['title']!;
+
+                                labelid = items[index]['label']!;
                               });
                             },
                             onChanged: (int? value) {
