@@ -17,7 +17,8 @@ import 'package:saralyatra/services/shared_pref.dart';
 import 'package:saralyatra/setups.dart';
 import 'package:uuid/uuid.dart';
 
-final String balance = '0.0'; // Default balance for new users
+final String balance = '0.0';
+final String driverid = '0'; // Default balance for new users
 String generate16DigitNumber() {
   final random = Random();
   String number = '';
@@ -32,6 +33,22 @@ String generate16DigitNumber() {
 
   print(number); // Debugging line to check the generated number
   return number; // This is a String
+}
+
+String generate8DigitNumber() {
+  final random1 = Random();
+  String number1 = '';
+
+  // Ensure the first digit is not 0
+  number1 += (random1.nextInt(9) + 1).toString();
+
+  // Add 7 more digits
+  for (int j = 0; j < 7; j++) {
+    number1 += random1.nextInt(10).toString();
+  }
+
+  print(number1); // Debugging line to check the generated number
+  return number1; // This is a String
 }
 
 class Signup_page extends StatefulWidget {
@@ -237,6 +254,7 @@ class _Signup_pageState extends State<Signup_page> {
         'email': emailcontroller.text.toString(),
         'contact': contactnumcontroller.text.toString(),
         'uid': uid,
+        'dcardId': generate8DigitNumber(),
         'password': passcontroller.text.toString(),
         'imageUrl': imageUrl,
         'messageUsername': messageUserName,

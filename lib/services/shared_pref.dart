@@ -9,6 +9,8 @@ class SharedpreferenceHelper {
   static String userCardIDKey = "USERCARDIDKEY";
   static String userBalanceKey = "USERBALANCEKEY"; // Added for user balance
   static String driverIdKey = "DRIVERKEY";
+
+  static String driverIddKey = "DRIVERIDDKEY"; // Added for driver ID
   static String driverEmailKey = "USEREMAILKEY";
   static String driverImageKey = "USERIMAGEKEY";
   static String driverDriverNameKey = "USERUSERNAMEKEY";
@@ -75,6 +77,16 @@ class SharedpreferenceHelper {
     return prefs.getString(userCardIDKey);
   }
 
+  Future<bool> saveDriverIdd(String getDriverIdd) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setString(driverIddKey, getDriverIdd);
+  }
+
+  Future<String?> getDriverIdd() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString(driverIddKey);
+  }
+
   Future<bool> saveUserBalance(String getUserBalance) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.setString(userBalanceKey, getUserBalance);
@@ -93,6 +105,11 @@ class SharedpreferenceHelper {
   Future<String?> getUserContact() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString(contact);
+  }
+
+  Future<String?> getDriverId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString(driverIdKey);
   }
 
   Future<String?> getRole() async {
