@@ -1,13 +1,21 @@
+import 'dart:async';
+// import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
+import 'package:geolocator/geolocator.dart';
+// import 'package:geolocator/geolocator.dart' as geolocator;
 import 'package:latlong2/latlong.dart';
+
+import 'package:flutter_map/flutter_map.dart';
+// import 'package:latlong2/latlong.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:location/location.dart';
 
 import 'package:provider/provider.dart';
-import 'package:geolocator/geolocator.dart';
+// import 'package:geolocator/geolocator.dart';
 import 'package:geolocator/geolocator.dart' as geolocator;
 import 'package:saralyatra/mapbox/provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -90,6 +98,25 @@ class _RouteMapPageState extends State<RouteMapPage> {
     bool serviceEnabled;
     LocationPermission permission;
 
+    Geolocator.requestPermission();
+    Geolocator.getCurrentPosition(
+            desiredAccuracy: geolocator.LocationAccuracy.high)
+        .then((position) {
+      context
+          .read<RouteProvider>()
+          .setUserLocation(LatLng(position.latitude, position.longitude));
+
+      setState(() {
+        currentLocation = LatLng(position.latitude, position.longitude);
+        print(currentLocation);
+      });
+      print(
+        "Current Position: ${position.latitude}, ${position.longitude}",
+      );
+    }).catchError((e) {
+      print("Error getting location: $e");
+    });
+
     // Check if location services enabled
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) return;
@@ -106,14 +133,7 @@ class _RouteMapPageState extends State<RouteMapPage> {
     Geolocator.getPositionStream().listen((Position position) {
       if (position.longitude != 0.0 &&
           position.latitude != 0.0 &&
-          context.mounted) {
-        context
-            .read<RouteProvider>()
-            .setUserLocation(LatLng(position.latitude, position.longitude));
-        setState(() {
-          currentLocation = LatLng(position.latitude, position.longitude);
-        });
-      }
+          context.mounted) {}
     });
   }
 
@@ -124,13 +144,17 @@ class _RouteMapPageState extends State<RouteMapPage> {
       if (!(await location.requestService())) return;
     }
 
-    // Get current position using geolocator 9.0.2 compatible API
-    Geolocator.getCurrentPosition().then((position) async {
-      print("Current Position: ${position.latitude}, ${position.longitude}");
-
+    Geolocator.requestPermission();
+    Geolocator.getCurrentPosition(
+            desiredAccuracy: geolocator.LocationAccuracy.high)
+        .then((position) {
       setState(() {
         currentLocation = LatLng(position.latitude, position.longitude);
+        print(currentLocation);
       });
+      print(
+        "Current Position: ${position.latitude}, ${position.longitude}",
+      );
     }).catchError((e) {
       print("Error getting location: $e");
     });
@@ -165,7 +189,8 @@ class _RouteMapPageState extends State<RouteMapPage> {
           });
         }
         return Scaffold(
-          appBar: AppBar(title: Text("Mapbox route"), actions: [
+          // backgroundColor: Colors.blue,
+          appBar: AppBar(title: Text(" Route"), actions: [
             IconButton(
               icon: Icon(Icons.gps_fixed_rounded),
               onPressed: () {

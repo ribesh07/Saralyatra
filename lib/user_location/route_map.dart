@@ -67,6 +67,21 @@ class _RouteMapPageState extends State<RouteMapPage> {
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) return;
 
+    Geolocator.requestPermission();
+    Geolocator.getCurrentPosition(
+            desiredAccuracy: geolocator.LocationAccuracy.high)
+        .then((position) {
+      context
+          .read<RouteProvider>()
+          .setUserLocation(LatLng(position.latitude, position.longitude));
+
+      print(
+        "Current Position: ${position.latitude}, ${position.longitude}",
+      );
+    }).catchError((e) {
+      print("Error getting location: $e");
+    });
+
     // Check permissions
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
