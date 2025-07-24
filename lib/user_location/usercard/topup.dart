@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 //import 'package:saralyatra/payments/esewa-pay.dart';
 import 'package:saralyatra/payments/esewalocal-pay.dart';
 import 'package:saralyatra/payments/khalti-pay.dart';
-//import 'package:saralyatra/setups.dart';
 
 const backgroundColor = Color.fromARGB(255, 213, 227, 239);
 const textcolor = Color.fromARGB(255, 17, 16, 17);
@@ -15,7 +14,7 @@ class TopUpPage extends StatefulWidget {
   final String userName;
   final String contact;
   final String date;
-  // final String price;
+  final String balance;
   final String email;
   final String userID;
 
@@ -24,7 +23,7 @@ class TopUpPage extends StatefulWidget {
       required this.userName,
       required this.contact,
       required this.date,
-      // required this.price,
+      required this.balance,
       required this.email,
       required this.userID});
 
@@ -33,13 +32,13 @@ class TopUpPage extends StatefulWidget {
 }
 
 class _TopUpPageState extends State<TopUpPage> {
-  final TextEditingController _amountController = TextEditingController();
-  String amount = '';
+  final TextEditingController _priceController = TextEditingController();
+  // String price = '';
   void _handleTopUp(String method) {
-    amount = _amountController.text;
-    if (amount.isEmpty) {
+    // price = _priceController.text;
+    if (_priceController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please enter an amount')),
+        SnackBar(content: Text('Please enter an price')),
       );
       return;
     }
@@ -48,7 +47,8 @@ class _TopUpPageState extends State<TopUpPage> {
       context: context,
       builder: (_) => AlertDialog(
         title: Text('Top-Up Request'),
-        content: Text('Payment Method: $method\nAmount: Rs. $amount'),
+        content: Text(
+            'Payment Method: $method\nprice: Rs. ${_priceController.text.trim()}'),
       ),
     );
   }
@@ -65,10 +65,10 @@ class _TopUpPageState extends State<TopUpPage> {
         child: Column(
           children: [
             TextField(
-              controller: _amountController,
+              controller: _priceController,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
-                labelText: 'Enter Amount (NPR)',
+                labelText: 'Enter price (NPR)',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -82,6 +82,7 @@ class _TopUpPageState extends State<TopUpPage> {
                   label: 'eSewa',
                   imagePath: 'assets/logos/esewa_logo.png',
                   onTap: () {
+                    print('eSewa selected: ${_priceController.text.trim()}');
                     Navigator.push(
                         context,
                         // String userName,String busName,String deptHr,String deptMin, String contact,String date
@@ -90,7 +91,7 @@ class _TopUpPageState extends State<TopUpPage> {
                                   userName: widget.userName,
                                   contact: widget.contact,
                                   date: widget.date,
-                                  price: amount,
+                                  price: _priceController.text.trim(),
                                   email: widget.email,
                                   userID: widget.userID,
                                 )));

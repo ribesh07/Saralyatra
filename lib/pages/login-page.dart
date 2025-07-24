@@ -107,6 +107,12 @@ class _Login_pageState extends State<Login_page> {
 
       if (uid != null) {
         final sessionToken = const Uuid().v4();
+        final userDoc = await FirebaseFirestore.instance
+            .collection('saralyatra')
+            .doc('userDetailsDatabase')
+            .collection('users')
+            .doc(uid)
+            .get();
 
         await FirebaseFirestore.instance
             .collection('saralyatra')
@@ -118,6 +124,9 @@ class _Login_pageState extends State<Login_page> {
         await SharedpreferenceHelper().saveSessionToken(sessionToken);
         await SharedpreferenceHelper().saveUserId(uid);
         await SharedpreferenceHelper().saveRole('user');
+        await SharedpreferenceHelper().saveUserEmail(email);
+        await SharedpreferenceHelper()
+            .saveUserBalance(userDoc['balance'] ?? '0.00');
 
         Navigator.pushReplacement(
           context,

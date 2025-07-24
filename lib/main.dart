@@ -221,6 +221,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:geolocator/geolocator.dart';
+import 'package:khalti_flutter/khalti_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:saralyatra/driver/driverPage.dart';
 import 'package:saralyatra/firebase_options.dart';
@@ -237,13 +238,26 @@ void main() async {
   await dotenv.load(fileName: ".env");
 
   runApp(
-    riverpod.ProviderScope(
-      child: MultiProvider(
-        providers: [
-          ChangeNotifierProvider<RouteProvider>(create: (_) => RouteProvider()),
-        ],
-        child: const App(),
-      ),
+    KhaltiScope(
+      publicKey: '93c775860c0e4fa3b53e62afc5bfc0ef',
+      // 'test_public_key_dc74b9c5f3ca45a9b1f2ad9f7a1a01ee', // Replace with your real key
+      builder: (context, navigatorKey) {
+        return riverpod.ProviderScope(
+          child: MultiProvider(
+            providers: [
+              ChangeNotifierProvider<RouteProvider>(
+                  create: (_) => RouteProvider()),
+            ],
+            child: MaterialApp(
+              navigatorKey: navigatorKey,
+              localizationsDelegates: const [
+                KhaltiLocalizations.delegate,
+              ],
+              home: const App(), // Replace with your actual app or screen
+            ),
+          ),
+        );
+      },
     ),
   );
 }
