@@ -346,6 +346,11 @@ class _HomeState extends State<Home> {
             print("No driver bus data found for user: ${_driverBusData}");
           }
         });
+        if (isOnline) {
+          startSending();
+        } else {
+          stopSending();
+        }
       }
       print("Driver Busnumber is : $bus_number");
 
