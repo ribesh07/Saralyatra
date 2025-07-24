@@ -212,9 +212,7 @@ const AdminChat = () => {
           <Link href="/">
             <div className="flex items-center space-x-2">
               <Bus className="h-8 w-8 text-blue-600" />
-              <span className="text-xl font-bold text-gray-900">
-                Admin Chat
-              </span>
+              <span className="text-xl font-bold text-gray-900">BusAdmin</span>
             </div>
           </Link>
 
