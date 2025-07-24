@@ -9,6 +9,7 @@ const BusDashboard = () => {
       name: 'City Express',
       routes: 'Downtown - Airport - Mall',
       type: 'AC Deluxe',
+      price: '500',
       availableSeats: 45,
     },
     {
@@ -16,28 +17,36 @@ const BusDashboard = () => {
       name: 'Metro Liner',
       routes: 'Central Station - University - Hospital',
       type: 'Non-AC',
+      price: '500',
       availableSeats: 32,
+      
     },
     {
       id: 'BUS003',
       name: 'Rapid Transit',
       routes: 'North Zone - South Zone - East Plaza',
       type: 'AC Standard',
+      price: '500',
       availableSeats: 28,
+
     },
     {
       id: 'BUS004',
       name: 'Highway Cruiser',
       routes: 'City Center - Suburb A - Suburb B',
       type: 'AC Deluxe',
+      price: '500',
       availableSeats: 52,
+      
     },
     {
       id: 'BUS005',
       name: 'Local Shuttle',
       routes: 'Market Square - Residential Area - School',
       type: 'Non-AC',
+      price: '500',
       availableSeats: 15,
+
     },
   ];
 
@@ -96,6 +105,8 @@ const BusDashboard = () => {
                 <th className="px-6 py-3 text-centre text-xs font-medium text-gray-500 uppercase tracking-wider">Routes</th>
                 <th className="px-6 py-3 text-centre text-xs font-medium text-gray-500 uppercase tracking-wider">Bus Type</th>
                 <th className="px-6 py-3 text-centre text-xs font-medium text-gray-500 uppercase tracking-wider">Available Seats</th>
+                <th className="px-6 py-3 text-centre text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+
                 <th className="px-6 py-3 text-centre text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
@@ -126,6 +137,7 @@ const BusDashboard = () => {
                       <span className="text-sm font-medium text-gray-900">{bus.name}</span>
                     )}
                   </td>
+                  
                   <td className="px-6 py-4">
                     {editingId === bus.id ? (
                       <input
@@ -166,6 +178,20 @@ const BusDashboard = () => {
                     ) : (
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getSeatStatus(bus.availableSeats)}`}>
                         {bus.availableSeats} seats
+                      </span>
+                    )}
+                  </td>
+                   <td className="px-6 py-4 whitespace-nowrap">
+                    {editingId === bus.id ? (
+                      <input
+                        type="number"
+                        value={editForm.price}
+                        onChange={(e) => setEditForm({...editForm, price: parseInt(e.target.value)  })}
+                        className="w-20 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    ) : (
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getSeatStatus(bus.availableSeats)}`}>
+                        NRs {bus.price} 
                       </span>
                     )}
                   </td>
