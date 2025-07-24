@@ -429,7 +429,8 @@ class _ProfileSettingState extends State<ProfileSetting> {
         .collection('drivers')
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .get();
-
+    print("Local Token: $localToken");
+    print("Server Token: ${doc['sessionToken']}");
     final serverToken = doc['sessionToken'];
 
     if (localToken != serverToken) {

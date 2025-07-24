@@ -383,6 +383,7 @@ class _Signup_pageState extends State<Signup_page> {
       SharedpreferenceHelper().saveDriverId(uid),
       SharedpreferenceHelper().saveRole('driver'),
       SharedpreferenceHelper().saveSessionToken(sessionToken),
+      SharedpreferenceHelper().saveBusNumber(busnumbercontroller.text.trim()),
     ]);
   }
 
