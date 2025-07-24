@@ -559,11 +559,11 @@ class _ChangeProfilePicState extends State<ChangeProfilePic> {
     }
   }
 
-  Future<String?> _uploadImage(File image) async {
+  Future<String?> _uploadImage(File image, String role) async {
     try {
       final storageRef = FirebaseStorage.instance
           .ref()
-          .child('user_images')
+          .child(role == 'user' ? 'user_images' : 'driver_images')
           .child('${DateTime.now().toIso8601String()}.jpg');
       final uploadTask = storageRef.putFile(image);
       final snapshot = await uploadTask;
@@ -617,7 +617,7 @@ class _ChangeProfilePicState extends State<ChangeProfilePic> {
         oldImageUrl = data?['imageUrl'] as String?;
       }
 
-      final newImageUrl = await _uploadImage(_image!);
+      final newImageUrl = await _uploadImage(_image!, user_role!);
 
       if (newImageUrl != null) {
         if (oldImageUrl != null && oldImageUrl.isNotEmpty) {
