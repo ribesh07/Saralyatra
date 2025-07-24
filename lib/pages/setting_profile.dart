@@ -458,58 +458,8 @@ class _ProfileSettingState extends State<ProfileSetting> {
           ),
           child: Column(
             children: [
-              SizedBox(height: 20),
-              Row(
-                children: [
-                  Container(
-                    width: MediaQuery.of(context).size.width,
-                    child: Padding(
-                      padding:
-                          const EdgeInsets.only(top: 5, bottom: 10, right: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Container(
-                            width: 90,
-                            child: FittedBox(
-                              child: ToggleSwitch(
-                                minWidth: 50.0,
-                                minHeight: 40.0,
-                                initialLabelIndex: 0,
-                                cornerRadius: 20.0,
-                                activeFgColor: Colors.white,
-                                inactiveBgColor: Colors.grey,
-                                inactiveFgColor: Colors.white,
-                                totalSwitches: 2,
-                                icons: [
-                                  Icons.brightness_2_outlined,
-                                  Icons.lightbulb,
-                                ],
-                                iconSize: 30.0,
-                                activeBgColors: [
-                                  [
-                                    const Color.fromARGB(255, 0, 0, 0),
-                                    Colors.black26
-                                  ],
-                                  [
-                                    Color.fromARGB(255, 235, 175, 115),
-                                    Color.fromARGB(230, 250, 191, 102)
-                                  ]
-                                ],
-                                animate: true,
-                                curve: Curves.bounceInOut,
-                                onToggle: (index) {
-                                  print('switched to: $index');
-                                },
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              SizedBox(height: 50),
+
               _userData?['role'] == "user"
                   ? FittedBox(
                       child: _userData?['imageUrl'] != null
@@ -570,8 +520,10 @@ class _ProfileSettingState extends State<ProfileSetting> {
                     MaterialPageRoute(
                         builder: (context) => const editDetails()),
                   );
+                  setState(() {});
                 },
               ),
+
               _buildOptionCard(
                 context,
                 icon: Icons.lock,

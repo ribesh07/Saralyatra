@@ -37,29 +37,24 @@ class _ServiceselectionState extends State<Serviceselection> {
                       child: Card(
                         child: Container(
                           width: double.infinity,
-                          height: MediaQuery.of(context).size.height * 0.4,
-                          // padding: EdgeInsets.all(10),
-                          child: Center(
-                              child: Text(
-                            "LOCAL BUS",
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20,
-                                color: Colors.white),
-                          )),
+                          height: MediaQuery.of(context).size.height * 0.3,
                           decoration: BoxDecoration(
-                            shape: BoxShape.rectangle,
-                            border: Border.all(),
-                            borderRadius: BorderRadius.circular(10),
-                            color: const Color.fromARGB(255, 231, 202, 123),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color.fromARGB(255, 31, 215, 219),
-                                blurRadius: 5,
-                                offset: Offset(0, 3),
-                              ),
-                            ],
-                          ),
+                              shape: BoxShape.rectangle,
+                              border: Border.all(),
+                              borderRadius: BorderRadius.circular(10),
+                              color: const Color.fromARGB(255, 231, 202, 123),
+                              boxShadow: [
+                                BoxShadow(
+                                  color:
+                                      const Color.fromARGB(255, 31, 215, 219),
+                                  blurRadius: 5,
+                                  offset: Offset(0, 3),
+                                ),
+                              ],
+                              image: DecorationImage(
+                                  image:
+                                      AssetImage("assets/logos/localbus.jpg"),
+                                  fit: BoxFit.cover)),
                         ),
                       ),
                       onTap: () {
@@ -73,20 +68,23 @@ class _ServiceselectionState extends State<Serviceselection> {
                   ),
                   Padding(
                     padding: EdgeInsets.all(8),
+                    child: Text(
+                      "LOCAL BUS",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                          color: Colors.black),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(8),
                     child: GestureDetector(
                       child: Card(
                         child: Container(
                           width: double.infinity,
-                          height: MediaQuery.of(context).size.height * 0.4,
+                          height: MediaQuery.of(context).size.height * 0.3,
                           // padding: EdgeInsets.all(8),
-                          child: Center(
-                              child: Text(
-                            "NIGHT BUS & RESERVATION",
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20,
-                                color: Colors.white),
-                          )),
+
                           decoration: BoxDecoration(
                             shape: BoxShape.rectangle,
                             border: Border.all(),
@@ -99,6 +97,9 @@ class _ServiceselectionState extends State<Serviceselection> {
                                 offset: Offset(0, 3),
                               ),
                             ],
+                            image: DecorationImage(
+                                image: AssetImage("assets/logos/nightbus.jpg"),
+                                fit: BoxFit.cover),
                           ),
                         ),
                       ),
@@ -111,7 +112,17 @@ class _ServiceselectionState extends State<Serviceselection> {
                                     )));
                       },
                     ),
-                  )
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(8),
+                    child: Text(
+                      "NIGHTBUS & RESERVATION",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                          color: Colors.black),
+                    ),
+                  ),
                 ],
               ),
             ),

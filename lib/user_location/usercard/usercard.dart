@@ -77,7 +77,9 @@ class _UserCardAppState extends State<UserCardApp> {
     final emaill = await SharedpreferenceHelper().getUserEmail();
     final contactt = await SharedpreferenceHelper().getUserContact();
     final cardIDD = await SharedpreferenceHelper().getUserCardID();
-    final balance = await SharedpreferenceHelper().getUserBalance();
+    var balancer = await SharedpreferenceHelper().getUserBalance();
+    print(
+        'Fetched data from sharedpreference: $usern, $useid, $emaill, $contactt, $cardIDD, $balancer'); // Debugging line
 
     if (useid != null) {
       DocumentSnapshot snapshot = await FirebaseFirestore.instance
@@ -92,7 +94,9 @@ class _UserCardAppState extends State<UserCardApp> {
         final String emaill = snapshot['email'] as String? ?? '';
         final String contactt = snapshot['contact'] as String? ?? '';
         final String cardIDD = snapshot['cardID'] as String? ?? '';
-        final String balance = snapshot['balance'] as String? ?? '';
+        final String balancee = snapshot['balance'] ?? '';
+        print(
+            'Fetched data: $names, $useid, $emaill, $contactt, $cardIDD, $balancee');
 
         setState(() {
           username = names;
@@ -101,12 +105,14 @@ class _UserCardAppState extends State<UserCardApp> {
           contact = contactt;
           name = names;
           cardID = cardIDD;
-          this.balance = balance; // Set the balance
+          balance = balancee; // Set the balance
           isLoading = false; // Set loading false here
         });
       } else {
         setState(() {
           isLoading = false;
+          cardID = null; // Set cardID to null if document does not exist
+          print('No user data found for user ID: $useid');
         });
       }
     } else {
@@ -187,7 +193,7 @@ class _UserCardAppState extends State<UserCardApp> {
                                 TextStyle(color: Colors.white70, fontSize: 16),
                           ),
                           Text(
-                            'Nrs ${balance ?? '0.00'}', // Use null-aware operator
+                            'Nrs ${balance!}', // Use null-aware operator
                             // balance ?? 'Nrs 0.00', // Use null-aware operator
                             style: TextStyle(
                               color: Colors.greenAccent,
@@ -231,8 +237,10 @@ class _UserCardAppState extends State<UserCardApp> {
                                 if (username != null &&
                                     userid != null &&
                                     email != null &&
-                                    contact != null) {
+                                    contact != null &&
+                                    balance != null) {
                                   return TopUpPage(
+                                    balance: balance!,
                                     userName: username!,
                                     userID: userid!,
                                     email: email!,

@@ -11,6 +11,7 @@ import 'package:saralyatra/Booking/input_field.dart';
 import 'package:saralyatra/Booking/provide.dart';
 import 'package:saralyatra/driver/driverPage.dart';
 import 'package:saralyatra/pages/botton_nav_bar.dart';
+import 'package:saralyatra/pages/login-page.dart';
 import 'package:saralyatra/pages/serviceSelection.dart';
 import 'package:saralyatra/services/database.dart';
 import 'package:saralyatra/services/shared_pref.dart';
@@ -410,6 +411,15 @@ class _Signup_pageState extends State<Signup_page> {
       appBar: AppBar(
         title: Text(
           'SignUp',
+        ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => Login_page()),
+            );
+          },
         ),
         centerTitle: true,
         backgroundColor: appbarcolor,

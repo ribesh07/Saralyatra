@@ -35,6 +35,8 @@ class _HomeState extends State<Home> {
   double toggleWidth = 300;
   double toggleHeight = 50;
   double knobSize = 35;
+  double knobPadding = 7;
+
   // ADD THIS LINE
 
   bool isLoading = true;
@@ -483,7 +485,7 @@ class _HomeState extends State<Home> {
             border: Border.all(color: Colors.grey.shade300, width: 2),
             borderRadius: BorderRadius.circular(12),
             color: index == selectedIndex
-                ? Color.fromARGB(255, 185, 221, 255)
+                ? Color.fromARGB(255, 3, 179, 255)
                 : Colors.white,
           ),
           child: Row(
@@ -521,6 +523,7 @@ class _HomeState extends State<Home> {
   double dragPosition = 0.0;
   @override
   Widget build(BuildContext context) {
+    final double maxDrag = toggleWidth - knobSize - 2 * knobPadding;
     if (_driverData == null && _driverBusData == null) {
       setState(() {
         isLoading = true;
@@ -550,16 +553,14 @@ class _HomeState extends State<Home> {
                       onHorizontalDragUpdate: (details) {
                         setState(() {
                           dragPosition += details.delta.dx;
-                          dragPosition =
-                              dragPosition.clamp(0, toggleWidth - knobSize);
+                          dragPosition = dragPosition.clamp(0.0, maxDrag);
                         });
                       },
                       onHorizontalDragEnd: (details) {
                         setState(() {
-                          isOnline =
-                              dragPosition > (toggleWidth - knobSize) / 2;
+                          isOnline = dragPosition > maxDrag / 2;
                           dragPosition =
-                              isOnline ? toggleWidth - 1.5 * knobSize : 0;
+                              dragPosition = isOnline ? maxDrag : 0.0;
                           if (isOnline) {
                             addDetails(isOnline);
                             startSending();
@@ -611,42 +612,50 @@ class _HomeState extends State<Home> {
                     ),
                   ],
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 20, right: 4, left: 4),
-                  child: Container(
-                    padding: EdgeInsets.all(20),
-                    //height: MediaQuery.of(context).size.height / 6,
-                    width: MediaQuery.of(context).size.width / 2,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.rectangle,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                          color: const Color.fromARGB(255, 187, 193, 197),
-                          width: 3),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(1.0),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              Text('Name : ${name?.toUpperCase()}'),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Text('Driver ID : ${driverID ?? 'N/A'}'),
-                            ],
-                          ),
-                          // Row(
-                          //   children: [Text('Bus ID: '), Text('XXXXXX')],
-                          // ),
-                          Row(
-                            children: [
-                              Text('My Bus: ${driverBus ?? 'XXXXXX'}'),
-                            ],
-                          ),
-                        ],
+                SizedBox(height: 10),
+                Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  elevation: 5,
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                        top: 4, right: 4, left: 4, bottom: 4),
+                    child: Container(
+                      padding: EdgeInsets.all(20),
+                      // height: MediaQuery.of(context).size.height / 6,
+                      width: MediaQuery.of(context).size.width / 1.5,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.rectangle,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                            color: const Color.fromARGB(255, 187, 193, 197),
+                            width: 3),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(1.0),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                Text('Name : ${name?.toUpperCase()}'),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Text('Driver ID : ${driverID ?? 'N/A'}'),
+                              ],
+                            ),
+                            // Row(
+                            //   children: [Text('Bus ID: '), Text('XXXXXX')],
+                            // ),
+                            Row(
+                              children: [
+                                Text('My Bus: ${driverBus ?? 'XXXXXX'}'),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -655,10 +664,10 @@ class _HomeState extends State<Home> {
                   padding: const EdgeInsets.only(top: 20, right: 10, left: 10),
                   child: Container(
                     width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height / 3,
+                    height: MediaQuery.of(context).size.height / 2.5,
                     decoration: BoxDecoration(
                       shape: BoxShape.rectangle,
-                      color: Color.fromARGB(255, 185, 207, 219),
+                      color: Color.fromARGB(255, 255, 255, 255),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                           color: Color.fromARGB(255, 134, 136, 137), width: 3),

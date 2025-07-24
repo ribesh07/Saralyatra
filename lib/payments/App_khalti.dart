@@ -5,7 +5,7 @@ import 'package:saralyatra/routes/app_route.dart';
 class App extends StatelessWidget {
   const App({super.key});
 
-  final String _publicKey = 'test_public_key_88f255b7a1f64a08884e811440174478';
+  final String _publicKey = '93c775860c0e4fa3b53e62afc5bfc0ef';
 
   @override
   Widget build(BuildContext context) {
