@@ -3,6 +3,7 @@
 //import 'dart:nativewrappers/_internal/vm/lib/async_patch.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -31,40 +32,115 @@ class _TicketScreenState extends State<TicketScreen> {
 
   Future<void> _storeReservationDetails() async {
     if (formkey.currentState!.validate()) {
-      String vehicleType;
-
-      switch (_value) {
-        case 1:
-          vehicleType = 'Bus';
-          break;
-        case 2:
-          vehicleType = 'Car';
-          break;
-        case 3:
-          vehicleType = 'Jeep';
-          break;
-        default:
-          vehicleType = 'Unknown';
+      // Get current user first
+      User? currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Please login to make a reservation'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
       }
 
-      final data = {
-        'name': namecontroller.text,
-        'contact': phonecontroller.text,
-        'email': emailcontroller.text,
-        'startLocation': departcontroller.text,
-        'destination': destinationcontroller.text,
-        'date': departureDate,
-      };
+      // Show loading dialog with better management
+      bool isDialogShowing = false;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext dialogContext) {
+          isDialogShowing = true;
+          return PopScope(
+            canPop: false,
+            child: AlertDialog(
+              content: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(width: 20),
+                  Expanded(
+                    child: Text(
+                      "Creating reservation...",
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ).then((_) {
+        isDialogShowing = false;
+      });
 
       try {
+        // Get vehicle type
+        String vehicleType;
+        switch (_value) {
+          case 1:
+            vehicleType = 'Bus';
+            break;
+          case 2:
+            vehicleType = 'Car';
+            break;
+          case 3:
+            vehicleType = 'Jeep';
+            break;
+          default:
+            vehicleType = 'Unknown';
+        }
+
+        // Generate a unique ID for the reservation
+        String uniqueId = DateTime.now().millisecondsSinceEpoch.toString();
+        
+        final reservationDetails = {
+          'name': namecontroller.text.trim(),
+          'contact': phonecontroller.text.trim(),
+          'email': emailcontroller.text.trim(),
+          'vehicleType': vehicleType,
+          'from': departcontroller.text.trim(),
+          'destination': destinationcontroller.text.trim(),
+          'date': departureDate,
+          'bookingDate': DateTime.now().toIso8601String(),
+          'bookingTime': DateFormat('HH:mm').format(DateTime.now()),
+          'userUid': currentUser.uid,
+        };
+
+        // Save to Firebase location: history/upcomingHistoryDetails/reservation/{uniqueId}
         await FirebaseFirestore.instance
-            .collection('saralyatra')
-            .doc('reservation')
-            .collection(vehicleType)
-            .add(data);
+            .collection('history')
+            .doc('upcomingHistoryDetails')
+            .collection('reservation')
+            .doc(uniqueId)
+            .set(reservationDetails);
+
+        // Close loading dialog safely
+        if (isDialogShowing && mounted) {
+          Navigator.of(context, rootNavigator: true).pop();
+          isDialogShowing = false;
+        }
+
         print('Reservation details stored successfully');
+        
       } catch (e) {
+        // Close loading dialog safely
+        if (isDialogShowing && mounted) {
+          Navigator.of(context, rootNavigator: true).pop();
+          isDialogShowing = false;
+        }
+        
         print('Error storing reservation details: $e');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to create reservation. Please try again.'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+        rethrow; // Re-throw to let the confirmation dialog handle it
       }
     }
   }
@@ -337,26 +413,36 @@ class _TicketScreenState extends State<TicketScreen> {
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10),
                                   ),
-                                  title: Text("Conformation"),
+                                  title: Text("Confirmation"),
                                   content: Text("Confirm Reservation"),
                                   actions: [
                                     TextButton(
-                                      onPressed: () {
-                                        //main Logic
-                                        _storeReservationDetails();
-                                        final snackBar = SnackBar(
-                                          backgroundColor: Colors.green,
-                                          elevation: 10,
-                                          duration:
-                                              Duration(milliseconds: 3000),
-                                          content: const Text(
-                                            "we will contact you soon",
-                                            style: TextStyle(fontSize: 20),
-                                          ),
-                                        );
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(snackBar);
+                                      onPressed: () async {
+                                        // Close confirmation dialog
                                         Navigator.pop(context);
+                                        
+                                        try {
+                                          //main Logic
+                                          await _storeReservationDetails();
+                                          
+                                          // Show success message
+                                          if (mounted) {
+                                            final snackBar = SnackBar(
+                                              backgroundColor: Colors.green,
+                                              elevation: 10,
+                                              duration: Duration(milliseconds: 3000),
+                                              content: const Text(
+                                                "Reservation created successfully! We will contact you soon.",
+                                                style: TextStyle(fontSize: 16),
+                                              ),
+                                            );
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(snackBar);
+                                          }
+                                        } catch (e) {
+                                          // Error is already handled in _storeReservationDetails
+                                          print('Error in confirmation: $e');
+                                        }
                                       },
                                       child: Text("Ok"),
                                     ),
@@ -370,8 +456,7 @@ class _TicketScreenState extends State<TicketScreen> {
                                 );
                               },
                             );
-                            print(namecontroller);
-                          } else {}
+                          }
                         },
                         child: Text(
                           "Submit",

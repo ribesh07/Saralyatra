@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-//import 'package:flutter/material.dart';
-//import 'package:saralyatra/payments/esewa-pay.dart';
 import 'package:saralyatra/payments/esewalocal-pay.dart';
 import 'package:saralyatra/payments/khalti-pay.dart';
 
@@ -18,14 +16,15 @@ class TopUpPage extends StatefulWidget {
   final String email;
   final String userID;
 
-  const TopUpPage(
-      {super.key,
-      required this.userName,
-      required this.contact,
-      required this.date,
-      required this.balance,
-      required this.email,
-      required this.userID});
+  const TopUpPage({
+    super.key,
+    required this.userName,
+    required this.contact,
+    required this.date,
+    required this.balance,
+    required this.email,
+    required this.userID,
+  });
 
   @override
   _TopUpPageState createState() => _TopUpPageState();
@@ -33,22 +32,17 @@ class TopUpPage extends StatefulWidget {
 
 class _TopUpPageState extends State<TopUpPage> {
   final TextEditingController _priceController = TextEditingController();
-  // String price = '';
-  void _handleTopUp(String method) {
-    // price = _priceController.text;
-    if (_priceController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please enter an price')),
-      );
-      return;
-    }
 
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text('Top-Up Request'),
-        content: Text(
-            'Payment Method: $method\nprice: Rs. ${_priceController.text.trim()}'),
+  bool _isValidPrice(String text) {
+    final trimmed = text.trim();
+    final price = int.tryParse(trimmed);
+    return price != null && price > 0;
+  }
+
+  void _showInvalidPriceMessage() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Please enter a valid price greater than 0'),
       ),
     );
   }
@@ -57,9 +51,11 @@ class _TopUpPageState extends State<TopUpPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: Text('Top-Up Page'),
-          backgroundColor: appbarcolor,
-          foregroundColor: appbarfontcolor),
+        title: const Text('Top-Up Page'),
+        centerTitle: true,
+        backgroundColor: appbarcolor,
+        foregroundColor: appbarfontcolor,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -67,14 +63,15 @@ class _TopUpPageState extends State<TopUpPage> {
             TextField(
               controller: _priceController,
               keyboardType: TextInputType.number,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Enter price (NPR)',
                 border: OutlineInputBorder(),
               ),
             ),
-            SizedBox(height: 30),
-            Text('Choose Payment Method:', style: TextStyle(fontSize: 16)),
-            SizedBox(height: 20),
+            const SizedBox(height: 30),
+            const Text('Choose Payment Method:',
+                style: TextStyle(fontSize: 16)),
+            const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -82,29 +79,41 @@ class _TopUpPageState extends State<TopUpPage> {
                   label: 'eSewa',
                   imagePath: 'assets/logos/esewa_logo.png',
                   onTap: () {
-                    print('eSewa selected: ${_priceController.text.trim()}');
+                    if (!_isValidPrice(_priceController.text)) {
+                      _showInvalidPriceMessage();
+                      return;
+                    }
+
                     Navigator.push(
-                        context,
-                        // String userName,String busName,String deptHr,String deptMin, String contact,String date
-                        MaterialPageRoute(
-                            builder: (context) => EsewaLocalScreen(
-                                  userName: widget.userName,
-                                  contact: widget.contact,
-                                  date: widget.date,
-                                  price: _priceController.text.trim(),
-                                  email: widget.email,
-                                  userID: widget.userID,
-                                )));
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EsewaLocalScreen(
+                          userName: widget.userName,
+                          contact: widget.contact,
+                          date: widget.date,
+                          price: _priceController.text.trim(),
+                          email: widget.email,
+                          userID: widget.userID,
+                        ),
+                      ),
+                    );
                   },
                 ),
                 PaymentButton(
                   label: 'Khalti',
                   imagePath: 'assets/logos/khalti.png',
                   onTap: () {
+                    if (!_isValidPrice(_priceController.text)) {
+                      _showInvalidPriceMessage();
+                      return;
+                    }
+
                     Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const PaymentKhalti()));
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PaymentKhalti(),
+                      ),
+                    );
                   },
                 ),
               ],
@@ -134,7 +143,7 @@ class PaymentButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(10),
       child: Container(
         width: 130,
-        padding: EdgeInsets.all(10),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey.shade300),
           borderRadius: BorderRadius.circular(10),
@@ -142,7 +151,7 @@ class PaymentButton extends StatelessWidget {
         child: Column(
           children: [
             Image.asset(imagePath, height: 50),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Text(label),
           ],
         ),

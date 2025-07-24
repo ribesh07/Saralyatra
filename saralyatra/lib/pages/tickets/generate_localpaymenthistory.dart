@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:saralyatra/pages/botton_nav_bar.dart';
@@ -89,7 +90,8 @@ class _generateTicketState extends State<generateTicket> {
                         style: textStyle,
                       ),
                       Text(
-                        widget.date,
+                        DateFormat('yyyy-MM-dd')
+                            .format(DateTime.parse(widget.date)),
                         style: textStyle,
                       ),
                     ],
