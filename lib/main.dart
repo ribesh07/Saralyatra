@@ -254,6 +254,7 @@ void main() async {
               localizationsDelegates: const [
                 KhaltiLocalizations.delegate,
               ],
+              debugShowCheckedModeBanner: false,
               home: const App(), // Replace with your actual app or screen
             ),
           ),
