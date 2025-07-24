@@ -196,11 +196,17 @@ class _JourneyScreenState extends State<JourneyScreen> {
                                                           Navigator.push(
                                                             context,
                                                             MaterialPageRoute(
-                                                              builder: (context) =>
-                                                                  PackageBooking(
-                                                                      packageTitle:
-                                                                          dataItems[index]["title"] ??
-                                                                              ''),
+                                                              builder: (context) => PackageBooking(
+                                                                  packageTitle:
+                                                                      dataItems[index]
+                                                                              [
+                                                                              "title"] ??
+                                                                          '',
+                                                                  packageId:
+                                                                      dataItems[
+                                                                              index]
+                                                                          [
+                                                                          "id"]),
                                                             ),
                                                           );
                                                         },
