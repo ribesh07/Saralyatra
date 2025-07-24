@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 
+const backgroundColor = Color.fromARGB(255, 213, 227, 239);
+const textcolor = Color.fromARGB(255, 17, 16, 17);
+const appbarcolor = Color.fromARGB(255, 39, 136, 228);
+const appbarfontcolor = Color.fromARGB(255, 17, 16, 17);
+const listColor = Color.fromARGB(255, 153, 203, 238);
+
 class BankStatementScreen extends StatelessWidget {
   final List<Transaction> transactions = [
     Transaction(
@@ -29,7 +35,11 @@ class BankStatementScreen extends StatelessWidget {
     return PopScope(
       canPop: true,
       child: Scaffold(
-        appBar: AppBar(title: Text('Card Statement')),
+        appBar: AppBar(
+          title: Text('Card Statement'),
+          backgroundColor: appbarcolor,
+          foregroundColor: appbarfontcolor,
+        ),
         body: ListView.builder(
           itemCount: transactions.length,
           itemBuilder: (context, index) {

@@ -6,11 +6,27 @@ class SharedpreferenceHelper {
   static String userEmailKey = "USEREMAILKEY";
   static String userImageKey = "USERIMAGEKEY";
   static String userUserNameKey = "USERUSERNAMEKEY";
-static String driverIdKey = "DRIVERKEY";
+  static String userCardIDKey = "USERCARDIDKEY";
+  static String userBalanceKey = "USERBALANCEKEY"; // Added for user balance
+  static String driverIdKey = "DRIVERKEY";
+
+  static String driverIddKey = "DRIVERIDDKEY"; // Added for driver ID
   static String driverEmailKey = "USEREMAILKEY";
   static String driverImageKey = "USERIMAGEKEY";
   static String driverDriverNameKey = "USERUSERNAMEKEY";
   static String role = "ROLE";
+  static String contact = "CONTACT";
+  static String driverBusNumberKey = "DRIVERBUSNUMBERKEY";
+
+  Future<bool> saveBusNumber(String busNumber) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setString(driverBusNumberKey, busNumber);
+  }
+
+  Future<String?> getBusNumber() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString(driverBusNumberKey);
+  }
 
   Future<bool> saveUserId(String getUserId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -62,9 +78,49 @@ static String driverIdKey = "DRIVERKEY";
     return prefs.setString(driverDriverNameKey, getUserName1);
   }
 
+  Future<bool> saveUserCardID(String getUserCardID) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setString(userCardIDKey, getUserCardID);
+  }
+
+  Future<String?> getUserCardID() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString(userCardIDKey);
+  }
+
+  Future<bool> saveDriverIdd(String getDriverIdd) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setString(driverIddKey, getDriverIdd);
+  }
+
+  Future<String?> getDriverIdd() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString(driverIddKey);
+  }
+
+  Future<bool> saveUserBalance(String getUserBalance) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.setString(userBalanceKey, getUserBalance);
+  }
+
+  Future<String?> getUserBalance() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString(userBalanceKey);
+  }
+
   Future<String?> getUserId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString(userIdKey);
+  }
+
+  Future<String?> getUserContact() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString(contact);
+  }
+
+  Future<String?> getDriverId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString(driverIdKey);
   }
 
   Future<String?> getRole() async {

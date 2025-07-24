@@ -26,11 +26,12 @@ class AuthMethods {
       debugPrint('Token refresh error: $e');
     }
   }
+
   getCurrentUser() async {
     return auth.currentUser;
   }
 
-signInWithEmailAndPassword(
+  signInWithEmailAndPassword(
       BuildContext context, String email, String password) async {
     await _refreshToken();
     try {

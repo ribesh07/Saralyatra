@@ -26,6 +26,21 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  String uid = FirebaseAuth.instance.currentUser!.uid;
+  String? name;
+  String? drivername;
+  String? userid;
+  String? driverID;
+  String? driverBus;
+  double toggleWidth = 300;
+  double toggleHeight = 50;
+  double knobSize = 35;
+  double knobPadding = 7;
+
+  // ADD THIS LINE
+
+  bool isLoading = true;
+
   Timer? timer;
   late WebSocketChannel channel;
   int selectedIndex = 0;
@@ -34,12 +49,71 @@ class _HomeState extends State<Home> {
   bool isOnline = false;
   String? address = "";
   List<dynamic> drivers = [];
-  final List<Map<String, String>> items = [
-    {"title": "Koteshwar-Kalanki-satdobato", "label": " 1"},
-    {"title": "Satdobato-Kalanki-koteshwar", "label": "2"},
-    {"title": "Koteshwar-Thimi-Sanga", "label": " 3"},
-    {"title": "Thimi-Sanga-Koteshwar", "label": "4"},
+  final List<Map<String, dynamic>> items = [
+    {
+      'busNo': 'BA-01-1234',
+      'label': "0",
+      'title': 'Pashupati - Kalanki - Koteshwor',
+      'driverId': 'DRV001',
+      'active': true,
+    },
+    {
+      'busNo': 'BA-02-5678',
+      'label': "1",
+      'title': 'Koteshwor - Bhaktapur - Sanga',
+      'driverId': 'DRV002',
+      'active': false,
+    },
+    {
+      'busNo': 'BA-03-4321',
+      'label': "2",
+      'title': 'Koteshwor - Kalanki - Pashupati',
+      'driverId': 'DRV003',
+      'active': true,
+    },
+    {
+      'busNo': 'BA-04-8765',
+      'label': "3",
+      'title': 'Sanga - Bhaktapur - Koteshwor',
+      'driverId': 'DRV004',
+      'active': true,
+    },
   ];
+
+  late String selectedRoute;
+  late String labelid = "0";
+
+  Future<void> addDetails(checkonline) async {
+    debugPrint(
+        "Adding details to Firestore... {selectedRoute: $selectedRoute, driverBus: $driverBus}");
+    final docRef = FirebaseFirestore.instance
+        .collection('saralyatra')
+        .doc('driverDetailsDatabase')
+        .collection('driverRoute')
+        .doc(driverBus); // 'driverBus' is the doc ID
+
+    final snapshot = await docRef.get();
+
+    if (snapshot.exists) {
+      // 🔄 Document exists → update only the field
+      debugPrint("Document exists, updating...");
+      await docRef.update({
+        'title': selectedRoute,
+        'busNo': driverBus,
+        'label': labelid,
+        'status': checkonline
+      });
+    } else {
+      debugPrint("Document does not exist, creating new...");
+      // 📄 Document doesn't exist → create new
+      await docRef.set({
+        'title': selectedRoute,
+        'busNo': driverBus,
+        'label': labelid,
+        'status': checkonline
+      });
+    }
+  }
 
   // void openOtherApp() async {
   //   bool isInstalled = await DeviceApps.isAppInstalled('com.example.mapbox');
@@ -54,14 +128,44 @@ class _HomeState extends State<Home> {
   User? _currentUser;
   Map<String, dynamic>? _userData;
   Map<String, dynamic>? _driverData;
+  Map<String, dynamic>? _driverBusData;
+  LatLng? currentLocation;
+  late LocationSettings locationSettings;
+
+  void getdata() async {
+    final usern = await SharedpreferenceHelper().getUserName1();
+    final useid = await SharedpreferenceHelper().getDriverId();
+    final driveriDD = await SharedpreferenceHelper().getDriverIdd();
+    print("Driver ID is : $driveriDD");
+    print("name : $usern");
+    print("User ID is : $useid");
+    setState(() {
+      name = usern;
+      driverID = driveriDD;
+      userid = useid;
+    });
+    print("Driver ID is : $driverID");
+    print("name : $name");
+  }
 
   @override
   void initState() {
     super.initState();
-    _fetchDriverData();
     connectToWebSocket();
+    _fetchDriverData();
+    _fetchBusData();
     onTheLoad();
+    setState(() {
+      print("Setting initial values");
+    });
+    // addDetails();
   }
+
+  // void initState() {
+  //   super.initState();
+
+  //   getdata();
+  // }
 
   void connectToWebSocket() async {
     const serverUrl =
@@ -160,9 +264,7 @@ class _HomeState extends State<Home> {
     setState(() => isOnline = false);
   }
 
-  LatLng? currentLocation;
-  late LocationSettings locationSettings;
-
+//get details of driver
   Future<void> _fetchDriverData() async {
     _currentUser = _auth.currentUser;
     if (_currentUser != null) {
@@ -172,9 +274,82 @@ class _HomeState extends State<Home> {
           .collection('drivers')
           .doc(_currentUser!.uid)
           .get();
+      if (_driverData != null) {
+        print("Driver data already fetched: $_driverData");
+        setState(() {
+          isLoading = false;
+        });
+      }
       setState(() {
         _driverData = userDoc.data() as Map<String, dynamic>?;
+        if (_driverData != null) {
+          name = _driverData!['username'];
+          driverID = _driverData!['dcardId'];
+          driverBus = _driverData!['busNumber'];
+          // labelid = _driverData!['label'];
+          print("Driver ID is : $driverID");
+          print("Driver Bus is : $driverBus");
+          // print("Driver Name is : $labelid");
+        } else {
+          print("No driver data: ${_driverData}");
+        }
       });
+      print("Driver Data: $_driverData");
+    }
+    final localToken = await SharedpreferenceHelper().getSessionToken();
+    final doc = await FirebaseFirestore.instance
+        .collection('saralyatra')
+        .doc('driverDetailsDatabase')
+        .collection('drivers')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get();
+
+    final serverToken = doc['sessionToken'];
+
+    if (localToken != serverToken) {
+      // Force logout — session is invalidated
+      await FirebaseAuth.instance.signOut();
+      if (!context.mounted) return;
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (_) => Login_page()));
+    }
+  }
+
+  Future<void> _fetchBusData() async {
+    final bus_number = await SharedpreferenceHelper().getBusNumber();
+
+    _currentUser = _auth.currentUser;
+    if (_currentUser != null) {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('saralyatra')
+          .doc('driverDetailsDatabase')
+          .collection('driverRoute')
+          .doc(bus_number)
+          .get();
+      // _driverBusData = userDoc.data() as Map<String, dynamic>?;
+      if (userDoc.exists) {
+        // print("\n\n\nBus Number from buss : $driverBus");
+        print("Driver data already fetched: $_driverBusData");
+        setState(() {
+          isLoading = false;
+          _driverBusData = userDoc.data() as Map<String, dynamic>?;
+          if (_driverBusData != null) {
+            labelid = _driverBusData!['label'];
+            final checkon = _driverBusData!['status'];
+            isOnline = checkon ?? false;
+            dragPosition = isOnline ? toggleWidth - 1.5 * knobSize : 0;
+            selectedRoute = _driverBusData!['title'];
+            // print("Driver ID is : $driverID");
+            print("Driver lable is : $labelid");
+          } else {
+            print("Driver Bus is : $driverBus");
+            print("No driver bus data found for user: ${_driverBusData}");
+          }
+        });
+      }
+      print("Driver Busnumber is : $bus_number");
+
+      print("Driverbus Data: $_driverBusData");
     }
     final localToken = await SharedpreferenceHelper().getSessionToken();
     final doc = await FirebaseFirestore.instance
@@ -241,46 +416,101 @@ class _HomeState extends State<Home> {
     });
   }
 
+  // Widget customCard({
+  //   required String title,
+  //   required VoidCallback onTap,
+  //   required String label,
+  //   bool isSelected = false,
+  // }) {
+  //   return Card(
+  //     shape: RoundedRectangleBorder(
+  //       borderRadius: BorderRadius.circular(12),
+  //     ),
+  //     elevation: 4,
+  //     // margin: EdgeInsets.all(16),
+  //     child:
+
+  //         // padding: EdgeInsets.all(16),
+  //         InkWell(
+  //       onTap: onTap,
+  //       child: Container(
+  //         width: MediaQuery.of(context).size.width / 0.2,
+  //         decoration: BoxDecoration(
+  //           shape: BoxShape.rectangle,
+  //           borderRadius: BorderRadius.circular(12),
+  //           border:
+  //               Border.all(color: Color.fromARGB(255, 223, 231, 239), width: 3),
+  //           color: isSelected ? listColor : Colors.white,
+  //         ),
+  //         child: Column(
+  //           mainAxisSize: MainAxisSize.min,
+  //           crossAxisAlignment: CrossAxisAlignment.center,
+  //           mainAxisAlignment: MainAxisAlignment.center,
+  //           children: [
+  //             Text(
+  //               "Route No: $label",
+  //               textAlign: TextAlign.center,
+  //               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+  //             ),
+  //             // SizedBox(height: 8),
+  //             Text(
+  //               title,
+  //               style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
+
   Widget customCard({
     required String title,
     required VoidCallback onTap,
     required String label,
-    bool isSelected = false,
+    required int index,
+    required int selectedIndex,
+    required ValueChanged<int?> onChanged,
   }) {
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
       elevation: 4,
-      // margin: EdgeInsets.all(16),
-      child:
-
-          // padding: EdgeInsets.all(16),
-          InkWell(
+      child: InkWell(
         onTap: onTap,
         child: Container(
-          width: MediaQuery.of(context).size.width / 0.2,
+          padding: EdgeInsets.all(16),
           decoration: BoxDecoration(
-            shape: BoxShape.rectangle,
+            border: Border.all(color: Colors.grey.shade300, width: 2),
             borderRadius: BorderRadius.circular(12),
-            border:
-                Border.all(color: Color.fromARGB(255, 223, 231, 239), width: 3),
-            color: isSelected ? listColor : Colors.white,
+            color: index == selectedIndex
+                ? Color.fromARGB(255, 3, 179, 255)
+                : Colors.white,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Row(
             children: [
-              Text(
-                "Route No: $label",
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              Radio<int>(
+                value: index,
+                groupValue: selectedIndex,
+                onChanged: onChanged,
               ),
-              // SizedBox(height: 8),
-              Text(
-                title,
-                style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+              SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Route : ${int.parse(label) + 1}",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      title,
+                      style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -290,12 +520,18 @@ class _HomeState extends State<Home> {
   }
 
   // bool isOnline = false;
-  double dragPosition = .0;
+  double dragPosition = 0.0;
   @override
   Widget build(BuildContext context) {
-    const double toggleWidth = 300;
-    const double toggleHeight = 50;
-    const double knobSize = 35;
+    final double maxDrag = toggleWidth - knobSize - 2 * knobPadding;
+    if (_driverData == null && _driverBusData == null) {
+      setState(() {
+        isLoading = true;
+      });
+      _fetchDriverData();
+      _fetchBusData();
+      return const Center(child: CircularProgressIndicator());
+    }
     return Scaffold(
       backgroundColor: backgroundColor,
       body: Padding(
@@ -317,19 +553,19 @@ class _HomeState extends State<Home> {
                       onHorizontalDragUpdate: (details) {
                         setState(() {
                           dragPosition += details.delta.dx;
-                          dragPosition =
-                              dragPosition.clamp(0, toggleWidth - knobSize);
+                          dragPosition = dragPosition.clamp(0.0, maxDrag);
                         });
                       },
                       onHorizontalDragEnd: (details) {
                         setState(() {
-                          isOnline =
-                              dragPosition > (toggleWidth - knobSize) / 2;
+                          isOnline = dragPosition > maxDrag / 2;
                           dragPosition =
-                              isOnline ? toggleWidth - 1.5 * knobSize : 0;
+                              dragPosition = isOnline ? maxDrag : 0.0;
                           if (isOnline) {
+                            addDetails(isOnline);
                             startSending();
                           } else {
+                            addDetails(isOnline);
                             stopSending();
                           }
                           //update database
@@ -376,36 +612,50 @@ class _HomeState extends State<Home> {
                     ),
                   ],
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 20, right: 10, left: 10),
-                  child: Container(
-                    padding: EdgeInsets.all(20),
-                    //height: MediaQuery.of(context).size.height / 6,
-                    width: MediaQuery.of(context).size.width / 2,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.rectangle,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                          color: const Color.fromARGB(255, 187, 193, 197),
-                          width: 3),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [Text('Name: '), Text("XXXXX")],
-                          ),
-                          Row(
-                            children: [Text('Driver ID : '), Text("XXXXX")],
-                          ),
-                          Row(
-                            children: [Text('Bus ID: '), Text('XXXXXX')],
-                          ),
-                          Row(
-                            children: [Text('Route: '), Text('XXXXXX')],
-                          ),
-                        ],
+                SizedBox(height: 10),
+                Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  elevation: 5,
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                        top: 4, right: 4, left: 4, bottom: 4),
+                    child: Container(
+                      padding: EdgeInsets.all(20),
+                      // height: MediaQuery.of(context).size.height / 6,
+                      width: MediaQuery.of(context).size.width / 1.5,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.rectangle,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                            color: const Color.fromARGB(255, 187, 193, 197),
+                            width: 3),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(1.0),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                Text('Name : ${name?.toUpperCase()}'),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Text('Driver ID : ${driverID ?? 'N/A'}'),
+                              ],
+                            ),
+                            // Row(
+                            //   children: [Text('Bus ID: '), Text('XXXXXX')],
+                            // ),
+                            Row(
+                              children: [
+                                Text('My Bus: ${driverBus ?? 'XXXXXX'}'),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -414,10 +664,10 @@ class _HomeState extends State<Home> {
                   padding: const EdgeInsets.only(top: 20, right: 10, left: 10),
                   child: Container(
                     width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height / 3,
+                    height: MediaQuery.of(context).size.height / 2.5,
                     decoration: BoxDecoration(
                       shape: BoxShape.rectangle,
-                      color: Color.fromARGB(255, 185, 207, 219),
+                      color: Color.fromARGB(255, 255, 255, 255),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                           color: Color.fromARGB(255, 134, 136, 137), width: 3),
@@ -429,14 +679,24 @@ class _HomeState extends State<Home> {
                         itemBuilder: (context, index) {
                           return customCard(
                             title: items[index]['title']!,
-                            isSelected: index == selectedIndex,
+                            label: items[index]['label'] ?? '',
+                            index: index,
+                            selectedIndex: int.parse(labelid),
                             onTap: () {
                               setState(() {
-                                selectedMap = items[index]['title']!;
                                 selectedIndex = index;
+                                selectedRoute = items[index]['title']!;
+                                selectedMap = items[index]['title']!;
+
+                                labelid = items[index]['label']!;
                               });
                             },
-                            label: items[index]['label'] ?? "",
+                            onChanged: (int? value) {
+                              setState(() {
+                                selectedIndex = value!;
+                                selectedMap = items[value]['title']!;
+                              });
+                            },
                           );
                         },
                       ),

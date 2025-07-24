@@ -61,7 +61,7 @@ class _accountUpdateState extends State<accountUpdate> {
             child: const Padding(
               padding: EdgeInsets.only(right: 69),
               child: Text(
-                'Edit details',
+                'Edit Details',
                 style: textStyleappbar,
               ),
             )),

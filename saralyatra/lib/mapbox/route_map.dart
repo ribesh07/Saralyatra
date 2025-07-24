@@ -1,13 +1,21 @@
+import 'dart:async';
+// import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
+import 'package:geolocator/geolocator.dart';
+// import 'package:geolocator/geolocator.dart' as geolocator;
 import 'package:latlong2/latlong.dart';
+
+import 'package:flutter_map/flutter_map.dart';
+// import 'package:latlong2/latlong.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:location/location.dart';
 
 import 'package:provider/provider.dart';
-import 'package:geolocator/geolocator.dart';
+// import 'package:geolocator/geolocator.dart';
 import 'package:geolocator/geolocator.dart' as geolocator;
 import 'package:saralyatra/mapbox/provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -26,7 +34,7 @@ class _RouteMapPageState extends State<RouteMapPage> {
   MapController _mapController = MapController();
   LatLng? currentLocation;
   String accessToken = dotenv.get('MAPBOX_API');
-  late LocationSettings locationSettings;
+  // late LocationSettings locationSettings; // Not available in geolocator 9.0.2
 
   @override
   void initState() {
@@ -90,6 +98,25 @@ class _RouteMapPageState extends State<RouteMapPage> {
     bool serviceEnabled;
     LocationPermission permission;
 
+    Geolocator.requestPermission();
+    Geolocator.getCurrentPosition(
+            desiredAccuracy: geolocator.LocationAccuracy.high)
+        .then((position) {
+      context
+          .read<RouteProvider>()
+          .setUserLocation(LatLng(position.latitude, position.longitude));
+
+      setState(() {
+        currentLocation = LatLng(position.latitude, position.longitude);
+        print(currentLocation);
+      });
+      print(
+        "Current Position: ${position.latitude}, ${position.longitude}",
+      );
+    }).catchError((e) {
+      print("Error getting location: $e");
+    });
+
     // Check if location services enabled
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) return;
@@ -102,21 +129,11 @@ class _RouteMapPageState extends State<RouteMapPage> {
     }
     if (permission == LocationPermission.deniedForever) return;
 
-    // Get current position and listen to updates
-    Geolocator.getPositionStream(
-      locationSettings: LocationSettings(
-          accuracy: geolocator.LocationAccuracy.high, distanceFilter: 5),
-    ).listen((Position position) {
+    // Get current position and listen to updates (compatible with geolocator 9.0.2)
+    Geolocator.getPositionStream().listen((Position position) {
       if (position.longitude != 0.0 &&
           position.latitude != 0.0 &&
-          context.mounted) {
-        context
-            .read<RouteProvider>()
-            .setUserLocation(LatLng(position.latitude, position.longitude));
-        setState(() {
-          currentLocation = LatLng(position.latitude, position.longitude);
-        });
-      }
+          context.mounted) {}
     });
   }
 
@@ -127,44 +144,23 @@ class _RouteMapPageState extends State<RouteMapPage> {
       if (!(await location.requestService())) return;
     }
 
-    // if (await location.hasPermission() == PermissionStatus.denied) {
-    //   if (await location.requestPermission() != PermissionStatus.granted)
-    //     return;
-    // }
-
-    // final loc = await location.getLocation();
-
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      locationSettings = AndroidSettings(
-        accuracy: geolocator.LocationAccuracy.high,
-        distanceFilter: 5,
-        forceLocationManager: true,
-        //(Optional) Set foreground notification config to keep the app alive
-        //when going to the background
-        foregroundNotificationConfig: const ForegroundNotificationConfig(
-          notificationText: "Getting location in background",
-          notificationTitle: "Location Service",
-          enableWakeLock: true,
-        ),
-      );
-    }
-    Geolocator.getCurrentPosition(locationSettings: locationSettings)
-        .then((position) async {
-      var accuracy = await Geolocator.getLocationAccuracy();
-      print("Accuracy: $accuracy");
-
+    Geolocator.requestPermission();
+    Geolocator.getCurrentPosition(
+            desiredAccuracy: geolocator.LocationAccuracy.high)
+        .then((position) {
       setState(() {
         currentLocation = LatLng(position.latitude, position.longitude);
+        print(currentLocation);
       });
-      // _getRoute(currentLocation!, destination);
-
-      print("Current Position: ${position.latitude}, ${position.longitude}");
+      print(
+        "Current Position: ${position.latitude}, ${position.longitude}",
+      );
     }).catchError((e) {
       print("Error getting location: $e");
     });
 
-    Geolocator.getPositionStream(locationSettings: locationSettings)
-        .listen((Position position) {
+    // Listen to position stream using compatible API
+    Geolocator.getPositionStream().listen((Position position) {
       setState(() {
         currentLocation = LatLng(position.latitude, position.longitude);
       });
@@ -193,7 +189,8 @@ class _RouteMapPageState extends State<RouteMapPage> {
           });
         }
         return Scaffold(
-          appBar: AppBar(title: Text("Mapbox route"), actions: [
+          // backgroundColor: Colors.blue,
+          appBar: AppBar(title: Text(" Route"), actions: [
             IconButton(
               icon: Icon(Icons.gps_fixed_rounded),
               onPressed: () {

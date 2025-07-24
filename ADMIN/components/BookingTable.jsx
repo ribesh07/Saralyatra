@@ -89,8 +89,8 @@ const BookingTable = () => {
         </div>
       </div> */}
 
-      <div className="bg-white rounded-lg shadow-sm border">
-        <div className="px-6 py-4 border-b border-gray-200">
+      <div className="bg-white shadow-sm ">
+        <div className="px-6 py-4 mt-5 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">Bookings</h3>
         </div>
         <div className="overflow-x-auto">
@@ -150,7 +150,7 @@ const BookingTable = () => {
                       onClick={() =>
                         updateBooking({ ...booking, status: "confirmed" })
                       }
-                      className="text-blue-600 hover:text-blue-900"
+                      className="text-white hover:text-blue-900 bg-blue-500 px-2 py-1 rounded-md"
                     >
                       Confirm
                     </button>
