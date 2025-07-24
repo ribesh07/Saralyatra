@@ -240,6 +240,7 @@ void main() async {
   runApp(
     KhaltiScope(
       publicKey: '93c775860c0e4fa3b53e62afc5bfc0ef',
+
       // 'test_public_key_dc74b9c5f3ca45a9b1f2ad9f7a1a01ee', // Replace with your real key
       builder: (context, navigatorKey) {
         return riverpod.ProviderScope(
