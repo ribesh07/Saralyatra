@@ -729,7 +729,7 @@ class _ChangeProfilePicState extends State<ChangeProfilePic> {
                                 image: NetworkImage(_fetchedImageUrl!),
                                 fit: BoxFit.cover,
                                 colorFilter: ColorFilter.mode(
-                                  Colors.black.withValues(alpha: 0.3),
+                                  Colors.black.withOpacity(0.3),
                                   BlendMode.darken,
                                 ),
                               ),
@@ -782,7 +782,7 @@ class _ChangeProfilePicState extends State<ChangeProfilePic> {
           ),
           if (_isLoading)
             Container(
-              color: Colors.black.withValues(alpha: 0.5),
+              color: Colors.black.withOpacity(0.5),
               child: const Center(
                 child: CircularProgressIndicator(),
               ),
