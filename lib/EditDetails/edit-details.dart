@@ -38,7 +38,7 @@ class _editDetailsState extends State<editDetails> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => changeProfilePic()),
+                    MaterialPageRoute(builder: (context) => ChangeProfilePic()),
                   );
                 },
                 child: Container(

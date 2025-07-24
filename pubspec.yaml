@@ -114,6 +114,7 @@ flutter:
     - assets/logos/
     - .env
     - assets/
+    - assets/logos/localbus.jpg
   # - assets/logos/instagram_icon.png
   # - assets/logos/Facebook_icon.png
   # - assets/logos/esewa_logo.png
