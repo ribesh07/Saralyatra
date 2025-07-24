@@ -1,9 +1,6 @@
-//
-
-// ignore_for_file: use_build_context_synchronously, avoid_print
+// // ignore_for_file: use_build_context_synchronously, avoid_print
 
 import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:esewa_flutter_sdk/esewa_flutter_sdk.dart';
@@ -14,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:saralyatra/pages/setups/snackbar_message.dart';
 import 'package:saralyatra/pages/tickets/generate_localpaymenthistory.dart';
 import 'package:saralyatra/routes/app_route.dart';
+import 'package:saralyatra/services/shared_pref.dart';
 
 const String kEsewaClientId =
     'JB0BBQ4aD0UqIThFJwAKBgAXEUkEGQUBBAwdOgABHD4DChwUAB0R';
@@ -27,39 +25,25 @@ class Esewalocal {
     String date,
     String price,
     String email,
-    // String uniqueBusID,
     String userID,
-    // String location,
   ) async {
-    // double price = 100.0;
-    // String productId = "1d71jd81";
-    // String productName = "Product One";
-
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-
     DocumentReference documentReference = firestore
         .collection('saralyatra')
         .doc('paymentDetails')
-        .collection('forUser')
-        .doc('$userName$date');
-//
-    // String departureTime = "$deptHr : $deptMin";
+        .collection('userLocalPaymentHistory')
+        .doc('$userID');
 
     final paymentData = {
       'userName': userName,
-      // 'busName': busName,
-      // 'departureTime': departureTime,
       'txnRefId': txnRefId,
       'contact': contact,
       'date': date,
       'price': price,
-      // 'selectedList': selectedList,
       'timestamp': FieldValue.serverTimestamp(),
-      // 'uniqueBusID': uniqueBusID,
       'userID': userID,
-      // 'location': location
     };
-
+    print('Adding payment data to the database: $paymentData');
     try {
       await documentReference.set(paymentData);
       print('Payment data added to the database successfully');
@@ -74,51 +58,47 @@ class Esewalocal {
     String contact,
     String date,
     String price,
-    // List selectedList,
     String email,
-    // String uniqueBusID,
     String userID,
-    // String location,
   ) async {
-    // double price = 100.0;
-    // String productId = "1d71jd81";
-    // String productName = "Product One";
-
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-
     DocumentReference documentReference = firestore
         .collection('saralyatra')
-        .doc('paymentDetails')
-        .collection('forUser')
-        .doc('$userID$date');
+        .doc('userDetailsDatabase')
+        .collection('users')
+        .doc('$userID');
 
-    // String departureTime = "$deptHr : $deptMin";
+    // final paymentData = {
+    //   'userName': userName,
+    //   'txnRefId': txnRefId,
+    //   'contact': contact,
+    //   'date': date,
+    //   'price': price,
+    //   'timestamp': FieldValue.serverTimestamp(),
 
-    final paymentData = {
-      'userName': userName,
-      // 'busName': busName,
-      // 'departureTime': departureTime,
-      'txnRefId': txnRefId,
-      'contact': contact,
-      'date': date,
-      'price': price,
-      // 'selectedList': selectedList,
-      'timestamp': FieldValue.serverTimestamp(),
-      // 'uniqueBusID': uniqueBusID,
-      'userID': userID,
-      // 'location': location
-    };
+    // };
+
+    DocumentSnapshot snapshot = await FirebaseFirestore.instance
+        .collection('saralyatra')
+        .doc('userDetailsDatabase')
+        .collection('users')
+        .doc('$userID')
+        .get();
+    // print('Current balance: $balance');
 
     try {
-      await documentReference.set(paymentData);
-      print('Payment data added to the database successfully');
+      var balancer = snapshot['balance'] ?? '0.00';
+      balancer =
+          (double.parse(balancer!) + double.parse(price)).toStringAsFixed(2);
+      print('Updated balance: $balancer');
+      await documentReference.update({'balance': balancer});
+      print('User payment data added to the database successfully');
     } catch (e) {
-      print('Error adding payment data to the database: $e');
+      print('Error adding user payment data to the database: $e');
     }
   }
 
-  // pay(BuildContext context, String price) {
-  pay(
+  void pay(
     BuildContext context,
     String price,
     String userName,
@@ -127,7 +107,15 @@ class Esewalocal {
     String email,
     String userID,
   ) {
+    print('Price: $price');
     try {
+      final parsedPrice =
+          double.tryParse(price) ?? 100.0; // Default to 100 if parsing fails
+      final formattedPrice = parsedPrice.toStringAsFixed(2);
+
+      print("Starting payment...");
+      print("Price: $formattedPrice");
+
       EsewaFlutterSdk.initPayment(
         esewaConfig: EsewaConfig(
           environment: Environment.test,
@@ -135,38 +123,40 @@ class Esewalocal {
           secretId: kEsewaSecretKey,
         ),
         esewaPayment: EsewaPayment(
-          productId: "1d71jd81",
-          productName: "Product One",
-          productPrice: price,
+          productId: "BUS_TICKET_01",
+          productName: "BusTicket", // Use a clean name
+          productPrice: formattedPrice,
         ),
         onPaymentSuccess: (EsewaPaymentSuccessResult result) async {
-          debugPrint('SUCCESS');
+          debugPrint('Payment SUCCESS');
           String txnRefId = result.refId;
-          // String userName,String busName,String deptHr,String deptMin,String txnRefId, String contact,String date, String price,List selectedList
-          _addPaymentInDatabase(
+
+          await _addPaymentInDatabase(
             userName,
             txnRefId,
             contact,
             date,
-            price,
+            formattedPrice,
             email,
             userID,
           );
-          _addUserInDatabase(
+
+          await _addUserInDatabase(
             userName,
             txnRefId,
             contact,
             date,
-            price,
-            // selectedList,
+            formattedPrice,
             email,
             userID,
           );
+
           showSnackBarMsg(
             context: context,
             message: 'Payment success.',
             bgColor: Colors.green,
           );
+
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -175,90 +165,55 @@ class Esewalocal {
                 txnRefId: txnRefId,
                 contact: contact,
                 date: date,
-                price: price,
+                price: formattedPrice,
                 userID: userID,
               ),
             ),
           );
+
           verify(result);
         },
         onPaymentFailure: () {
-          debugPrint('FAILURE');
+          debugPrint('Payment FAILURE');
           showSnackBarMsg(
             context: context,
             message: 'Failed to pay.',
             bgColor: Colors.red,
           );
         },
-        // onPaymentCancellation: () {
-        //   debugPrint('CANCEL');
-        //   showSnackBarMsg(
-        //     context: context,
-        //     message: 'Canceled to payment proceed.',
-        //     bgColor: Colors.pink,
-        //   );
-        //   Navigator.pushNamed(context, AppRoute.homeRoute);
-        // },
         onPaymentCancellation: () {
-          debugPrint('CANCEL');
+          debugPrint('Payment CANCELLED');
           showSnackBarMsg(
             context: context,
             message: 'Canceled to payment proceed.',
             bgColor: Colors.pink,
           );
-          // Log additional information here if needed
           Navigator.pushNamed(context, AppRoute.homeRoute);
         },
       );
     } catch (e) {
-      debugPrint('EXCEPTION: $e');
+      debugPrint('EXCEPTION during payment: $e');
+      showSnackBarMsg(
+        context: context,
+        message: 'Something went wrong during payment.',
+        bgColor: Colors.red,
+      );
     }
   }
 
-//   verify(EsewaPaymentSuccessResult result) async {
-//     try {
-//       Dio dio = Dio();
-//       String basic =
-//           'Basic ${base64.encode(utf8.encode('$kEsewaClientId:$kEsewaSecretKey'))}';
-//       Response response = await dio.get(
-//         'https://esewa.com.np/mobile/transaction',
-//         queryParameters: {
-//           'txnRefId': result.refId,
-//         },
-//         options: Options(
-//           headers: {
-//             'Authorization': basic,
-//           },
-//         ),
-//       );
-//       print('Verification response: ${response.data}');
-//     } catch (e) {
-//       print('Verification error: $e');
-//     }
-//   }
-// }
-
-  verify(EsewaPaymentSuccessResult result) async {
+  void verify(EsewaPaymentSuccessResult result) async {
     try {
       Dio dio = Dio();
-      String basic =
+      String basicAuth =
           'Basic ${base64.encode(utf8.encode('$kEsewaClientId:$kEsewaSecretKey'))}';
       Response response = await dio.get(
         'https://esewa.com.np/mobile/transaction',
-        queryParameters: {
-          'txnRefId': result.refId,
-        },
-        options: Options(
-          headers: {
-            'Authorization': basic,
-          },
-        ),
+        queryParameters: {'txnRefId': result.refId},
+        options: Options(headers: {'Authorization': basicAuth}),
       );
       print('Verification response: ${response.data}');
-      // Add additional checks on response data if needed
     } catch (e) {
       print('Verification error: $e');
-      // You could notify the user about the verification failure
     }
   }
 }
