@@ -21,7 +21,6 @@ import {
   Calendar,
 } from "lucide-react";
 
-
 const Analytics = () => {
   const [activeTab, setActiveTab] = useState("overview");
 
