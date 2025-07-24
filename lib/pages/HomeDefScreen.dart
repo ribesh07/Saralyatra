@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -22,9 +23,9 @@ class _HomeDefScreenState extends State<HomeDefScreen>
   var destinationvalue = -1;
   final formkey = GlobalKey<FormState>();
   int current = 0;
-  List<Map<String, String>> dataItemsAll = [];
-  List<Map<String, String>> dataItemsBLogs = [];
-  List<Map<String, String>> dataItemsNews = [];
+  List<Map<String, dynamic>> dataItemsAll = [];
+  List<Map<String, dynamic>> dataItemsBLogs = [];
+  List<Map<String, dynamic>> dataItemsNews = [];
   var location;
   @override
   void initState() {
@@ -34,31 +35,41 @@ class _HomeDefScreenState extends State<HomeDefScreen>
 
   Future<void> _loadImages() async {
     try {
-      // Fetch blog images
-      final blogRefs = (await firebase_storage.FirebaseStorage.instance
-              .ref('blog_images/')
-              .listAll())
-          .items;
-      final List<Map<String, String>> blogs = await Future.wait(
-        blogRefs.map((ref) async {
-          final url = await ref.getDownloadURL();
-          final description = ref.name.split('.').first;
-          return {"product": url, "frequency": description};
-        }).toList(),
-      );
+      // Fetch blogs from Firestore
+      QuerySnapshot blogSnapshot = await FirebaseFirestore.instance
+          .collection('uploads')
+          .doc('blogDetails')
+          .collection('blogs')
+          .get();
 
-      // Fetch news images
-      final newsRefs = (await firebase_storage.FirebaseStorage.instance
-              .ref('news_images/')
-              .listAll())
-          .items;
-      final List<Map<String, String>> news = await Future.wait(
-        newsRefs.map((ref) async {
-          final url = await ref.getDownloadURL();
-          final description = ref.name.split('.').first;
-          return {"product": url, "frequency": description};
-        }).toList(),
-      );
+      List<Map<String, dynamic>> blogs = blogSnapshot.docs.map((doc) {
+        var data = doc.data() as Map<String, dynamic>;
+        return {
+          'id': doc.id,
+          'title': data['title'] ?? 'No Title',
+          'imageUrl': data['imageUrl'] ?? '',
+          'description': data['description'] ?? 'No Description',
+          'type': 'blog'
+        };
+      }).toList();
+
+      // Fetch news from Firestore
+      QuerySnapshot newsSnapshot = await FirebaseFirestore.instance
+          .collection('uploads')
+          .doc('newsDetails')
+          .collection('news')
+          .get();
+
+      List<Map<String, dynamic>> news = newsSnapshot.docs.map((doc) {
+        var data = doc.data() as Map<String, dynamic>;
+        return {
+          'id': doc.id,
+          'title': data['title'] ?? 'No Title',
+          'imageUrl': data['imageUrl'] ?? '',
+          'description': data['description'] ?? 'No Description',
+          'type': 'news'
+        };
+      }).toList();
 
       setState(() {
         dataItemsBLogs = blogs;
@@ -66,8 +77,36 @@ class _HomeDefScreenState extends State<HomeDefScreen>
         dataItemsAll = [...blogs, ...news];
       });
     } catch (e) {
-      print('Error loading images: $e');
+      print('Error loading data: $e');
     }
+  }
+
+  void _showDescriptionDialog(String title, String description) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            title,
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: SingleChildScrollView(
+            child: Text(
+              description,
+              style: TextStyle(fontSize: 16),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   double changeContainerColor() {
@@ -106,7 +145,7 @@ class _HomeDefScreenState extends State<HomeDefScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "   ${dataItemsAll[index]["frequency"]}",
+                            "   ${dataItemsAll[index]["title"]}",
                             style: textStyle,
                           ),
                           Padding(
@@ -117,19 +156,30 @@ class _HomeDefScreenState extends State<HomeDefScreen>
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(8),
                                 color: listColor,
-                                image: DecorationImage(
-                                  image: NetworkImage(
-                                      dataItemsAll[index]["product"]!),
-                                  fit: BoxFit.cover,
-                                ),
+                                image: dataItemsAll[index]["imageUrl"] != ''
+                                    ? DecorationImage(
+                                        image: NetworkImage(
+                                            dataItemsAll[index]["imageUrl"]!),
+                                        fit: BoxFit.contain,
+                                      )
+                                    : null,
                               ),
+                              child: dataItemsAll[index]["imageUrl"] == ''
+                                  ? Center(child: Text('No Image'))
+                                  : null,
                             ),
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               TextButton(
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    _showDescriptionDialog(
+                                      dataItemsAll[index]["title"] ?? 'Title',
+                                      dataItemsAll[index]["description"] ??
+                                          'No Description',
+                                    );
+                                  },
                                   child: Text(
                                     'Read',
                                     style: buttonStyle,
@@ -165,7 +215,7 @@ class _HomeDefScreenState extends State<HomeDefScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "   ${dataItemsBLogs[index]["frequency"]}",
+                            "   ${dataItemsBLogs[index]["title"]}",
                             style: textStyle,
                           ),
                           Padding(
@@ -174,21 +224,32 @@ class _HomeDefScreenState extends State<HomeDefScreen>
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(8),
                                 color: listColor,
-                                image: DecorationImage(
-                                  image: NetworkImage(
-                                      dataItemsBLogs[index]["product"]!),
-                                  fit: BoxFit.cover,
-                                ),
+                                image: dataItemsBLogs[index]["imageUrl"] != ''
+                                    ? DecorationImage(
+                                        image: NetworkImage(
+                                            dataItemsBLogs[index]["imageUrl"]!),
+                                        fit: BoxFit.contain,
+                                      )
+                                    : null,
                               ),
                               width: MediaQuery.of(context).size.width,
                               height: 120,
+                              child: dataItemsBLogs[index]["imageUrl"] == ''
+                                  ? Center(child: Text('No Image'))
+                                  : null,
                             ),
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               TextButton(
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    _showDescriptionDialog(
+                                      dataItemsBLogs[index]["title"] ?? 'Title',
+                                      dataItemsBLogs[index]["description"] ??
+                                          'No Description',
+                                    );
+                                  },
                                   child: Text(
                                     'Read',
                                     style: buttonStyle,
@@ -224,7 +285,7 @@ class _HomeDefScreenState extends State<HomeDefScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "   ${dataItemsNews[index]["frequency"]}",
+                            "   ${dataItemsNews[index]["title"]}",
                             style: textStyle,
                           ),
                           Padding(
@@ -233,21 +294,32 @@ class _HomeDefScreenState extends State<HomeDefScreen>
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(8),
                                 color: listColor,
-                                image: DecorationImage(
-                                  image: NetworkImage(
-                                      dataItemsNews[index]["product"]!),
-                                  fit: BoxFit.cover,
-                                ),
+                                image: dataItemsNews[index]["imageUrl"] != ''
+                                    ? DecorationImage(
+                                        image: NetworkImage(
+                                            dataItemsNews[index]["imageUrl"]!),
+                                        fit: BoxFit.contain,
+                                      )
+                                    : null,
                               ),
                               width: MediaQuery.of(context).size.width,
                               height: 120,
+                              child: dataItemsNews[index]["imageUrl"] == ''
+                                  ? Center(child: Text('No Image'))
+                                  : null,
                             ),
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               TextButton(
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    _showDescriptionDialog(
+                                      dataItemsNews[index]["title"] ?? 'Title',
+                                      dataItemsNews[index]["description"] ??
+                                          'No Description',
+                                    );
+                                  },
                                   child: Text(
                                     'Read',
                                     style: buttonStyle,

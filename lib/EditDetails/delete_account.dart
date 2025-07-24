@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:saralyatra/Booking/input_field.dart';
 import 'package:saralyatra/Booking/provide.dart';
 import 'package:saralyatra/pages/login-page.dart';
+import 'package:saralyatra/services/shared_pref.dart';
 import 'package:saralyatra/setups.dart';
 
 class DeleteAccount extends StatefulWidget {
@@ -45,17 +46,29 @@ class _DeleteAccountState extends State<DeleteAccount> {
     }
 
     try {
-      // Fetch the email from Firestore
+      // Get user role from SharedPreferences
+      final String? user_role = await SharedpreferenceHelper().getRole();
+
+      if (user_role == null || (user_role != 'user' && user_role != 'driver')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Unable to determine user role')),
+        );
+        return false;
+      }
+
+      // Fetch the email from Firestore based on role
       DocumentSnapshot userDoc = await FirebaseFirestore.instance
           .collection('saralyatra')
-          .doc('userDetailsDatabase')
-          .collection('users')
+          .doc(user_role == 'user' 
+              ? 'userDetailsDatabase' 
+              : 'driverDetailsDatabase')
+          .collection(user_role == 'user' ? 'users' : 'drivers')
           .doc(uid)
           .get();
 
       if (!userDoc.exists) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('User not found')),
+          SnackBar(content: Text('${user_role == 'user' ? 'User' : 'Driver'} not found')),
         );
         return false;
       }
@@ -91,11 +104,23 @@ class _DeleteAccountState extends State<DeleteAccount> {
     }
 
     try {
-      // Delete the Firestore document
+      // Get user role from SharedPreferences
+      final String? user_role = await SharedpreferenceHelper().getRole();
+
+      if (user_role == null || (user_role != 'user' && user_role != 'driver')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Unable to determine user role')),
+        );
+        return;
+      }
+
+      // Delete the Firestore document based on role
       await FirebaseFirestore.instance
           .collection('saralyatra')
-          .doc('userDetailsDatabase')
-          .collection('users')
+          .doc(user_role == 'user' 
+              ? 'userDetailsDatabase' 
+              : 'driverDetailsDatabase')
+          .collection(user_role == 'user' ? 'users' : 'drivers')
           .doc(uid)
           .delete();
 

@@ -272,11 +272,11 @@ class _changeProfilePicState extends State<changeProfilePic> {
     }
   }
 
-  Future<String?> _uploadImage(File image) async {
+  Future<String?> _uploadImage(File image, String role) async {
     try {
       final storageRef = FirebaseStorage.instance
           .ref()
-          .child('user_images')
+          .child(role == 'user' ? 'user_images' : 'driver_images')
           .child('${DateTime.now().toIso8601String()}.jpg');
       final uploadTask = storageRef.putFile(image);
       final snapshot = await uploadTask;
@@ -313,7 +313,22 @@ class _changeProfilePicState extends State<changeProfilePic> {
       }
       final String? user_id = await SharedpreferenceHelper().getUserId();
       final String? user_role = await SharedpreferenceHelper().getRole();
-      if (user_role != 'user') {}
+      
+      if (user_role == null || (user_role != 'user' && user_role != 'driver')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Color.fromARGB(255, 232, 13, 13),
+            elevation: 10,
+            duration: Duration(milliseconds: 3000),
+            content: const Text(
+              "Unable to determine user role",
+              style: TextStyle(fontSize: 20),
+            ),
+          ),
+        );
+        return;
+      }
+      
       String uid = user.uid;
 
       // Get current image URL from Firestore
@@ -334,7 +349,7 @@ class _changeProfilePicState extends State<changeProfilePic> {
       }
 
       // Upload the new image and get the URL
-      final newImageUrl = await _uploadImage(_image!);
+      final newImageUrl = await _uploadImage(_image!, user_role);
 
       if (newImageUrl != null) {
         // Delete the old image if it exists

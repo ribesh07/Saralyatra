@@ -1,9 +1,12 @@
 // ignore_for_file: camel_case_types, sized_box_for_whitespace, prefer_const_constructors, prefer_const_literals_to_create_immutables
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 // import 'package:saralyatra/Booking/booking_form.dart';
 import 'package:saralyatra/EditDetails/change_profile_pic.dart';
 import 'package:saralyatra/EditDetails/edit_email.dart';
+import 'package:saralyatra/driver/edit_driver_email.dart';
 import 'package:saralyatra/setups.dart';
 
 class editDetails extends StatefulWidget {
@@ -14,6 +17,67 @@ class editDetails extends StatefulWidget {
 }
 
 class _editDetailsState extends State<editDetails> {
+  Future<String?> _getUserRole() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    final uid = currentUser?.uid;
+
+    if (uid == null) return null;
+
+    try {
+      // Check if user exists in users collection
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('saralyatra')
+          .doc('userDetailsDatabase')
+          .collection('users')
+          .doc(uid)
+          .get();
+
+      if (userDoc.exists) {
+        return 'user';
+      }
+
+      // Check if user exists in drivers collection
+      DocumentSnapshot driverDoc = await FirebaseFirestore.instance
+          .collection('saralyatra')
+          .doc('driverDetailsDatabase')
+          .collection('drivers')
+          .doc(uid)
+          .get();
+
+      if (driverDoc.exists) {
+        return 'driver';
+      }
+
+      return null;
+    } catch (e) {
+      print('Error checking user role: $e');
+      return null;
+    }
+  }
+
+  void _navigateToEmailEdit() async {
+    final role = await _getUserRole();
+
+    if (role == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Unable to determine user role')),
+      );
+      return;
+    }
+
+    if (role == 'user') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => EditEmail()),
+      );
+    } else if (role == 'driver') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => EditDriverEmail()),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -80,14 +144,7 @@ class _editDetailsState extends State<editDetails> {
                 ),
               ),
               GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => EditEmail(),
-                    ),
-                  );
-                },
+                onTap: _navigateToEmailEdit,
                 child: Container(
                   width: MediaQuery.of(context).size.width,
                   child: Padding(
@@ -113,7 +170,8 @@ class _editDetailsState extends State<editDetails> {
                               Container(
                                 width: 290,
                                 child: Text(
-                                  "Email & Name",
+                                  // "Email & Name",
+                                  "Edit Name",
                                   style: TextStyle(fontSize: 25),
                                 ),
                               ),
