@@ -1,71 +1,78 @@
-// ignore_for_file: prefer_const_declarations
-
 import 'package:flutter/material.dart';
 
 class SwipeToggle extends StatefulWidget {
-  get isOnline => null;
-
   @override
   _SwipeToggleState createState() => _SwipeToggleState();
 }
 
 class _SwipeToggleState extends State<SwipeToggle> {
   bool isOnline = false;
-  double dragPosition = .0;
+  double dragPosition = 0.0;
 
   @override
   Widget build(BuildContext context) {
-    final double toggleWidth = 300;
+    final double toggleWidth = 250;
     final double toggleHeight = 50;
     final double knobSize = 35;
+
+    final double knobPadding = 7; // spacing from the edge
+    final double maxDrag = toggleWidth - knobSize - 2 * knobPadding;
 
     return GestureDetector(
       onHorizontalDragUpdate: (details) {
         setState(() {
           dragPosition += details.delta.dx;
-          dragPosition = dragPosition.clamp(0, toggleWidth - knobSize);
+          dragPosition = dragPosition.clamp(0.0, maxDrag);
         });
       },
       onHorizontalDragEnd: (details) {
         setState(() {
-          isOnline = dragPosition > (toggleWidth - knobSize) / 2;
-          dragPosition = isOnline ? toggleWidth - 1.5 * knobSize : 0;
-
-          //update database
+          isOnline = dragPosition > maxDrag / 2;
+          dragPosition = isOnline ? maxDrag : 0.0;
         });
       },
       child: Container(
-        alignment: Alignment.center,
         width: toggleWidth,
         height: toggleHeight,
-        padding: EdgeInsets.symmetric(horizontal: 5),
         decoration: BoxDecoration(
-          color: isOnline ? Color.fromARGB(255, 3, 179, 255) : Colors.grey[400],
-          borderRadius: BorderRadius.circular(30),
+          color: isOnline ? Colors.green : Colors.grey,
+          borderRadius: BorderRadius.circular(10),
         ),
         child: Stack(
-          alignment: Alignment.center,
           children: [
+            // Center Label
             Center(
               child: Text(
                 isOnline ? "Online" : "Offline",
-                style:
-                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
+
+            // Animated knob
             AnimatedPositioned(
-              duration: Duration(milliseconds: 100),
-              left: dragPosition,
+              duration: Duration(milliseconds: 120),
+              curve: Curves.easeOut,
+              left: dragPosition + knobPadding,
+              top: (toggleHeight - knobSize) / 2,
               child: Container(
-                alignment: Alignment.center,
                 width: knobSize,
                 height: knobSize,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),
