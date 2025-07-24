@@ -32,7 +32,9 @@ class Esewalocal {
         .collection('saralyatra')
         .doc('paymentDetails')
         .collection('userLocalPaymentHistory')
-        .doc('$userID');
+        .doc('$userID')
+        .collection('payments')
+        .doc();
 
     final paymentData = {
       'userName': userName,

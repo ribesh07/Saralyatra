@@ -250,11 +250,11 @@ void main() async {
                   create: (_) => RouteProvider()),
             ],
             child: MaterialApp(
+              debugShowCheckedModeBanner: false,
               navigatorKey: navigatorKey,
               localizationsDelegates: const [
                 KhaltiLocalizations.delegate,
               ],
-              debugShowCheckedModeBanner: false,
               home: const App(), // Replace with your actual app or screen
             ),
           ),
