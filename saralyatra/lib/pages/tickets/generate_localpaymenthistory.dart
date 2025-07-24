@@ -5,35 +5,25 @@ import 'package:flutter/widgets.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:saralyatra/pages/botton_nav_bar.dart';
-import 'package:saralyatra/pages/tickets/pdf_generate.dart';
+import 'package:saralyatra/pages/tickets/local_bus/generatelocalpaymenthistorypdf.dart';
 import 'package:printing/printing.dart';
 import 'package:saralyatra/setups.dart';
 
 class generateTicket extends StatefulWidget {
   final String userName;
-  final String? busName;
-  final String deptHr;
-  final String deptMin;
   final String txnRefId;
   final String contact;
   final String price;
   final String date;
-  final List selectedList;
-  final String uniqueBusID;
   final String userID;
 
   const generateTicket({
     super.key,
     required this.userName,
-    this.busName,
-    required this.deptHr,
-    required this.deptMin,
     required this.txnRefId,
     required this.contact,
     required this.price,
     required this.date,
-    required this.selectedList,
-    required this.uniqueBusID,
     required this.userID,
   });
 
@@ -46,9 +36,6 @@ class generateTicket extends StatefulWidget {
 class _generateTicketState extends State<generateTicket> {
   @override
   Widget build(BuildContext context) {
-    String time = '${widget.deptHr} : ${widget.deptMin}';
-    String listString = widget.selectedList.join(', ');
-    int totalSeats = widget.selectedList.length;
     return PopScope(
       canPop: false,
       child: Scaffold(
@@ -98,43 +85,11 @@ class _generateTicketState extends State<generateTicket> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Bus name',
-                        style: textStyle,
-                      ),
-                      Text(
-                        widget.busName ?? 'N/A',
-                        style: textStyle,
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Departure Date',
+                        'Payment Date',
                         style: textStyle,
                       ),
                       Text(
                         widget.date,
-                        style: textStyle,
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Departure Time',
-                        style: textStyle,
-                      ),
-                      Text(
-                        '${widget.deptHr} : ${widget.deptMin}',
                         style: textStyle,
                       ),
                     ],
@@ -178,38 +133,6 @@ class _generateTicketState extends State<generateTicket> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Seat No',
-                        style: textStyle,
-                      ),
-                      Text(
-                        listString,
-                        style: textStyle,
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Total Seat',
-                        style: textStyle,
-                      ),
-                      Text(
-                        '$totalSeats',
-                        style: textStyle,
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
                         'Total Amount',
                         style: textStyle,
                       ),
@@ -224,8 +147,7 @@ class _generateTicketState extends State<generateTicket> {
                   height: 40,
                 ),
                 Text(
-                  "contact us: 9844499531"
-                  "contact us: 9812075707",
+                  "contact us: 9844499531",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       fontSize: 15,
@@ -244,7 +166,7 @@ class _generateTicketState extends State<generateTicket> {
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
-                      'Disclaimer: Customer needs to show the ticket during travel',
+                      'Disclaimer: Customer have any query regarding the payment, please contact us at 9844499531',
                       style: TextStyle(fontSize: 15),
                     ),
                   ),
@@ -255,16 +177,8 @@ class _generateTicketState extends State<generateTicket> {
                 Card(
                   color: Colors.blue,
                   child: TextButton(
-                    onPressed: () => printDoc(
-                        widget.userName,
-                        widget.busName ?? 'N/A',
-                        widget.date,
-                        time,
-                        widget.txnRefId,
-                        widget.contact,
-                        listString,
-                        totalSeats,
-                        widget.price),
+                    onPressed: () => printDoc(widget.userName, widget.date,
+                        widget.txnRefId, widget.contact, widget.price),
                     child: Text("Generate PDF",
                         style: TextStyle(color: Colors.white)),
                   ),
@@ -279,21 +193,12 @@ class _generateTicketState extends State<generateTicket> {
 }
 
 Future<void> printDoc(
-    String name,
-    String busName,
-    String departureDate,
-    String departureTime,
-    String txn,
-    String contact,
-    String selectedList,
-    int totalSeats,
-    String amount) async {
+    String name, String date, String txn, String contact, String amount) async {
   final doc = pw.Document();
   doc.addPage(pw.Page(
       pageFormat: PdfPageFormat.a4,
       build: (pw.Context context) {
-        return builPrintableData(name, busName, departureDate, departureTime,
-            txn, contact, selectedList, totalSeats, amount);
+        return builPrintableData(name, date, txn, contact, amount);
       }));
   await Printing.layoutPdf(
       onLayout: (PdfPageFormat format) async => doc.save());

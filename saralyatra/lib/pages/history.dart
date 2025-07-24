@@ -37,12 +37,11 @@ class _MyTabbedPageState extends State<MyTabbedPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   bottom: TabBar(
-      //     controller: _tabController,
-      //     tabs: myTabs,
-      //   ),
-      // ),
+      appBar: AppBar(
+        title: Text("History"),
+        centerTitle: true,
+        backgroundColor: Colors.blue,
+      ),
       body:
           // Container(
           //   child: TabBar(

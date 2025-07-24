@@ -19,7 +19,7 @@ class EditEmail extends StatefulWidget {
 class _EditEmailState extends State<EditEmail> {
   bool passwordObsecured = true;
 
-  final newEmailController = TextEditingController();
+  // final newEmailController = TextEditingController();
   final passwordController = TextEditingController();
   final usernameController = TextEditingController();
 
@@ -53,17 +53,17 @@ class _EditEmailState extends State<EditEmail> {
         return;
       }
 
-      String email = userDoc['email'];
+      // String email = userDoc['email'];
 
       // Create credential
-      var credential = EmailAuthProvider.credential(
-          email: email, password: passwordController.text);
+      // var credential = EmailAuthProvider.credential(
+      // email: email, password: passwordController.text);
 
       // Reauthenticate user
 
-      await currentUser?.reauthenticateWithCredential(credential);
+      // await currentUser?.reauthenticateWithCredential(credential);
       // Send verification email to the new email address
-      await currentUser?.verifyBeforeUpdateEmail(newEmailController.text);
+      // await currentUser?.verifyBeforeUpdateEmail(newEmailController.text);
 
       // Update email
       // await currentUser?.updateEmail(newEmailController.text);
@@ -78,7 +78,7 @@ class _EditEmailState extends State<EditEmail> {
           .doc(uid)
           .update({
         'username': usernameController.text,
-        'email': newEmailController.text,
+        // 'email': newEmailController.text,
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -108,7 +108,7 @@ class _EditEmailState extends State<EditEmail> {
 
   @override
   void dispose() {
-    newEmailController.dispose();
+    // newEmailController.dispose();
     passwordController.dispose();
     usernameController.dispose();
 
@@ -146,12 +146,12 @@ class _EditEmailState extends State<EditEmail> {
                   validator: (value) =>
                       provider.validator(value, 'Fullname required'),
                 ),
-                InputField(
-                  label: 'New-Email',
-                  icon: Icons.mail,
-                  controller: newEmailController,
-                  validator: (value) => provider.emailValidator(value),
-                ),
+                // InputField(
+                //   label: 'New-Email',
+                //   icon: Icons.mail,
+                //   controller: newEmailController,
+                //   validator: (value) => provider.emailValidator(value),
+                // ),
                 Padding(
                   padding: const EdgeInsets.only(top: 20, left: 8, right: 8),
                   child: Text('Enter password to update email'),

@@ -1,7 +1,7 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
-import 'dart:math';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:saralyatra/services/shared_pref.dart';
 import 'package:saralyatra/user_location/usercard/Statement.dart';
 
 import 'help_line.dart';
@@ -10,24 +10,31 @@ import 'busroute.dart';
 import 'package:flutter/material.dart';
 import 'topup.dart';
 
-String generate16DigitNumber() {
-  final random = Random();
-  String number = '';
+const backgroundColor = Color.fromARGB(255, 213, 227, 239);
+const textcolor = Color.fromARGB(255, 17, 16, 17);
+const appbarcolor = Color.fromARGB(255, 39, 136, 228);
+const appbarfontcolor = Color.fromARGB(255, 17, 16, 17);
+const listColor = Color.fromARGB(255, 153, 203, 238);
+// String? username, email, userid;
+// String? contact;
+// String generate16DigitNumber() {
+// final random = Random();
+// String number = '';
 
-  // Ensure the first digit is not 0
-  number += (random.nextInt(9) + 1).toString();
+//   // Ensure the first digit is not 0
+//   number += (random.nextInt(9) + 1).toString();
 
-  // Add 15 more digits
-  for (int i = 0; i < 15; i++) {
-    number += random.nextInt(10).toString();
-  }
+//   // Add 15 more digits
+//   for (int i = 0; i < 15; i++) {
+//     number += random.nextInt(10).toString();
+//   }
 
-  return number; // This is a String
-}
+//   return number; // This is a String
+// }
 
-String formatWithCardSpacing(String number) {
+String formatWithCardSpacing(String cardID) {
   // Insert a space every 4 digits
-  return number
+  return cardID
       .replaceAllMapped(RegExp(r".{4}"), (match) => "${match.group(0)} ")
       .trim();
 }
@@ -37,12 +44,25 @@ String formatWithCardSpacing(String number) {
 //   formatWithCardSpacing(rawNumber);
 // }
 
-class UserCardApp extends StatelessWidget {
-  final String name = 'saurav kumar';
-  final String cardNumber = formatWithCardSpacing(generate16DigitNumber());
-  final String balance = 'Nrs 4,320.50';
-  // final String bankLogoUrl =
-  //     'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Wells_Fargo_Bank.svg/2560px-Wells_Fargo_Bank.svg.png';
+class UserCardApp extends StatefulWidget {
+  UserCardApp({super.key});
+
+  @override
+  State<UserCardApp> createState() => _UserCardAppState();
+}
+
+class _UserCardAppState extends State<UserCardApp> {
+  String name = 'User';
+  String? username;
+  String? userid;
+  String? email;
+  String? contact;
+  String? cardID;
+  String? balance; // ADD THIS LINE
+
+  bool isLoading = true; // ADD THIS LINE
+
+  //final String balance = 'Nrs 4,320.50';
 
   final List<Map<String, dynamic>> actions = [
     {'label': 'Bus Route', 'icon': Icons.directions_bus},
@@ -51,20 +71,88 @@ class UserCardApp extends StatelessWidget {
     {'label': 'Report', 'icon': Icons.report},
   ];
 
-  UserCardApp({super.key});
+  void getdata() async {
+    final usern = await SharedpreferenceHelper().getUserName();
+    final useid = await SharedpreferenceHelper().getUserId();
+    final emaill = await SharedpreferenceHelper().getUserEmail();
+    final contactt = await SharedpreferenceHelper().getUserContact();
+    final cardIDD = await SharedpreferenceHelper().getUserCardID();
+    var balancer = await SharedpreferenceHelper().getUserBalance();
+    print(
+        'Fetched data from sharedpreference: $usern, $useid, $emaill, $contactt, $cardIDD, $balancer'); // Debugging line
+
+    if (useid != null) {
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance
+          .collection('saralyatra')
+          .doc('userDetailsDatabase')
+          .collection('users')
+          .doc(useid)
+          .get();
+
+      if (snapshot.exists) {
+        final String names = snapshot['username'] as String? ?? '';
+        final String emaill = snapshot['email'] as String? ?? '';
+        final String contactt = snapshot['contact'] as String? ?? '';
+        final String cardIDD = snapshot['cardID'] as String? ?? '';
+        final String balancee = snapshot['balance'] ?? '';
+        print(
+            'Fetched data: $names, $useid, $emaill, $contactt, $cardIDD, $balancee');
+
+        setState(() {
+          username = names;
+          userid = useid;
+          email = emaill;
+          contact = contactt;
+          name = names;
+          cardID = cardIDD;
+          balance = balancee; // Set the balance
+          isLoading = false; // Set loading false here
+        });
+      } else {
+        setState(() {
+          isLoading = false;
+          cardID = null; // Set cardID to null if document does not exist
+          print('No user data found for user ID: $useid');
+        });
+      }
+    } else {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getdata();
+  }
 
   @override
   Widget build(BuildContext context) {
+    // ✅ HANDLE LOADING OR NULL STATE
+    if (isLoading || cardID == null) {
+      return Scaffold(
+        backgroundColor: Colors.grey[100],
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    // ✅ Now safe to use cardID!
     return Scaffold(
+      appBar: AppBar(
+        title: Text('SaralYatra'),
+        backgroundColor: appbarcolor,
+        centerTitle: true,
+      ),
       backgroundColor: Colors.grey[100],
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              // Card Layout
               Card(
-                color: const Color.fromARGB(255, 203, 31, 128),
+                color: Color.fromARGB(255, 59, 154, 242),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16)),
                 elevation: 6,
@@ -75,7 +163,6 @@ class UserCardApp extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Top: Bank Title & Logo
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -84,18 +171,11 @@ class UserCardApp extends StatelessWidget {
                             style:
                                 TextStyle(color: Colors.white70, fontSize: 16),
                           ),
-                          // Image.network(
-                          //   ,
-                          //   height: 30,
-                          //   width: 80,
-                          //   fit: BoxFit.contain,
-                          // ),
                         ],
                       ),
                       Spacer(),
-                      // Card Number
                       Text(
-                        cardNumber,
+                        formatWithCardSpacing(cardID!), // Now safe
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 22,
@@ -104,7 +184,6 @@ class UserCardApp extends StatelessWidget {
                         ),
                       ),
                       SizedBox(height: 10),
-                      // Name and Balance
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -114,7 +193,8 @@ class UserCardApp extends StatelessWidget {
                                 TextStyle(color: Colors.white70, fontSize: 16),
                           ),
                           Text(
-                            balance,
+                            'Nrs ${balance!}', // Use null-aware operator
+                            // balance ?? 'Nrs 0.00', // Use null-aware operator
                             style: TextStyle(
                               color: Colors.greenAccent,
                               fontSize: 18,
@@ -128,8 +208,6 @@ class UserCardApp extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 20),
-
-              // Square Buttons Grid
               Expanded(
                 child: GridView.count(
                   crossAxisCount: 2,
@@ -156,11 +234,42 @@ class UserCardApp extends StatelessWidget {
                               } else if (action['label'] == 'Statement') {
                                 return BankStatementScreen();
                               } else if (action['label'] == 'Topup') {
-                                return TopUpPage();
+                                if (username != null &&
+                                    userid != null &&
+                                    email != null &&
+                                    contact != null &&
+                                    balance != null) {
+                                  return TopUpPage(
+                                    balance: balance!,
+                                    userName: username!,
+                                    userID: userid!,
+                                    email: email!,
+                                    contact: contact!,
+                                    date: DateTime.now().toString(),
+                                  );
+                                } else {
+                                  return Scaffold(
+                                    body: Center(
+                                      child: AlertDialog(
+                                        title: Text('User data not available'),
+                                        content: Text(
+                                            'Please complete your profile.'),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
+                                            },
+                                            child: Text('OK'),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }
                               } else if (action['label'] == 'Report') {
                                 return Helpline();
                               }
-                              return Container(); // Fallback
+                              return Container();
                             },
                           ),
                         );

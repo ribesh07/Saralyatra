@@ -1,6 +1,7 @@
 // ignore_for_file: camel_case_types, prefer_const_constructors, sized_box_for_whitespace, prefer_const_literals_to_create_immutables
 
 import 'dart:io';
+import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -8,12 +9,48 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:saralyatra/Booking/input_field.dart';
 import 'package:saralyatra/Booking/provide.dart';
+import 'package:saralyatra/driver/driverPage.dart';
 import 'package:saralyatra/pages/botton_nav_bar.dart';
+import 'package:saralyatra/pages/login-page.dart';
 import 'package:saralyatra/pages/serviceSelection.dart';
 import 'package:saralyatra/services/database.dart';
 import 'package:saralyatra/services/shared_pref.dart';
 import 'package:saralyatra/setups.dart';
 import 'package:uuid/uuid.dart';
+
+final String balance = '0.0';
+final String driverid = '0'; // Default balance for new users
+String generate16DigitNumber() {
+  final random = Random();
+  String number = '';
+
+  // Ensure the first digit is not 0
+  number += (random.nextInt(9) + 1).toString();
+
+  // Add 15 more digits
+  for (int i = 0; i < 15; i++) {
+    number += random.nextInt(10).toString();
+  }
+
+  print(number); // Debugging line to check the generated number
+  return number; // This is a String
+}
+
+String generate8DigitNumber() {
+  final random1 = Random();
+  String number1 = '';
+
+  // Ensure the first digit is not 0
+  number1 += (random1.nextInt(9) + 1).toString();
+
+  // Add 7 more digits
+  for (int j = 0; j < 7; j++) {
+    number1 += random1.nextInt(10).toString();
+  }
+
+  print(number1); // Debugging line to check the generated number
+  return number1; // This is a String
+}
 
 class Signup_page extends StatefulWidget {
   const Signup_page({super.key});
@@ -32,6 +69,7 @@ class _Signup_pageState extends State<Signup_page> {
   final cpasscontroller = TextEditingController();
   final usernamecontroller = TextEditingController();
   final contactnumcontroller = TextEditingController();
+  final busnumbercontroller = TextEditingController();
   final formkey = GlobalKey<FormState>();
 
   final ImagePicker _picker = ImagePicker();
@@ -145,9 +183,12 @@ class _Signup_pageState extends State<Signup_page> {
         'password': passcontroller.text.toString(),
         'imageUrl': imageUrl,
         'messageUsername': messageUserName,
+        'cardID': generate16DigitNumber(),
+        'balance': balance,
         'role': "user",
         'sessionToken': sessionToken
       };
+      print(userInfoMap);
 
       var chatRoomId =
           getChatRoomIdbyUsername("Agent", userInfoMap["username"]);
@@ -191,7 +232,6 @@ class _Signup_pageState extends State<Signup_page> {
     _showLoadingDialog();
 
     try {
-      // Run Firebase Auth and image upload in parallel
       final results = await Future.wait([
         FirebaseAuth.instance
             .createUserWithEmailAndPassword(email: email, password: password),
@@ -215,11 +255,13 @@ class _Signup_pageState extends State<Signup_page> {
         'email': emailcontroller.text.toString(),
         'contact': contactnumcontroller.text.toString(),
         'uid': uid,
+        'dcardId': generate8DigitNumber(),
         'password': passcontroller.text.toString(),
         'imageUrl': imageUrl,
         'messageUsername': messageUserName,
         'role': "driver",
-        'sessionToken': sessionToken
+        'sessionToken': sessionToken,
+        'busNumber': busnumbercontroller.text.toString(), // 👈 UPDATED
       };
 
       var chatRoomId =
@@ -228,7 +270,6 @@ class _Signup_pageState extends State<Signup_page> {
         "users": ["Agent", userInfoMap["username"]],
       };
 
-      // Run database operations in parallel
       await Future.wait<void>([
         DatabaseMethod().addDriverDetails(userInfoMap, uid!),
         DatabaseMethod().createChatRoom(chatRoomId, chatInfoMap),
@@ -238,10 +279,9 @@ class _Signup_pageState extends State<Signup_page> {
       _hideLoadingDialog();
       _showSuccessSnackBar('Driver account created successfully!');
 
-      // Navigate to BottomBar
       if (mounted) {
         Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => const BottomBar()));
+            MaterialPageRoute(builder: (context) => const DriverPage()));
       }
     } on FirebaseAuthException catch (e) {
       _hideLoadingDialog();
@@ -343,6 +383,7 @@ class _Signup_pageState extends State<Signup_page> {
       SharedpreferenceHelper().saveDriverId(uid),
       SharedpreferenceHelper().saveRole('driver'),
       SharedpreferenceHelper().saveSessionToken(sessionToken),
+      SharedpreferenceHelper().saveBusNumber(busnumbercontroller.text.trim()),
     ]);
   }
 
@@ -352,12 +393,14 @@ class _Signup_pageState extends State<Signup_page> {
   }
 
   @override
+  @override
   void dispose() {
     emailcontroller.dispose();
     passcontroller.dispose();
     cpasscontroller.dispose();
     usernamecontroller.dispose();
     contactnumcontroller.dispose();
+    busnumbercontroller.dispose(); // 👈 NEW
     super.dispose();
   }
 
@@ -368,6 +411,15 @@ class _Signup_pageState extends State<Signup_page> {
       appBar: AppBar(
         title: Text(
           'SignUp',
+        ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => Login_page()),
+            );
+          },
         ),
         centerTitle: true,
         backgroundColor: appbarcolor,
@@ -502,6 +554,75 @@ class _Signup_pageState extends State<Signup_page> {
                     validator: (value) => provider.cpasswordValidator(
                         passcontroller.text, cpasscontroller.text),
                   ),
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            height: MediaQuery.of(context).size.height / 20,
+                            child: ToggleButtons(
+                              isSelected: isSelected,
+                              borderRadius: BorderRadius.circular(8),
+                              selectedColor: Colors.white,
+                              fillColor: Colors.blue,
+                              children: [
+                                Container(
+                                  width: MediaQuery.of(context).size.width / 3,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16),
+                                    child: Text(
+                                      "I am User",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                          fontStyle: FontStyle.italic),
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  width: MediaQuery.of(context).size.width / 3,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16),
+                                    child: Text(
+                                      "I am Driver",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                          fontStyle: FontStyle.italic),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              onPressed: (int index) {
+                                setState(() {
+                                  // Set only the clicked index to true, others false
+                                  for (int i = 0; i < isSelected.length; i++) {
+                                    isSelected[i] = i == index;
+                                  }
+                                });
+                              },
+                            ),
+                            // SizedBox(height: 20),
+                            // Text(
+                            //   "Selected: ${isSelected[0] ? "I am User" : "I am driver"}",
+                            //   style: TextStyle(fontStyle: FontStyle.italic),
+                            // ),
+                          )
+                        ]),
+                  ),
+                  if (isSelected[1])
+                    InputField(
+                      icon: Icons.directions_bus,
+                      label: "Bus Number (e.g. BA-01-PA-1234)",
+                      controller: busnumbercontroller,
+                      inputFormat: [
+                        FilteringTextInputFormatter.allow(
+                            RegExp(r'[A-Z0-9\-]')), // ✅ FIXED
+                        LengthLimitingTextInputFormatter(13),
+                      ],
+                      validator: (value) => provider.busValidator(value),
+                    ),
                   IconButton(
                     onPressed: () {
                       showDialog(
@@ -539,74 +660,17 @@ class _Signup_pageState extends State<Signup_page> {
                     icon: Icon(Icons.privacy_tip_outlined),
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          height: MediaQuery.of(context).size.height / 20,
-                          child: ToggleButtons(
-                            isSelected: isSelected,
-                            borderRadius: BorderRadius.circular(8),
-                            selectedColor: Colors.white,
-                            fillColor: Colors.blue,
-                            children: [
-                              Container(
-                                width: MediaQuery.of(context).size.width / 3,
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16),
-                                  child: Text(
-                                    "I am User",
-                                    textAlign: TextAlign.center,
-                                    style:
-                                        TextStyle(fontStyle: FontStyle.italic),
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                width: MediaQuery.of(context).size.width / 3,
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16),
-                                  child: Text(
-                                    "I am Driver",
-                                    textAlign: TextAlign.center,
-                                    style:
-                                        TextStyle(fontStyle: FontStyle.italic),
-                                  ),
-                                ),
-                              ),
-                            ],
-                            onPressed: (int index) {
-                              setState(() {
-                                // Set only the clicked index to true, others false
-                                for (int i = 0; i < isSelected.length; i++) {
-                                  isSelected[i] = i == index;
-                                }
-                              });
-                            },
-                          ),
-                        ),
-                        // SizedBox(height: 20),
-                        // Text(
-                        //   "Selected: ${isSelected[0] ? "I am User" : "I am driver"}",
-                        //   style: TextStyle(fontStyle: FontStyle.italic),
-                        // ),
-                      ],
-                    ),
-                  ),
-                  Padding(
                     padding: const EdgeInsets.only(top: 15),
                     child: ElevatedButton(
                       onPressed: () {
-                        if (formkey.currentState!.validate() && isSelected[0]) {
-                          userSignUp(emailcontroller.text.toString(),
-                              passcontroller.text.toString());
-                        } else if (formkey.currentState!.validate() &&
-                            isSelected[1]) {
-                          driverSignUp(emailcontroller.text.toString(),
-                              passcontroller.text.toString());
+                        if (formkey.currentState!.validate()) {
+                          if (isSelected[0]) {
+                            userSignUp(emailcontroller.text.trim(),
+                                passcontroller.text.trim());
+                          } else {
+                            driverSignUp(emailcontroller.text.trim(),
+                                passcontroller.text.trim());
+                          }
                         }
                       },
                       child: Text(

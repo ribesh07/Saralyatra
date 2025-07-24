@@ -1,9 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-// import 'package:mapbox/main.dart';
-// import 'package:mapbox/main.dart';
 import '../route_map.dart';
 
-enum BusInfo { busA, busB }
+const textcolor = Color.fromARGB(255, 17, 16, 17);
+const appbarcolor = Color.fromARGB(255, 39, 136, 228);
+const appbarfontcolor = Color.fromARGB(255, 17, 16, 17);
+const listColor = Color.fromARGB(255, 153, 203, 238);
 
 class BusControlPanel extends StatefulWidget {
   @override
@@ -11,189 +13,138 @@ class BusControlPanel extends StatefulWidget {
 }
 
 class _BusControlPanelState extends State<BusControlPanel> {
-  bool isBhaktapurActive = false;
-  bool isChakrapathActive = false;
-  final List<Map<String, dynamic>> routes = [
-    {
-      'busNo': 'BA-01-1234',
-      'route': 'Pashupati - Kalanki - Koteshwor',
-      'driverId': 'DRV001',
-      'active': true,
-    },
-    {
-      'busNo': 'BA-02-5678',
-      'route': 'Koteshwor - Bhaktapur - Sanga',
-      'driverId': 'DRV002',
-      'active': false,
-    },
-    {
-      'busNo': 'BA-03-4321',
-      'route': 'Koteshwor - Kalanki - Pashupati',
-      'driverId': 'DRV003',
-      'active': true,
-    },
-    {
-      'busNo': 'BA-04-8765',
-      'route': 'Sanga - Bhaktapur - Koteshwor',
-      'driverId': 'DRV004',
-      'active': false,
-    },
-  ];
+  List<Map<String, dynamic>> routes = [];
+  bool isLoading = true;
 
-  // Simulating an active bus
+  @override
+  void initState() {
+    super.initState();
+    fetchAllDriverRoutes();
+  }
+
+  /// Fetch all routes from Firestore
+  Future<void> fetchAllDriverRoutes() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('saralyatra')
+          .doc('driverDetailsDatabase')
+          .collection('driverRoute')
+          .get();
+      print("Fetching routes from Firestore... $snapshot");
+
+      final List<Map<String, dynamic>> fetchedRoutes = snapshot.docs.map((doc) {
+        final data = doc.data();
+        print("Fetched Route Data: $data");
+        return {
+          'busNo': data['busNo'] ?? 'Unknown',
+          'route': data['title'] ?? 'No route',
+          'status': data['status'] ?? false, // Firestore field 'active'
+        };
+      }).toList();
+
+      setState(() {
+        routes = fetchedRoutes;
+        isLoading = false;
+      });
+    } catch (e) {
+      print('Error fetching routes: $e');
+      setState(() => isLoading = false);
+    }
+  }
+
+  void _navigateToMap(String routeName) {
+    Widget page;
+    if (routeName.contains('Pashupati') || routeName.contains('Kalanki')) {
+      page = RouteMapPage(data: 'mahasagar');
+    } else if (routeName.contains('Bhaktapur') || routeName.contains('Sanga')) {
+      page = RouteMapPage(data: 'sanga');
+    } else {
+      page = RouteMapPage(data: 'unknown');
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => page),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final activeBuses = routes.where((bus) => bus['status'] == true).toList();
+    final inactiveBuses =
+        routes.where((bus) => bus['status'] == false).toList();
+    print("Active Buses: $activeBuses");
+    print("Inactive Buses: $inactiveBuses");
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Bus Route'),
-        backgroundColor: Colors.red,
+        backgroundColor: appbarcolor,
       ),
-      body: Container(
-        height: double.infinity,
-        width: double.infinity,
-        child: Column(children: [
-          Expanded(
-              child: ListView.builder(
-            itemCount: routes.length,
-            itemBuilder: (context, index) {
-              final route = routes[index];
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              physics: BouncingScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Active Buses",
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold)),
+                    SizedBox(height: 8),
+                    _buildBusList(activeBuses, active: true),
+                    SizedBox(height: 20),
+                    Text("Inactive Buses",
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold)),
+                    SizedBox(height: 8),
+                    _buildBusList(inactiveBuses, active: false),
+                  ],
+                ),
+              ),
+            ),
+    );
+  }
 
-              return GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) {
-                        if (route['route'] ==
-                            'Pashupati - Kalanki - Koteshwor') {
-                          return RouteMapPage(data: 'mahasagar');
-                        } else if (route['route'] ==
-                            'Koteshwor - Bhaktapur - Sanga') {
-                          return RouteMapPage(
-                            data: 'sanga',
-                          );
-                        } else if (route['route'] ==
-                            'Koteshwor - Kalanki - Pashupati') {
-                          return RouteMapPage(data: 'mahasagar');
-                        } else if (route['route'] ==
-                            'Sanga - Bhaktapur - Koteshwor') {
-                          return RouteMapPage(
-                            data: 'sanga',
-                          );
-                        }
-                        return Container(); // Fallback
-                      },
-                    ),
-                  );
-                },
-                child: Container(
-                  padding: EdgeInsets.symmetric(vertical: 18),
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 227, 239, 118),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  margin: EdgeInsets.symmetric(horizontal: 6, vertical: 7),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      Column(
-                        children: [
-                          Text(route['busNo']),
-                          Text(route['route']),
-                          Text(route['driverId']),
-                          Text(
-                            route['active'] ? 'Active' : 'Inactive',
-                            style: TextStyle(
-                              color:
-                                  route['active'] ? Colors.green : Colors.red,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ), // Chakrapath Button
-                      CircleAvatar(
-                        radius: 30,
+  Widget _buildBusList(List<Map<String, dynamic>> buses,
+      {required bool active}) {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      itemCount: buses.length,
+      itemBuilder: (context, index) {
+        final bus = buses[index];
+        return GestureDetector(
+          onTap: active ? () => _navigateToMap(bus['route']) : null,
+          child: Card(
+            elevation: active ? 4 : 1,
+            color: active ? null : Colors.grey[200],
+            child: ListTile(
+              enabled: active,
+              leading: Icon(Icons.directions_bus,
+                  color: active ? Colors.green : Colors.red),
+              title: Text(
+                bus['busNo'],
+                style: TextStyle(color: active ? Colors.black : Colors.grey),
+              ),
+              subtitle: Text(bus['route']),
+              trailing: active
+                  ? Padding(
+                      padding: const EdgeInsets.only(top: 15),
+                      child: CircleAvatar(
+                        radius: 20,
                         backgroundColor: Colors.red,
                         child: Icon(Icons.location_on,
-                            color: Colors.white, size: 30),
+                            color: Colors.white, size: 20),
                       ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          )),
-
-          // Spacer to push the button to the bottom
-          SizedBox(height: 20),
-          // Bus Info Card
-          Container(
-            height: 180,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              // ignore: deprecated_member_use
-              color: Colors.red.withOpacity(0.9),
-            ),
-            padding: EdgeInsets.all(10),
-            width: MediaQuery.of(context).size.width * 0.9,
-            child: Card(
-              margin: EdgeInsets.only(
-                bottom: 40,
-              ),
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        '🚌',
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        '🚍',
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        '📍',
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        '👨‍✈️',
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(" Active Bus: Yes",
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold)),
-                      SizedBox(height: 8),
-                      Text(" Bus No: BA-12-3456",
-                          style: TextStyle(fontSize: 18)),
-                      Text(" Route: Bhaktapur - Chakrapath",
-                          style: TextStyle(fontSize: 18)),
-                      Text(" Driver ID: DRV1023",
-                          style: TextStyle(fontSize: 18)),
-                    ],
-                  ),
-                ],
-              ),
+                    )
+                  : Icon(Icons.block, color: Colors.grey),
             ),
           ),
-        ]),
-      ),
+        );
+      },
     );
   }
 }

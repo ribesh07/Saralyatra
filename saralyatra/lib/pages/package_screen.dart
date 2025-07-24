@@ -1,148 +1,6 @@
-// // ignore_for_file: prefer_const_constructors
-
-// import 'package:flutter/material.dart';
-// import 'package:saralyatra/Booking/package_booking.dart';
-// import 'package:saralyatra/setups.dart';
-
-// class JourneyScreen extends StatefulWidget {
-//   const JourneyScreen({super.key});
-
-//   @override
-//   State<JourneyScreen> createState() => _JourneyScreenState();
-// }
-
-// class _JourneyScreenState extends State<JourneyScreen> {
-//   List<dynamic> dataItems = [
-//     {"product": "[product image1]", "frequency": "[Description1]"},
-//     {"product": "[product image2]", "frequency": "[Description2]"},
-//     {"product": "[product image3]", "frequency": "[Description3]"},
-//     {"product": "[product image4]", "frequency": "[Description4]"}
-//   ];
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container(
-//       color: backgroundColor,
-//       height: double.infinity,
-//       width: double.infinity,
-//       child: SingleChildScrollView(
-//         physics: BouncingScrollPhysics(
-//           parent: AlwaysScrollableScrollPhysics(),
-//         ),
-//         child: Column(
-//           children: [
-//             SizedBox(
-//               height: 10,
-//             ),
-//             SizedBox(
-//               height: 20,
-//             ),
-//             ListView.builder(
-//               scrollDirection: Axis.vertical,
-//               physics: NeverScrollableScrollPhysics(),
-//               shrinkWrap: true,
-//               itemCount: dataItems.length,
-//               //separatorBuilder: (_, __) => const Divider(),
-//               itemBuilder: (context, index) {
-//                 return Container(
-//                   child: Column(
-//                     children: [
-//                       Padding(
-//                         padding: const EdgeInsets.only(left: 8, right: 8),
-//                         child: FittedBox(
-//                           child: Card(
-//                               elevation: 8,
-//                               child: SizedBox(
-//                                   width: MediaQuery.of(context).size.width,
-//                                   child: Column(
-//                                     // mainAxisAlignment: MainAxisAlignment.start,
-//                                     crossAxisAlignment:
-//                                         CrossAxisAlignment.start,
-//                                     children: [
-//                                       Padding(
-//                                         padding: const EdgeInsets.all(8),
-//                                         child: Container(
-//                                           width:
-//                                               MediaQuery.of(context).size.width,
-//                                           height: 200,
-//                                           decoration: BoxDecoration(
-//                                             borderRadius:
-//                                                 BorderRadius.circular(8),
-//                                             color: listColor,
-//                                           ),
-//                                           child: Text(
-//                                               dataItems[index]["product"]
-//                                                   .toString(),
-//                                               style: textStyle,
-//                                               textAlign: TextAlign.center),
-//                                         ),
-//                                       ),
-//                                       Text(
-//                                         "   ${dataItems[index]["frequency"].toString()}",
-//                                         style: textStyle,
-//                                       ),
-//                                       Row(
-//                                         mainAxisAlignment:
-//                                             MainAxisAlignment.end,
-//                                         // crossAxisAlignment: CrossAxisAlignment.end,
-//                                         children: [
-//                                           Padding(
-//                                             padding: const EdgeInsets.all(8.0),
-//                                             child: Card(
-//                                               shape: RoundedRectangleBorder(
-//                                                   borderRadius:
-//                                                       BorderRadius.circular(
-//                                                           50)),
-//                                               child: Container(
-//                                                 decoration: BoxDecoration(
-//                                                     borderRadius:
-//                                                         BorderRadius.circular(
-//                                                             50),
-//                                                     color: Colors.blue),
-//                                                 child: TextButton(
-//                                                   onPressed: () {
-//                                                     Navigator.push(
-//                                                       context,
-//                                                       MaterialPageRoute(
-//                                                         builder: (context) =>
-//                                                             PackageBooking(),
-//                                                       ),
-//                                                     );
-//                                                   },
-//                                                   child: Text(
-//                                                     "Book",
-//                                                     textAlign: TextAlign.center,
-//                                                     style: textStyle,
-//                                                   ),
-//                                                 ),
-//                                               ),
-//                                             ),
-//                                           )
-//                                         ],
-//                                       )
-//                                     ],
-//                                   ))),
-//                         ),
-//                       ),
-//                       SizedBox(
-//                         height: 20,
-//                       ),
-//                     ],
-//                   ),
-//                 );
-//               },
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-// Use this one
-
 // ignore_for_file: prefer_const_constructors
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:flutter/material.dart';
 import 'package:saralyatra/Booking/package_booking.dart';
@@ -156,39 +14,67 @@ class JourneyScreen extends StatefulWidget {
 }
 
 class _JourneyScreenState extends State<JourneyScreen> {
-  List<Map<String, String>> dataItems = [];
+  List<Map<String, dynamic>> dataItems = [];
 
   @override
   void initState() {
     super.initState();
-    _loadImages();
+    _loadPackages();
   }
 
-  Future<void> _loadImages() async {
+  Future<void> _loadPackages() async {
     try {
-      final List<firebase_storage.Reference> refs = (await firebase_storage
-              .FirebaseStorage.instance
-              .ref('tour_packages_images/')
-              .listAll())
-          .items;
+      // Fetch packages from Firestore
+      QuerySnapshot packageSnapshot = await FirebaseFirestore.instance
+          .collection('uploads')
+          .doc('packageDetails')
+          .collection('packages')
+          .get();
 
-      final List<Map<String, String>> items = await Future.wait(
-        refs.map((ref) async {
-          final url = await ref.getDownloadURL();
-          // Assuming that the description is part of the file name or stored in metadata
-          // If you have descriptions stored somewhere else, you need to fetch them accordingly
-          final description =
-              ref.name.split('.').first; // Example: "image1.jpg" -> "image1"
-          return {"product": url, "frequency": description};
-        }).toList(),
-      );
+      List<Map<String, dynamic>> packages = packageSnapshot.docs.map((doc) {
+        var data = doc.data() as Map<String, dynamic>;
+        return {
+          'id': doc.id,
+          'title': data['title'] ?? 'Package',
+          'imageUrl': data['imageUrl'] ?? '',
+          'description': data['description'] ?? 'No Description Available',
+        };
+      }).toList();
 
       setState(() {
-        dataItems = items;
+        dataItems = packages;
       });
     } catch (e) {
-      print('Error: $e');
+      print('Error loading packages: $e');
     }
+  }
+
+  void _showDescriptionDialog(String title, String description) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            title,
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: SingleChildScrollView(
+            child: Text(
+              description,
+              style: TextStyle(fontSize: 16),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -238,23 +124,57 @@ class _JourneyScreenState extends State<JourneyScreen> {
                                                   borderRadius:
                                                       BorderRadius.circular(8),
                                                   color: listColor,
-                                                  image: DecorationImage(
-                                                    image: NetworkImage(
-                                                        dataItems[index]
-                                                            ["product"]!),
-                                                    fit: BoxFit.cover,
-                                                  ),
+                                                  image: dataItems[index]
+                                                              ["imageUrl"] !=
+                                                          ''
+                                                      ? DecorationImage(
+                                                          image: NetworkImage(
+                                                              dataItems[index][
+                                                                  "imageUrl"]!),
+                                                          fit: BoxFit.contain,
+                                                        )
+                                                      : null,
                                                 ),
+                                                child: dataItems[index]
+                                                            ["imageUrl"] ==
+                                                        ''
+                                                    ? Center(
+                                                        child: Text('No Image'))
+                                                    : null,
                                               ),
                                             ),
                                             Text(
-                                              "   ${dataItems[index]["frequency"]}",
+                                              "   ${dataItems[index]["title"]}",
                                               style: textStyle,
                                             ),
                                             Row(
                                               mainAxisAlignment:
-                                                  MainAxisAlignment.end,
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
                                               children: [
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
+                                                  child: TextButton(
+                                                    onPressed: () {
+                                                      _showDescriptionDialog(
+                                                        dataItems[index]
+                                                                ["title"] ??
+                                                            'Package',
+                                                        dataItems[index][
+                                                                "description"] ??
+                                                            'No Description',
+                                                      );
+                                                    },
+                                                    child: Text(
+                                                      'Read More',
+                                                      style: TextStyle(
+                                                        color: Colors.blue,
+                                                        fontSize: 16,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
                                                 Padding(
                                                   padding:
                                                       const EdgeInsets.all(8.0),
@@ -277,7 +197,10 @@ class _JourneyScreenState extends State<JourneyScreen> {
                                                             context,
                                                             MaterialPageRoute(
                                                               builder: (context) =>
-                                                                  PackageBooking(),
+                                                                  PackageBooking(
+                                                                      packageTitle:
+                                                                          dataItems[index]["title"] ??
+                                                                              ''),
                                                             ),
                                                           );
                                                         },

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:saralyatra/Booking/input_field.dart';
 import 'package:saralyatra/Booking/provide.dart';
 import 'package:saralyatra/pages/login-page.dart';
+import 'package:saralyatra/services/shared_pref.dart';
 
 import 'package:saralyatra/setups.dart';
 
@@ -29,14 +30,43 @@ class _ChangePasswordState extends State<ChangePassword> {
   Future<void> changePassword() async {
     final currentUser = FirebaseAuth.instance.currentUser;
     final uid = currentUser?.uid;
+
+    if (uid == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('User is not logged in')),
+      );
+      return;
+    }
+
     try {
-      // Fetch the email from Firestore
+      // Get user role from SharedPreferences
+      final String? user_role = await SharedpreferenceHelper().getRole();
+
+      if (user_role == null || (user_role != 'user' && user_role != 'driver')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Unable to determine user role')),
+        );
+        return;
+      }
+
+      // Fetch the email from Firestore based on role
       DocumentSnapshot userDoc = await FirebaseFirestore.instance
           .collection('saralyatra')
-          .doc('userDetailsDatabase')
-          .collection('users')
+          .doc(user_role == 'user'
+              ? 'userDetailsDatabase'
+              : 'driverDetailsDatabase')
+          .collection(user_role == 'user' ? 'users' : 'drivers')
           .doc(uid)
           .get();
+
+      if (!userDoc.exists) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content:
+                  Text('${user_role == 'user' ? 'User' : 'Driver'} not found')),
+        );
+        return;
+      }
 
       String email = userDoc['email'];
 
@@ -49,21 +79,25 @@ class _ChangePasswordState extends State<ChangePassword> {
       // Update the password
       await currentUser?.updatePassword(newconfirmpassController.text);
 
-      // Update Firestore document
+      // Update Firestore document based on role
       await FirebaseFirestore.instance
           .collection('saralyatra')
-          .doc('userDetailsDatabase')
-          .collection('users')
+          .doc(user_role == 'user'
+              ? 'userDetailsDatabase'
+              : 'driverDetailsDatabase')
+          .collection(user_role == 'user' ? 'users' : 'drivers')
           .doc(uid)
           .update({
         'password': newconfirmpassController.text,
       });
-      // await currentUser!.updatePassword(newconfirmpassController.text);
-      FirebaseAuth.instance.signOut();
+
+      // Sign out the user
+      await FirebaseAuth.instance.signOut();
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Password updated successfully')),
       );
+
       Future.delayed(Duration(seconds: 2), () {
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (context) => Login_page()));

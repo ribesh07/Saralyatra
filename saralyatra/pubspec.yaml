@@ -76,12 +76,15 @@ dependencies:
   location: ^7.0.0
   latlong2: ^0.9.1
   http: ^1.2.2
-  geolocator: ^14.0.0
+  geolocator: ^9.0.2
   flutter_map: ^7.0.2
   flutter_dotenv: ^5.2.1
   uuid: ^4.5.1
   web_socket_channel:
   # khalti_checkout_flutter: ^1.0.0-dev.4
+
+dependency_overrides:
+  geolocator_android: 4.4.1
 
 dev_dependencies:
   flutter_test:
@@ -111,6 +114,7 @@ flutter:
     - assets/logos/
     - .env
     - assets/
+    - assets/logos/localbus.jpg
   # - assets/logos/instagram_icon.png
   # - assets/logos/Facebook_icon.png
   # - assets/logos/esewa_logo.png

@@ -69,7 +69,7 @@ class _MapScreenState extends State<MapScreen> {
             enableWakeLock: true,
           ));
     }
-    Geolocator.getCurrentPosition(locationSettings: locationSettings)
+    Geolocator.getCurrentPosition(desiredAccuracy: locationSettings.accuracy)
         .then((position) async {
       var accuracy = await Geolocator.getLocationAccuracy();
       print("Accuracy: $accuracy");
