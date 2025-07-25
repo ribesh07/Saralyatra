@@ -63,8 +63,8 @@ const navigation = [
   { name: 'Tours & Packages', icon: Settings, id: 'tours&packages' },
   { name: 'Payment History', icon: Settings, id: 'payment-history' },
   { name: 'News & Blogs', icon: MapPin, id: 'blogs&news' },
-  { name: 'Analytics', icon: BarChart3, id: 'analytics' },
-  { name: 'Settings', icon: Settings, id: 'settings' },
+  // { name: 'Analytics', icon: BarChart3, id: 'analytics' },
+  // { name: 'Settings', icon: Settings, id: 'settings' },
 
 
 ];

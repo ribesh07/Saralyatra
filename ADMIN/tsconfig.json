@@ -30,7 +30,8 @@
     "app/test/page.jsx", // "app/analytics/page.tsx",
     "components/Users.jsx", // "app/users/page.tsx"
     "components/Drivers.jsx",
-    "components/DriverPayment.jsx"
+    "components/DriverPayment.jsx",
+    "components/PaymentHistory.jsx"
   ],
   "exclude": ["node_modules"]
 }

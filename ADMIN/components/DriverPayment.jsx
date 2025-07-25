@@ -39,28 +39,50 @@ const DriverPaymentTable = () => {
   });
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchAllDriverPayments = async () => {
       try {
-        const routeCollectionRef = collection(
+        const driverWithdrawRef = collection(
           db,
           "saralyatra",
-          "driverDetailsDatabase",
-          "drivers"
+          "paymentDetails",
+          "driverWithdrawHistory"
         );
-        const querySnapshot = await getDocs(routeCollectionRef);
 
-        const driverss = querySnapshot.docs.map((docSnap) => ({
-          // id: docSnap.id,
-          ...docSnap.data(),
-        }));
-        setdrivers(driverss);
-        console.log("Fetched drivers:", driverss);
-      } catch (error) {
-        console.error("Error fetching users:", error);
+        const driverDocsSnap = await getDocs(driverWithdrawRef);
+
+        const allPayments = [];
+
+        for (const driverDoc of driverDocsSnap.docs) {
+          const driverID = driverDoc.id;
+
+          const paymentsRef = collection(
+            db,
+            "saralyatra",
+            "paymentDetails",
+            "driverWithdrawHistory",
+            driverID,
+            "payments" // the subcollection
+          );
+
+          const paymentsSnap = await getDocs(paymentsRef);
+
+          paymentsSnap.forEach((paymentDoc) => {
+            allPayments.push({
+              driverID,
+              paymentID: paymentDoc.id,
+              ...paymentDoc.data(),
+            });
+          });
+        }
+
+        setdrivers(allPayments); // or setDriverPayments if it's payment-specific
+        console.log("Fetched all driver payments:", allPayments);
+      } catch (err) {
+        console.error("Error fetching nested driver payments:", err);
       }
     };
 
-    fetchUsers(); // Don't forget to call it!
+    fetchAllDriverPayments();
   }, []);
 
   const filteredDrivers = drivers.filter(
@@ -173,7 +195,10 @@ const DriverPaymentTable = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredDrivers.map((driver) => (
-                  <tr key={driver.driverID} className="hover:bg-gray-50">
+                  <tr
+                    key={driver.driverID + driver.date}
+                    className="hover:bg-gray-50"
+                  >
                     {/* Driver Info */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
@@ -182,10 +207,10 @@ const DriverPaymentTable = () => {
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
-                            {driver.username}
+                            {driver.userName}
                           </div>
                           <div className="text-sm text-gray-500">
-                            ID: {driver.email}
+                            ID: {driver.driverID}
                           </div>
                         </div>
                       </div>
@@ -206,7 +231,7 @@ const DriverPaymentTable = () => {
                       <div className="flex items-center">
                         <Calendar className="w-4 h-4 text-gray-400 mr-2" />
                         <span className="text-sm text-gray-900">
-                          {currentDate}
+                          {driver.date.toDate().toISOString().split("T")[0]}
                         </span>
                       </div>
                     </td>
@@ -276,35 +301,6 @@ const DriverPaymentTable = () => {
               </div>
             </div>
           )}
-        </div>
-
-        {/* Summary */}
-        <div className="mt-6 bg-white rounded-lg shadow p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900">
-                {filteredDrivers.length}
-              </div>
-              <div className="text-sm text-gray-500">Total Drivers</div>
-            </div>
-
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">
-                ${filteredDrivers.withdrawBalance}
-              </div>
-              <div className="text-sm text-gray-500">Total Withdrawals</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">
-                {
-                  Object.keys(processingState).filter(
-                    (key) => processingState[key]
-                  ).length
-                }
-              </div>
-              <div className="text-sm text-gray-500">Processing</div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
