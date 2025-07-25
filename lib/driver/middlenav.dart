@@ -20,6 +20,8 @@ class _HistoryState extends State<History> {
     {"title": "Date1"},
     {"title": "Date2"},
     {"title": "Date3"},
+    {"title": "Date4"},
+    {"title": "Date5"},
   ];
 
   final Map<String, List<Map<String, String>>> tiles2 = {
@@ -46,12 +48,35 @@ class _HistoryState extends State<History> {
       },
     ],
     "Date3": [],
+    "Date4": [
+      {
+        "Passengers ID": "789",
+        "Entry": "putalisadak",
+        "Exit": "newroad",
+        "Amount": "200.00",
+      },
+      {
+        "Passengers ID": "789",
+        "Entry": "putalisadak",
+        "Exit": "newroad",
+        "Amount": "200.00",
+      },
+    ],
+    "Date5": [
+      {
+        "Passengers ID": "789",
+        "Entry": "newroad",
+        "Exit": "putalisadak",
+        "Amount": "200.00",
+      },
+    ],
   };
 
   String driverId = '';
   String driverEmail = '';
   String driverContact = '';
   double totalBalance = 0.0;
+  String driverName = '';
   bool isLoading = true;
   //List<Map<String, dynamic>> withdrawHistory = [];
 
@@ -79,6 +104,7 @@ class _HistoryState extends State<History> {
           driverId = snapshot['dcardId'] ?? uid;
           driverEmail = snapshot['email'] ?? user.email ?? '';
           driverContact = snapshot['contact'] ?? '';
+          driverName = snapshot['username'] ?? '';
           totalBalance = double.tryParse(snapshot['balance'].toString()) ?? 0.0;
         });
       }
@@ -100,6 +126,7 @@ class _HistoryState extends State<History> {
           driverId: driverId,
           driverContact: driverContact,
           driverEmail: driverEmail,
+          userName: driverName,
         ),
       ),
     );

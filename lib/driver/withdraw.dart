@@ -8,12 +8,14 @@ class WithdrawPage extends StatefulWidget {
   final String driverContact;
   final String driverEmail;
   final String driverId;
+  final String userName;
 
   const WithdrawPage({
     super.key,
     required this.driverContact,
     required this.driverEmail,
     required this.driverId,
+    required this.userName,
   });
 
   @override
@@ -153,7 +155,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
         'date': now,
         'type': 'withdraw',
         'userId': uid,
-        'userName': widget.driverId,
+        'userName': widget.userName,
       });
 
       setState(() {
