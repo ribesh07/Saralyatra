@@ -1,5 +1,6 @@
 import React, { useState, ChangeEvent } from 'react';
 import { Plus, Edit, Trash2, Upload } from 'lucide-react';
+import AddTourPackageForm from './AddTourPackageForm';
 
 interface TourPackage {
   id: number;
@@ -37,6 +38,15 @@ const ToursPackagesPage: React.FC = () => {
       duration: "10 days"
     }
   ]);
+  const [enabled, setenabled] = useState(false);
+
+   const handleClose = () => {
+    setenabled(false);
+  };
+
+  const handleOpen = () => {
+    setenabled(true);
+  };
 
   const handleImageUpload = (id: number, event: ChangeEvent<HTMLInputElement>): void => {
     const file = event.target.files?.[0];
@@ -67,7 +77,7 @@ const ToursPackagesPage: React.FC = () => {
   };
 
   const handleAddNew = (): void => {
-    alert('Add new Tours & Package functionality');
+        setenabled(true);
   };
 
   return (
@@ -87,6 +97,7 @@ const ToursPackagesPage: React.FC = () => {
             Add Tours & Package
           </button>
         </div>
+        { enabled && <AddTourPackageForm onClose={handleClose} /> }
 
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
