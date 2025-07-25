@@ -305,7 +305,7 @@ const UsersPage = () => {
                 placeholder="Search customers..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-80"
               />
             </div>
 
@@ -325,13 +325,13 @@ const UsersPage = () => {
             </select> */}
           </div>
 
-          <button
+          {/* <button
             onClick={() => setShowAddModal(true)}
             className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Plus className="h-4 w-4" />
             <span>Add Customer</span>
-          </button>
+          </button> */}
         </div>
       </div>
 
