@@ -83,28 +83,28 @@ const BusDashboard = () => {
   const [selectedBus, setSelectedBus] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const fetchBuses = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/get-bus-details");
+      const data = await response.json();
+      console.log("Fetched buses:", data);
+      if (data.success) {
+        setBuses(data.data);
+      } else {
+        console.error("Failed to fetch buses:", data.message);
+        setBuses([]); // Fallback to initial data
+      }
+    } catch (error) {
+      console.error("Error fetching buses:", error);
+    } finally {
+      setIsLoading(false);
+      // setBuses(data.data); // Fallback to initial data
+      // setIsLoading(false);
+    }
+  };
   useEffect(() => {
     // Simulate fetching data from an API
-    const fetchBuses = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetch("/api/get-bus-details");
-        const data = await response.json();
-        console.log("Fetched buses:", data);
-        if (data.success) {
-          setBuses(data.data);
-        } else {
-          console.error("Failed to fetch buses:", data.message);
-          setBuses([]); // Fallback to initial data
-        }
-      } catch (error) {
-        console.error("Error fetching buses:", error);
-      } finally {
-        setIsLoading(false);
-        // setBuses(data.data); // Fallback to initial data
-        // setIsLoading(false);
-      }
-    };
 
     fetchBuses();
   }, []);
@@ -117,6 +117,7 @@ const BusDashboard = () => {
   const handleCloseSeats = () => {
     setseatsenabled(false);
     setSelectedBus(null);
+    fetchBuses();
   };
 
   const handleUpdateSeats = (busId, newAvailableSeats) => {

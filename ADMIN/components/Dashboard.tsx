@@ -32,7 +32,7 @@ const Dashboard = () => {
     const completed = data.completed || [];
   
     const bookings = [...(data.packages || []), ...(data.reservations || []) , ...(data.completed || [])];
-  
+  var randomNumber = Math.floor(Math.random() * 1000000);
 
   return (
     <>
@@ -49,7 +49,7 @@ const Dashboard = () => {
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 justify-center">
               {stats.map((stat) => (
-                <div key={stat.name} className="bg-white self-center rounded-lg shadow-sm border p-6">
+                <div key={stat.name+randomNumber} className="bg-white self-center rounded-lg shadow-sm border p-6">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600">{stat.name}</p>
@@ -89,7 +89,7 @@ const Dashboard = () => {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {bookings.map((booking) => (
-                      <tr key={booking.id} className="hover:bg-gray-50">
+                      <tr key={booking.id+randomNumber} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                           {booking.id}
                         </td>

@@ -236,7 +236,7 @@ export default function AddTourPackageUpdate({ onClose, item }) {
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   errors.title ? "border-red-500" : "border-gray-300"
                 }`}
-                placeholder="Enter tour package title"
+                placeholder="Enter Blogs title"
               />
               {errors.title && (
                 <p className="text-red-500 text-sm mt-1">{errors.title}</p>
@@ -257,7 +257,7 @@ export default function AddTourPackageUpdate({ onClose, item }) {
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none ${
                   errors.description ? "border-red-500" : "border-gray-300"
                 }`}
-                placeholder="Enter tour package description"
+                placeholder="Enter Blogs description"
               />
               {errors.description && (
                 <p className="text-red-500 text-sm mt-1">
