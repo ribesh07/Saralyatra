@@ -1,118 +1,81 @@
 "use client";
-import React, { useState } from "react";
-import { ArrowLeft } from "lucide-react";
+import React, { use, useState , useEffect } from "react";
+import { doc, setDoc , getDoc } from "firebase/firestore";
+import { db } from "@/components/db/firebase"; // Adjust the import based on your project structure
 
 const SeatSelection = ({ bus, onUpdateSeats, onClose }) => {
-  // Initialize seat layout with status
-  const [seats, setSeats] = useState({
-    // Left side seats
-    L1: "booked",
-    L2: "booked",
-    L3: "booked",
-    L4: "booked",
-    L5: "booked",
-    L6: "booked",
-    L7: "available",
-    L8: "available",
-    L9: "available",
-    L10: "selected",
-    L11: "selected",
-    L12: "booked",
-    L13: "selected",
-    L14: "booked",
-
-    // Right side seats
-    R1: "available",
-    R2: "booked",
-    R3: "booked",
-    R4: "booked",
-    R5: "booked",
-    R6: "booked",
-    R7: "available",
-    R8: "booked",
-    R9: "booked",
-    R10: "booked",
-    R11: "booked",
-    R12: "booked",
-    R13: "booked",
-    R14: "booked",
-
-    // Center seat
-    C1: "booked",
-  });
-
-  const [selectedSeats, setSelectedSeats] = useState(["L10", "L11", "L13"]);
-
-  const handleBook = () => {
-    const newSeatCount = bus.availableSeats - selectedSeats.length;
-    onUpdateSeats(bus.id, newSeatCount); // Send updated seat count to parent
-    onClose(); // Close modal
-  };
+  const [seats, setSeats] = useState({});
+  const [selectedSeats, setSelectedSeats] = useState([]);
 
   const toggleSeat = (seatId) => {
-    if (seats[seatId] === "booked") return;
+    const seatKey = `book${seatId}`;
+    if (seats[seatKey]) return; // already booked
 
-    const newStatus = seats[seatId] === "selected" ? "available" : "selected";
-    const newSeats = { ...seats, [seatId]: newStatus };
-    setSeats(newSeats);
-
-    if (newStatus === "selected") {
-      setSelectedSeats((prev) => [...prev, seatId]);
-    } else {
+    if (selectedSeats.includes(seatId)) {
       setSelectedSeats((prev) => prev.filter((id) => id !== seatId));
+    } else {
+      setSelectedSeats((prev) => [...prev, seatId]);
     }
   };
 
-  const getSeatColor = (status) => {
-    switch (status) {
-      case "available":
-        return "bg-white border-2 border-gray-300";
-      case "booked":
-        return "bg-gray-400";
-      case "selected":
-        return "bg-red-500";
-      default:
-        return "bg-white border-2 border-gray-300";
+  useEffect(() => {
+    const fetchSeats = async () => {
+    const busRef = doc(db,"saralyatra" ,"busTicketDetails", "buses" , bus.id); 
+         const busSnap = await getDoc(busRef);
+
+    if (busSnap.exists()) {
+      const busData = busSnap.data();
+      console.log("Fetched bus data:", busData);
+      setSeats(busData); 
+      // setSelectedSeats([]);
+    } else {
+      console.error("Bus document not found!");
     }
+
+    }
+
+    fetchSeats();
+  }, []);
+  const getSeatColor = (seatId) => {
+    const seatKey = `book${seatId}`;
+    const isBooked = seats[seatKey];
+    const isSelected = selectedSeats.includes(seatId);
+
+    if (isBooked) return "bg-gray-400";
+    if (isSelected) return "bg-red-500";
+    return "bg-white border-2 border-gray-300";
   };
 
-  const getSeatIcon = (status) => {
-    const iconColor =
-      status === "available"
-        ? "text-gray-600"
-        : status === "selected"
-        ? "text-white"
-        : "text-gray-800";
+  const getSeatIcon = (seatId) => {
+    const seatKey = `book${seatId}`;
+    const isBooked = seats[seatKey];
+    const isSelected = selectedSeats.includes(seatId);
+
+    const iconColor = isBooked
+      ? "text-gray-800"
+      : isSelected
+      ? "text-white"
+      : "text-gray-600";
 
     return (
-      <svg
-        className={`w-8 h-8 ${iconColor}`}
-        fill="currentColor"
-        viewBox="0 0 24 24"
-      >
+      <svg className={`w-8 h-8 ${iconColor}`} fill="currentColor" viewBox="0 0 24 24">
         <path d="M7 13c1.66 0 3-1.34 3-3S8.66 7 7 7s-3 1.34-3 3 1.34 3 3 3zm12-6h-8v7H3V6H1v15h2v-3h18v3h2V10c0-2.21-1.79-4-4-4z" />
       </svg>
     );
   };
 
-  const Seat = ({ id, status, label }) => (
+  const Seat = ({ id, label }) => (
     <div
       onClick={() => toggleSeat(id)}
-      className={`
-        w-16 h-16 rounded-xl flex flex-col items-center justify-center
-        ${getSeatColor(status)}
-        ${
-          status !== "booked"
-            ? "cursor-pointer hover:opacity-80"
-            : "cursor-not-allowed"
-        }
-        transition-all duration-200 shadow-sm
-      `}
+      className={`w-16 h-16 rounded-xl flex flex-col items-center justify-center
+        ${getSeatColor(id)}
+        ${seats[`book${id}`] ? "cursor-not-allowed" : "cursor-pointer hover:opacity-80"}
+        transition-all duration-200 shadow-sm`}
     >
-      {getSeatIcon(status)}
+      {getSeatIcon(id)}
       <span
         className={`text-xs font-medium mt-1 ${
-          status === "selected" ? "text-white" : "text-gray-700"
+          selectedSeats.includes(id) ? "text-white" : "text-gray-700"
         }`}
       >
         {label}
@@ -120,144 +83,103 @@ const SeatSelection = ({ bus, onUpdateSeats, onClose }) => {
     </div>
   );
 
+  const handleBook = async () => {
+    const updatedSeats = { ...seats };
+    selectedSeats.forEach((seatId) => {
+      updatedSeats[`book${seatId}`] = true;
+    });
+
+    const updatedBus = {
+     updatedSeats
+    };
+
+    const busRef = doc(db, "saralyatra", "busTicketDetails","buses", bus.id);
+    await setDoc(busRef, updatedSeats, { merge: true });
+
+    const newSeatCount = bus.availableSeats - selectedSeats.length;
+    onUpdateSeats(bus.id, newSeatCount);
+    onClose();
+  };
+
+  const seatLayout = [
+    ["L1", "L2", "R1", "R2"],
+    ["L3", "L4", "R3", "R4"],
+    ["L5", "L6", "R5", "R6"],
+    ["L7", "L8", "R7", "R8"],
+    ["L9", "L10", "R9", "R10"],
+    ["L11", "L12", "R11", "R12"],
+    ["L13", "L14", "C1", "R13", "R14"],
+  ];
+
   return (
     <div className="fixed inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-100 rounded-lg max-w-md w-full max-h-[90vh] hide-scrollbar overflow-y-auto">
+      <div className="bg-gray-100 rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="bg-blue-500 text-white p-4 flex items-center">
+        <div className="bg-blue-500 text-white p-4 flex items-center justify-between">
           <h1 className="text-xl font-semibold">Choose Seat</h1>
         </div>
 
-        {/* Main Content */}
+        {/* Content */}
         <div className="p-4">
-          <div className="bg-gray-100 rounded-3xl p-6 mx-auto max-w-md">
-            {/* Legend */}
-            <div className="flex justify-center items-center space-x-6 mb-8">
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-white border-2 border-gray-300 rounded"></div>
-                <span className="text-sm font-medium">Available:</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-gray-400 rounded"></div>
-                <span className="text-sm font-medium">Booked:</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-red-500 rounded"></div>
-                <span className="text-sm font-medium">Selected:</span>
-              </div>
+          {/* Legend */}
+          <div className="flex justify-center items-center space-x-6 mb-6">
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 bg-white border-2 border-gray-300 rounded" />
+              <span className="text-sm font-medium">Available</span>
             </div>
-
-            {/* Seat Layout */}
-            <div className="space-y-4">
-              {/* Row 1 */}
-              <div className="flex justify-between items-center">
-                <div className="flex space-x-4">
-                  <Seat id="L1" status={seats.L1} label="L1" />
-                  <Seat id="L2" status={seats.L2} label="L2" />
-                </div>
-                <div className="flex space-x-4">
-                  <Seat id="R1" status={seats.R1} label="R1" />
-                  <Seat id="R2" status={seats.R2} label="R2" />
-                </div>
-              </div>
-
-              {/* Row 2 */}
-              <div className="flex justify-between items-center">
-                <div className="flex space-x-4">
-                  <Seat id="L3" status={seats.L3} label="L3" />
-                  <Seat id="L4" status={seats.L4} label="L4" />
-                </div>
-                <div className="flex space-x-4">
-                  <Seat id="R3" status={seats.R3} label="R3" />
-                  <Seat id="R4" status={seats.R4} label="R4" />
-                </div>
-              </div>
-
-              {/* Row 3 */}
-              <div className="flex justify-between items-center">
-                <div className="flex space-x-4">
-                  <Seat id="L5" status={seats.L5} label="L5" />
-                  <Seat id="L6" status={seats.L6} label="L6" />
-                </div>
-                <div className="flex space-x-4">
-                  <Seat id="R5" status={seats.R5} label="R5" />
-                  <Seat id="R6" status={seats.R6} label="R6" />
-                </div>
-              </div>
-
-              {/* Row 4 */}
-              <div className="flex justify-between items-center">
-                <div className="flex space-x-4">
-                  <Seat id="L7" status={seats.L7} label="L7" />
-                  <Seat id="L8" status={seats.L8} label="L8" />
-                </div>
-                <div className="flex space-x-4">
-                  <Seat id="R7" status={seats.R7} label="R7" />
-                  <Seat id="R8" status={seats.R8} label="R8" />
-                </div>
-              </div>
-
-              {/* Row 5 */}
-              <div className="flex justify-between items-center">
-                <div className="flex space-x-4">
-                  <Seat id="L9" status={seats.L9} label="L9" />
-                  <Seat id="L10" status={seats.L10} label="L10" />
-                </div>
-                <div className="flex space-x-4">
-                  <Seat id="R9" status={seats.R9} label="R9" />
-                  <Seat id="R10" status={seats.R10} label="R10" />
-                </div>
-              </div>
-
-              {/* Row 6 */}
-              <div className="flex justify-between items-center">
-                <div className="flex space-x-4">
-                  <Seat id="L11" status={seats.L11} label="L11" />
-                  <Seat id="L12" status={seats.L12} label="L12" />
-                </div>
-                <div className="flex space-x-4">
-                  <Seat id="R11" status={seats.R11} label="R11" />
-                  <Seat id="R12" status={seats.R12} label="R12" />
-                </div>
-              </div>
-
-              {/* Row 7 - Bottom row with center seat */}
-              <div className="flex justify-center items-center space-x-4">
-                <Seat id="L13" status={seats.L13} label="L13" />
-                <Seat id="L14" status={seats.L14} label="L14" />
-                <Seat id="C1" status={seats.C1} label="C1" />
-                <Seat id="R13" status={seats.R13} label="R13" />
-                <Seat id="R14" status={seats.R14} label="R14" />
-              </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 bg-gray-400 rounded" />
+              <span className="text-sm font-medium">Booked</span>
             </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 bg-red-500 rounded" />
+              <span className="text-sm font-medium">Selected</span>
+            </div>
+          </div>
 
-            {/* Selected Seats Info */}
-            {selectedSeats.length > 0 && (
-              <div className="mt-8 p-4 bg-gray-50 rounded-2xl">
-                <h3 className="font-semibold text-gray-800 mb-2">
-                  Selected Seats:
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {selectedSeats.map((seatId) => (
-                    <span
-                      key={seatId}
-                      className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium"
-                    >
-                      {seatId}
-                    </span>
-                  ))}
-                </div>
-                <p className="text-sm text-gray-600 mt-2">
-                  Total seats: {selectedSeats.length}
-                </p>
+          {/* Seats */}
+          <div className="space-y-4">
+            {seatLayout.map((row, rowIndex) => (
+              <div key={rowIndex} className="flex justify-center space-x-4">
+                {row.map((seatId) => (
+                  <Seat key={seatId} id={seatId} label={seatId} />
+                ))}
               </div>
-            )}
+            ))}
+          </div>
 
-            {/* Book Button */}
+          {/* Selected Info */}
+          {selectedSeats.length > 0 && (
+            <div className="mt-8 p-4 bg-gray-50 rounded-2xl">
+              <h3 className="font-semibold text-gray-800 mb-2">Selected Seats:</h3>
+              <div className="flex flex-wrap gap-2">
+                {selectedSeats.map((seatId) => (
+                  <span
+                    key={seatId}
+                    className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium"
+                  >
+                    {seatId}
+                  </span>
+                ))}
+              </div>
+              <p className="text-sm text-gray-600 mt-2">
+                Total seats: {selectedSeats.length}
+              </p>
+            </div>
+          )}
+
+          {/* Buttons */}
+          <div className="mt-6 flex justify-between">
+            <button
+              onClick={onClose}
+              className="mt-4 bg-gray-400 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-full"
+            >
+              Close
+            </button>
             <button
               onClick={handleBook}
               disabled={selectedSeats.length === 0}
-              className="mt-8 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full disabled:opacity-50" // styling as before
+              className="mt-4 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full disabled:opacity-50"
             >
               Book ({selectedSeats.length} seats)
             </button>
