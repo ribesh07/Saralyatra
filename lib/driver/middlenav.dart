@@ -53,7 +53,7 @@ class _HistoryState extends State<History> {
   String driverContact = '';
   double totalBalance = 0.0;
   bool isLoading = true;
-  List<Map<String, dynamic>> withdrawHistory = [];
+  //List<Map<String, dynamic>> withdrawHistory = [];
 
   @override
   void initState() {
@@ -82,44 +82,13 @@ class _HistoryState extends State<History> {
           totalBalance = double.tryParse(snapshot['balance'].toString()) ?? 0.0;
         });
       }
-      await fetchWithdrawHistory(uid);
+      //await fetchWithdrawHistory(uid);
     } catch (e) {
       print('Error fetching driver details: $e');
     } finally {
       setState(() {
         isLoading = false;
       });
-    }
-  }
-
-  Future<void> fetchWithdrawHistory(String uid) async {
-    try {
-      final txSnap = await FirebaseFirestore.instance
-          .collection('saralyatra')
-          .doc('paymentDetails')
-          .collection('driverWithdrawHistory')
-          .doc(uid)
-          .collection('payments')
-          .orderBy('date', descending: true)
-          .get();
-
-      setState(() {
-        withdrawHistory = txSnap.docs.map((doc) {
-          final data = doc.data();
-          final timestamp = data['date'] as Timestamp?;
-          final date = timestamp != null
-              ? DateFormat.yMd().add_jm().format(timestamp.toDate())
-              : "N/A";
-          return {
-            "date": date,
-            "amount": data['balance'].toString(),
-            "contact": data['contact'] ?? '',
-            "username": data['userName'] ?? '',
-          };
-        }).toList();
-      });
-    } catch (e) {
-      print('Error fetching withdraw history: $e');
     }
   }
 
@@ -252,66 +221,6 @@ class _HistoryState extends State<History> {
                               ),
                             );
                           }).toList(),
-
-                          /// Withdraw History Section in one Card
-                          Card(
-                            elevation: 4,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            margin: EdgeInsets.symmetric(vertical: 16),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "Withdraw History",
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Divider(thickness: 1),
-                                  if (withdrawHistory.isEmpty)
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 8.0),
-                                      child: Text(
-                                          "No withdraw history available."),
-                                    )
-                                  else
-                                    ...withdrawHistory.map((entry) {
-                                      return Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 8.0),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              "Rs. ${entry['amount']}",
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.green[700],
-                                              ),
-                                            ),
-                                            SizedBox(height: 4),
-                                            Text("Date: ${entry['date']}"),
-                                            Text(
-                                                "Username: ${entry['username']}"),
-                                            Text(
-                                                "Contact: ${entry['contact']}"),
-                                            Divider(),
-                                          ],
-                                        ),
-                                      );
-                                    }).toList(),
-                                ],
-                              ),
-                            ),
-                          ),
                         ],
                       ),
                     ),

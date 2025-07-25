@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import 'package:saralyatra/driver/driverPage.dart';
-import 'package:saralyatra/driver/middlenav.dart';
 
 class WithdrawPage extends StatefulWidget {
   final String driverContact;
@@ -24,6 +24,8 @@ class _WithdrawPageState extends State<WithdrawPage> {
   final TextEditingController _withdrawController = TextEditingController();
   double? totalBalance;
   bool isLoading = true;
+
+  Map<String, List<Map<String, dynamic>>> withdrawHistoryGrouped = {};
 
   @override
   void initState() {
@@ -48,17 +50,57 @@ class _WithdrawPageState extends State<WithdrawPage> {
         totalBalance = double.tryParse(snapshot['balance'].toString()) ?? 0.0;
       } else {
         totalBalance = 0.0;
-        print("User document not found. Defaulting balance to 0.0");
       }
       setState(() {
         isLoading = false;
       });
+      await fetchWithdrawHistory(uid);
     } catch (e) {
       print('Error fetching driver balance: $e');
       setState(() {
         totalBalance = 0.0;
         isLoading = false;
       });
+    }
+  }
+
+  Future<void> fetchWithdrawHistory(String uid) async {
+    try {
+      final txSnap = await FirebaseFirestore.instance
+          .collection('saralyatra')
+          .doc('paymentDetails')
+          .collection('driverWithdrawHistory')
+          .doc(uid)
+          .collection('payments')
+          .orderBy('date', descending: true)
+          .get();
+
+      Map<String, List<Map<String, dynamic>>> groupedHistory = {};
+
+      for (var doc in txSnap.docs) {
+        final data = doc.data();
+        final timestamp = data['date'] as Timestamp?;
+        final dateKey = timestamp != null
+            ? DateFormat('yyyy-MM-dd').format(timestamp.toDate())
+            : "Unknown";
+
+        final entry = {
+          "time": timestamp != null
+              ? DateFormat('h:mm a').format(timestamp.toDate())
+              : "N/A",
+          "amount": data['balance'].toString(),
+          "contact": data['contact'] ?? '',
+          "username": data['userName'] ?? '',
+        };
+
+        groupedHistory.putIfAbsent(dateKey, () => []).add(entry);
+      }
+
+      setState(() {
+        withdrawHistoryGrouped = groupedHistory;
+      });
+    } catch (e) {
+      print('Error fetching withdraw history: $e');
     }
   }
 
@@ -90,7 +132,6 @@ class _WithdrawPageState extends State<WithdrawPage> {
     final now = DateTime.now();
 
     try {
-      // Update balance
       await FirebaseFirestore.instance
           .collection('saralyatra')
           .doc('driverDetailsDatabase')
@@ -98,14 +139,13 @@ class _WithdrawPageState extends State<WithdrawPage> {
           .doc(uid)
           .update({'balance': newBalance});
 
-      // Save withdraw request in history
       final withdrawRef = FirebaseFirestore.instance
           .collection('saralyatra')
           .doc('paymentDetails')
           .collection('driverWithdrawHistory')
           .doc(uid)
           .collection('payments')
-          .doc(); // generates auto-id
+          .doc();
 
       await withdrawRef.set({
         'balance': withdrawAmount,
@@ -120,6 +160,8 @@ class _WithdrawPageState extends State<WithdrawPage> {
         totalBalance = newBalance;
         _withdrawController.clear();
       });
+
+      await fetchWithdrawHistory(uid);
 
       _showAlert("Request Successful", "Your withdrawal has been recorded.");
     } catch (e) {
@@ -137,12 +179,10 @@ class _WithdrawPageState extends State<WithdrawPage> {
         actions: [
           ElevatedButton(
             onPressed: () {
-              Navigator.of(context).pop(); // 1. Close the dialog
+              Navigator.of(context).pop();
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => DriverPage(), // 2. Show History tab
-                ),
+                MaterialPageRoute(builder: (_) => DriverPage()),
               );
             },
             child: Text("OK"),
@@ -164,7 +204,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
       appBar: AppBar(title: Text("Withdraw Request")),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
-          : Padding(
+          : SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
@@ -200,7 +240,9 @@ class _WithdrawPageState extends State<WithdrawPage> {
                         ),
                       ),
                     ),
-                  )
+                  ),
+                  SizedBox(height: 20),
+                  _buildWithdrawHistory(),
                 ],
               ),
             ),
@@ -245,13 +287,61 @@ class _WithdrawPageState extends State<WithdrawPage> {
             "$label: ",
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          Expanded(
-            child: Text(
-              value,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
+          Expanded(child: Text(value, overflow: TextOverflow.ellipsis)),
         ],
+      ),
+    );
+  }
+
+  Widget _buildWithdrawHistory() {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      margin: EdgeInsets.only(top: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Withdraw History",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            Divider(thickness: 1),
+            if (withdrawHistoryGrouped.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Text("No withdraw history available."),
+              )
+            else
+              ...withdrawHistoryGrouped.entries.map((entry) {
+                final date = entry.key;
+                final withdrawals = entry.value;
+
+                return ExpansionTile(
+                  title: Text(
+                    DateFormat('MMM dd, yyyy').format(DateTime.parse(date)),
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  children: withdrawals.map((w) {
+                    return ListTile(
+                      title: Text("Rs. ${w['amount']}"),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Time: ${w['time']}"),
+                          Text("Username: ${w['username']}"),
+                          Text("Contact: ${w['contact']}"),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                );
+              }),
+          ],
+        ),
       ),
     );
   }
