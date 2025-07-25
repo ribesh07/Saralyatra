@@ -1,5 +1,3 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, sort_child_properties_last, sized_box_for_whitespace
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -22,30 +20,45 @@ class PackageBooking extends StatefulWidget {
   State<PackageBooking> createState() => _PackageBookingState();
 }
 
-class _PackageBookingState extends State<PackageBooking> {
-  // var _value = -1;
+class _PackageBookingState extends State<PackageBooking> with TickerProviderStateMixin {
   double toPay = 0.0;
   final namecontroller = TextEditingController();
   final provider = settingProvider();
   final phonecontroller = TextEditingController();
   final formkey = GlobalKey<FormState>();
   final mailcontroller = TextEditingController();
-  // final passengercontroller = TextEditingController();
   String tripdetails = '[details]';
   var departureDate = DateFormat("dd/MM/yyyy").format(DateTime.now());
   String packagePrice = "0";
   bool isLoadingPrice = true;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
 
   @override
   void initState() {
     super.initState();
     _fetchPackageDetails();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.2),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOut,
+    ));
+    _animationController.forward();
   }
 
   Future<void> _fetchPackageDetails() async {
     try {
       if (widget.packageId != null) {
-        // Fetch package details from Firebase
         DocumentSnapshot packageDoc = await FirebaseFirestore.instance
             .collection('history')
             .doc('upcomingHistoryDetails')
@@ -80,11 +93,10 @@ class _PackageBookingState extends State<PackageBooking> {
 
   Future<void> _saveBookingDetails() async {
     if (formkey.currentState!.validate()) {
-      // Get current user first
       User? currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Please login to book a package'),
             backgroundColor: Colors.red,
           ),
@@ -92,7 +104,6 @@ class _PackageBookingState extends State<PackageBooking> {
         return;
       }
 
-      // Show loading dialog with better management
       bool isDialogShowing = false;
       showDialog(
         context: context,
@@ -101,7 +112,7 @@ class _PackageBookingState extends State<PackageBooking> {
           isDialogShowing = true;
           return PopScope(
             canPop: false,
-            child: AlertDialog(
+            child: const AlertDialog(
               content: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -123,7 +134,6 @@ class _PackageBookingState extends State<PackageBooking> {
       });
 
       try {
-        // Generate a unique ID for the booking
         String uniqueId = DateTime.now().millisecondsSinceEpoch.toString();
 
         final bookingDetails = {
@@ -132,7 +142,6 @@ class _PackageBookingState extends State<PackageBooking> {
           'name': namecontroller.text.trim(),
           'packageName': widget.packageTitle,
           'reservationDate': departureDate,
-          // 'totalPassenger': passengercontroller.text.trim(),
           'price': packagePrice,
           'bookingDate': DateTime.now().toIso8601String(),
           'bookingTime': DateFormat('HH:mm').format(DateTime.now()),
@@ -140,7 +149,6 @@ class _PackageBookingState extends State<PackageBooking> {
           'status': 'pending',
         };
 
-        // Save to Firebase location: uploads/packageDetails/packages/{uniqueId}
         await FirebaseFirestore.instance
             .collection('history')
             .doc('upcomingHistoryDetails')
@@ -148,27 +156,22 @@ class _PackageBookingState extends State<PackageBooking> {
             .doc(uniqueId)
             .set(bookingDetails);
 
-        // Close loading dialog safely
         if (isDialogShowing && mounted) {
           Navigator.of(context, rootNavigator: true).pop();
           isDialogShowing = false;
         }
 
-        // Show success message
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
+            const SnackBar(
               content: Text('Package booked successfully!'),
               backgroundColor: Colors.green,
               duration: Duration(seconds: 2),
             ),
           );
-
-          // Navigate back to previous screen
           Navigator.of(context).pop();
         }
       } catch (e) {
-        // Close loading dialog safely
         if (isDialogShowing && mounted) {
           Navigator.of(context, rootNavigator: true).pop();
           isDialogShowing = false;
@@ -177,7 +180,7 @@ class _PackageBookingState extends State<PackageBooking> {
         print('Error booking package: $e');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
+            const SnackBar(
               content: Text('Failed to book package. Please try again.'),
               backgroundColor: Colors.red,
               duration: Duration(seconds: 3),
@@ -194,244 +197,228 @@ class _PackageBookingState extends State<PackageBooking> {
     phonecontroller.dispose();
     mailcontroller.dispose();
     provider.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: true,
-      child: Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: true,
-          title: Text(
-            'Package Booking',
-          ),
-          centerTitle: true,
-
-          // actions: [
-          //    IconButton(onPressed: (){}, icon: Icon(Icons.arrow_back_ios_new_sharp)),
-          //   Text("data"),
-          // ],
-          backgroundColor: appbarcolor,
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Package Booking',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
-        body: Container(
-          width: MediaQuery.of(context).size.width,
-          height: double.infinity,
-          color: backgroundColor,
-          child: Form(
-            key: formkey,
-            child: SingleChildScrollView(
-              physics: BouncingScrollPhysics(
-                parent: AlwaysScrollableScrollPhysics(),
-              ),
-              child: Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Column(
-                  children: [
-                    Card(
-                      elevation: 8,
-                      child: Container(
-                        height: 100,
-                        width: MediaQuery.of(context).size.width,
-                        child: Column(
-                          children: [
-                            Text(
-                              'Trip Details',
-                              style: textStyle,
-                              textAlign: TextAlign.center,
-                            ),
-                            Text(
-                              widget.packageTitle,
-                              style: TextStyle(
-                                  fontSize: 22, fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    Card(
-                      elevation: 8,
-                      child: Column(
-                        children: [
-                          Text('Contact Details', style: textStyle),
-                          //Name
-                          InputField(
-                            icon: Icons.person,
-                            label: "Full Name",
-                            keypad: TextInputType.text,
-                            controller: namecontroller,
-                            inputFormat: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(r'[a-zA-z ]'),
-                              ),
-                              LengthLimitingTextInputFormatter(50),
-                            ],
-                            validator: (value) => provider.validator(
-                                value, "full Name is required"),
-                          ),
-
-                          //phone Number
-                          InputField(
-                            icon: Icons.phone,
-                            label: "+977",
-                            keypad: TextInputType.number,
-                            controller: phonecontroller,
-                            inputFormat: [
-                              FilteringTextInputFormatter.digitsOnly,
-                              LengthLimitingTextInputFormatter(10),
-                            ],
-                            validator: (value) =>
-                                provider.phoneValidator(value),
-                          ),
-                          InputField(
-                            icon: Icons.mail,
-                            label: "Email",
-                            controller: mailcontroller,
-                            validator: (value) =>
-                                provider.emailValidator(value),
-                          ),
-                          // InputField(
-                          //   icon: Icons.numbers,
-                          //   label: "Total Passenger",
-                          //   controller: passengercontroller,
-                          //   inputFormat: [
-                          //     FilteringTextInputFormatter.digitsOnly,
-                          //   ],
-                          //   validator: (value) => provider.passValidator(value),
-                          // ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-
-                    Card(
-                      elevation: 10,
-                      child: Column(
-                        children: [
-                          Text(
-                            'Travel Date',
-                            style: textStyle,
-                          ),
-                          Container(
-                            margin: EdgeInsets.only(left: 10),
-                            child: GestureDetector(
-                              onTap: () async {
-                                final selectedate = await showDatePicker(
-                                  context: context,
-                                  firstDate: DateTime.now(),
-                                  lastDate: DateTime.now().add(
-                                    Duration(days: 30),
-                                  ),
-                                );
-                                if (selectedate != null) {
-                                  setState(() {
-                                    departureDate = DateFormat("dd/MM/yyyy")
-                                        .format(selectedate);
-                                    print(selectedate);
-                                    // departureDate = selectedate;
-                                  });
-                                }
-                              },
-                              // for making select date string tappble
-                              child: Row(
-                                children: [
-                                  IconButton(
-                                    onPressed: () async {
-                                      final selectedate = await showDatePicker(
-                                        context: context,
-                                        firstDate: DateTime.now(),
-                                        lastDate: DateTime.now().add(
-                                          Duration(days: 30),
-                                        ),
-                                      );
-                                      if (selectedate != null) {
-                                        setState(() {
-                                          departureDate =
-                                              DateFormat("dd/MM/yyyy")
-                                                  .format(selectedate);
-                                          print(selectedate);
-                                          // departureDate = selectedate;
-                                        });
-                                      }
-                                    },
-                                    icon: Icon(
-                                      Icons.calendar_month_outlined,
-                                      size: 30,
-                                    ),
-                                  ),
-                                  Text(
-                                    departureDate,
-                                    style: TextStyle(fontSize: 18),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    //address detail
-                    SizedBox(
-                      height: 10,
-                    ),
-
-                    //billing
-                    // Card(
-                    //   elevation: 10,
-                    //   child: Container(
-                    //     height: 100,
-                    //     width: MediaQuery.of(context).size.width,
-                    //     child: Column(
-                    //       children: [
-                    //         SizedBox(
-                    //           height: 10,
-                    //         ),
-                    //         Text(
-                    //           'Bill Amount',
-                    //           style: textStyle,
-                    //           textAlign: TextAlign.center,
-                    //         ),
-                    //         SizedBox(
-                    //           height: 10,
-                    //         ),
-                    //         Text(
-                    //           "Amount : Rs.$toPay",
-                    //           style: TextStyle(fontSize: 18),
-                    //         ),
-                    //       ],
-                    //     ),
-                    //   ),
-                    // ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Card(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50)),
-                      child: Container(
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(50),
-                            color: Colors.blue),
-                        child: TextButton(
-                          onPressed: _saveBookingDetails,
-                          child: Text(
-                            "Book Now",
-                            textAlign: TextAlign.center,
-                            style: textStyle,
-                          ),
-                        ),
-                      ),
-                    )
-                  ],
+        centerTitle: true,
+        backgroundColor: appbarcolor,
+        elevation: 10,
+        shadowColor: Colors.black.withOpacity(0.5),
+      ),
+      body: Container(
+        width: MediaQuery.of(context).size.width,
+        height: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [backgroundColor, Colors.blue[50]!],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Form(
+          key: formkey,
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics(),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: SlideTransition(
+                  position: _slideAnimation,
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 20),
+                      _buildTripDetailsCard(),
+                      const SizedBox(height: 20),
+                      _buildContactDetailsCard(),
+                      const SizedBox(height: 20),
+                      _buildDateCard(),
+                      const SizedBox(height: 30),
+                      _buildBookNowButton(),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTripDetailsCard() {
+    return Card(
+      elevation: 8,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Trip Details',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 15),
+            Row(
+              children: [
+                const Icon(Icons.card_travel, color: Colors.blue),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    widget.packageTitle,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContactDetailsCard() {
+    return Card(
+      elevation: 8,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Contact Details',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 15),
+            InputField(
+              icon: Icons.person_outline,
+              label: "Full Name",
+              keypad: TextInputType.text,
+              controller: namecontroller,
+              inputFormat: [
+                FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z ]')),
+                LengthLimitingTextInputFormatter(50),
+              ],
+              validator: (value) => provider.validator(value, "Full Name is required"),
+            ),
+            const SizedBox(height: 15),
+            InputField(
+              icon: Icons.phone_outlined,
+              label: "+977 Phone Number",
+              keypad: TextInputType.number,
+              controller: phonecontroller,
+              inputFormat: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(10),
+              ],
+              validator: (value) => provider.phoneValidator(value),
+            ),
+            const SizedBox(height: 15),
+            InputField(
+              icon: Icons.email_outlined,
+              label: "Email Address",
+              controller: mailcontroller,
+              validator: (value) => provider.emailValidator(value),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDateCard() {
+    return Card(
+      elevation: 8,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Travel Date',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 15),
+            InkWell(
+              onTap: () async {
+                final selectedDate = await showDatePicker(
+                  context: context,
+                  firstDate: DateTime.now(),
+                  lastDate: DateTime.now().add(const Duration(days: 30)),
+                );
+                if (selectedDate != null) {
+                  setState(() {
+                    departureDate = DateFormat("dd/MM/yyyy").format(selectedDate);
+                  });
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey[300]!),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.calendar_today_outlined, color: Colors.blue),
+                    const SizedBox(width: 12),
+                    Text(
+                      departureDate,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const Spacer(),
+                    const Icon(Icons.arrow_drop_down, color: Colors.grey),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBookNowButton() {
+    return ElevatedButton(
+      onPressed: () {
+        if (formkey.currentState!.validate()) {
+          _saveBookingDetails();
+        }
+      },
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 15),
+        backgroundColor: Colors.blue,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+        elevation: 10,
+        shadowColor: Colors.black.withOpacity(0.5),
+      ),
+      child: const Text(
+        'Book Now',
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
         ),
       ),
     );

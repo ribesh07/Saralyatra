@@ -1,315 +1,6 @@
-// import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:dotted_line/dotted_line.dart';
-// import 'package:flutter/material.dart';
-// import 'package:saralyatra/pages/seat.dart';
-// import 'package:saralyatra/setups.dart';
-
-// class SearchBus extends StatefulWidget {
-//   final String location;
-//   final String date;
-//   final String userId;
-
-//   const SearchBus({
-//     Key? key,
-//     required this.location,
-//     required this.date,
-//     required this.userId,
-//   }) : super(key: key);
-
-//   @override
-//   State<SearchBus> createState() => _SearchBusState();
-// }
-
-// class _SearchBusState extends State<SearchBus> {
-//   List<dynamic> dataItems = [];
-//   var uniqueID;
-//   var busNameP;
-//   var shiftP;
-//   var depMinP;
-//   var depHrP;
-//   var arrMinP;
-//   var arrHrP;
-//   var price;
-//   var busUniqueID;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     fetchBusDetails();
-//   }
-
-//   Future<void> fetchBusDetails() async {
-//     try {
-//       // Reference to the Firestore collection
-//       final CollectionReference busTicketDetailsCollection = FirebaseFirestore
-//           .instance
-//           .collection('saralyatra')
-//           .doc('busTicketDetails')
-//           .collection(widget.location); // Use location parameter here
-
-//       // Fetch the documents in the subcollection
-//       final QuerySnapshot snapshot = await busTicketDetailsCollection.get();
-
-//       // List to hold fetched data
-//       List<dynamic> fetchedData = [];
-
-//       // Debugging: Check the location parameter
-//       print('Location parameter: ${widget.location}');
-
-//       // Iterate through each document in the snapshot
-//       for (var doc in snapshot.docs) {
-//         // Debugging: Check each document ID
-//         print('Checking document ID: ${doc.id}');
-//         uniqueID = doc.id;
-//         busUniqueID = doc.id;
-
-//         busNameP = doc['busName'];
-//         shiftP = doc['shift'];
-//         depMinP = doc['depTimeMin'];
-//         depHrP = doc['depTimeHr'];
-//         arrMinP = doc['arrTimeMin'];
-//         arrHrP = doc['arrTimeHr'];
-//         price = doc['price'];
-
-//         // Map the document data to fetchedData list
-//         fetchedData.add({
-//           'product': doc['busName'], // Bus Name
-//           'pricing': doc['price'], // Price
-//           'shift': doc['shift'], // Shift
-//           'busNumber': doc['busNumber'], // Bus Number
-//           'busType': doc['busType'],
-//           'depMin': doc['depTimeMin'], // Bus Type
-//           'depHr': doc['depTimeHr'], // Bus Type
-//           'arrMin': doc['arrTimeMin'], // Bus Type
-//           'arrHr': doc['arrTimeHr'], // Bus Type
-//           'busUniqueID': uniqueID,
-//         });
-//       }
-
-//       // Check if any data was fetched
-//       if (fetchedData.isEmpty) {
-//         print('No matching routes found.'); // Debugging
-//       } else {
-//         print('Fetched data: $fetchedData'); // Debugging
-//       }
-
-//       // Update state with fetched data
-//       setState(() {
-//         dataItems = fetchedData;
-//       });
-//     } catch (e) {
-//       print('Error fetching bus details: $e');
-//     }
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text("Search Bus", style: textStyleappbar),
-//         centerTitle: true,
-//       ),
-//       body: Container(
-//         color: Color.fromARGB(255, 202, 227, 247),
-//         height: double.infinity,
-//         width: double.infinity,
-//         child: SingleChildScrollView(
-//           physics:
-//               BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-//           child: GestureDetector(
-//             onTap: () {
-//               Navigator.push(
-//                   context,
-//                   MaterialPageRoute(
-//                       builder: (context) => SeatS(
-//                             uniqueIDs: uniqueID.toString(),
-//                             busName: busNameP.toString(),
-//                             shift: shiftP.toString(),
-//                             depMin: depMinP.toString(),
-//                             depHr: depHrP.toString(),
-//                             arrMin: arrMinP.toString(),
-//                             arrHr: arrHrP.toString(),
-//                             price: price.toString(),
-//                             date: widget.date,
-//                             busUniqueID: busUniqueID,
-//                             userID: widget.userId,
-//                             location: widget.location,
-//                           )));
-//             },
-//             child: Column(
-//               children: [
-//                 SizedBox(height: 10),
-//                 ListView.builder(
-//                   scrollDirection: Axis.vertical,
-//                   physics: NeverScrollableScrollPhysics(),
-//                   shrinkWrap: true,
-//                   itemCount: dataItems.length,
-//                   itemBuilder: (context, index) {
-//                     return Container(
-//                       child: Column(
-//                         children: [
-//                           Padding(
-//                             padding: const EdgeInsets.only(left: 8, right: 8),
-//                             child: FittedBox(
-//                               child: Card(
-//                                 elevation: 8,
-//                                 child: Container(
-//                                   width: MediaQuery.of(context).size.width,
-//                                   child: Column(
-//                                     crossAxisAlignment:
-//                                         CrossAxisAlignment.start,
-//                                     children: [
-//                                       Padding(
-//                                         padding: const EdgeInsets.all(8),
-//                                         child: Container(
-//                                           width:
-//                                               MediaQuery.of(context).size.width,
-//                                           height: 100,
-//                                           decoration: BoxDecoration(
-//                                             borderRadius:
-//                                                 BorderRadius.circular(8),
-//                                             color: Color.fromARGB(
-//                                                 255, 104, 232, 159),
-//                                           ),
-//                                           child: Padding(
-//                                             padding: const EdgeInsets.all(8.0),
-//                                             child: Column(
-//                                               mainAxisAlignment:
-//                                                   MainAxisAlignment.spaceAround,
-//                                               children: [
-//                                                 Text(
-//                                                   dataItems[index]["product"]
-//                                                       .toString(),
-//                                                   style: textStyle,
-//                                                   textAlign: TextAlign.center,
-//                                                 ),
-//                                                 SizedBox(
-//                                                   height: 5,
-//                                                 ),
-//                                                 Row(
-//                                                   mainAxisAlignment:
-//                                                       MainAxisAlignment
-//                                                           .spaceEvenly,
-//                                                   children: [
-//                                                     Text(
-//                                                       dataItems[index]
-//                                                               ["busType"]
-//                                                           .toString(),
-//                                                       style: textStyle,
-//                                                       textAlign:
-//                                                           TextAlign.center,
-//                                                     ),
-//                                                     Text(
-//                                                       dataItems[index]["shift"]
-//                                                           .toString(),
-//                                                       style: textStyle,
-//                                                       textAlign:
-//                                                           TextAlign.center,
-//                                                     ),
-//                                                   ],
-//                                                 ),
-//                                               ],
-//                                             ),
-//                                           ),
-//                                         ),
-//                                       ),
-//                                       DottedLine(
-//                                         direction: Axis.horizontal,
-//                                         dashColor: Colors.grey,
-//                                         dashGapLength: 3,
-//                                         lineThickness: 3,
-//                                       ),
-//                                       Padding(
-//                                         padding: const EdgeInsets.all(8),
-//                                         child: Container(
-//                                           width:
-//                                               MediaQuery.of(context).size.width,
-//                                           height: 100,
-//                                           decoration: BoxDecoration(
-//                                             borderRadius:
-//                                                 BorderRadius.circular(8),
-//                                             color: Color.fromARGB(
-//                                                 255, 104, 232, 159),
-//                                           ),
-//                                           child: Padding(
-//                                             padding: const EdgeInsets.all(8.0),
-//                                             child: Column(
-//                                               children: [
-//                                                 Row(
-//                                                   mainAxisAlignment:
-//                                                       MainAxisAlignment.start,
-//                                                   children: [
-//                                                     Text(
-//                                                       dataItems[index]["depHr"]
-//                                                           .toString(),
-//                                                       style: textStyle,
-//                                                     ),
-//                                                     Text(" : "),
-//                                                     Text(
-//                                                       dataItems[index]["depMin"]
-//                                                           .toString(),
-//                                                       style: textStyle,
-//                                                     ),
-//                                                     Text(
-//                                                       " ---------> ",
-//                                                       style: textStyle,
-//                                                     ),
-//                                                     Text(
-//                                                       dataItems[index]["arrHr"]
-//                                                           .toString(),
-//                                                       style: textStyle,
-//                                                     ),
-//                                                     Text(" : "),
-//                                                     Text(
-//                                                       dataItems[index]["arrMin"]
-//                                                           .toString(),
-//                                                       style: textStyle,
-//                                                     )
-//                                                   ],
-//                                                 ),
-//                                                 SizedBox(
-//                                                   height: 10,
-//                                                 ),
-//                                                 Row(
-//                                                   children: [
-//                                                     Text(
-//                                                       dataItems[index]
-//                                                               ["pricing"]
-//                                                           .toString(),
-//                                                       style: textStyle,
-//                                                       textAlign:
-//                                                           TextAlign.center,
-//                                                     ),
-//                                                   ],
-//                                                 ),
-//                                               ],
-//                                             ),
-//                                           ),
-//                                         ),
-//                                       ),
-//                                     ],
-//                                   ),
-//                                 ),
-//                               ),
-//                             ),
-//                           ),
-//                           SizedBox(height: 20),
-//                         ],
-//                       ),
-//                     );
-//                   },
-//                 ),
-//               ],
-//             ),
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:saralyatra/pages/seat.dart';
 import 'package:saralyatra/setups.dart';
 
@@ -341,33 +32,63 @@ class _SearchBusState extends State<SearchBus> {
 
   Future<void> fetchBusDetails() async {
     try {
-      // Reference to the Firestore collection
-      final CollectionReference busTicketDetailsCollection = FirebaseFirestore
-          .instance
+      print('Searching for date: ${widget.date}');
+      print('Searching in location: ${widget.location}');
+
+      // Reference to the correct bus ticket details collection path
+      final CollectionReference locationCollection = FirebaseFirestore.instance
           .collection('saralyatra')
-          .doc('busTicketDetails')
+          .doc('busTicketDetails') // Note: no 's' at the end
           .collection(widget.location);
 
-      // Fetch the documents in the subcollection
-      final QuerySnapshot snapshot = await busTicketDetailsCollection.get();
+      // Get all bus documents in this location
+      final QuerySnapshot busDocsSnapshot = await locationCollection.get();
+
+      print(
+          'Found ${busDocsSnapshot.docs.length} bus documents in location ${widget.location}');
 
       // List to hold fetched data
       List<dynamic> fetchedData = [];
 
-      // Iterate through each document in the snapshot
-      for (var doc in snapshot.docs) {
-        fetchedData.add({
-          'product': doc['busName'],
-          'pricing': doc['price'],
-          'shift': doc['shift'],
-          'busNumber': doc['busNumber'],
-          'busType': doc['busType'],
-          'depMin': doc['depTimeMin'],
-          'depHr': doc['depTimeHr'],
-          'arrMin': doc['arrTimeMin'],
-          'arrHr': doc['arrTimeHr'],
-          'busUniqueID': doc.id,
-        });
+      // Iterate through each bus document (each doc represents a bus unique ID)
+      for (var busDoc in busDocsSnapshot.docs) {
+        try {
+          String busUniqueId = busDoc.id;
+          print('Checking bus with unique ID: $busUniqueId');
+
+          // Get the data from this bus document and check if it matches the date
+          final data = busDoc.data() as Map<String, dynamic>;
+
+          // Convert database date format to match widget date format (yyyy/MM/dd)
+          String dbDate = (data['date'] as String).replaceAll('-', '/');
+
+          // Check if this bus document has data for the selected date
+          if (dbDate == widget.date) {
+            print(
+                'Found matching bus: ${data['busName']} for date ${widget.date}');
+
+            fetchedData.add({
+              'product': data['busName'] ?? 'Unknown Bus',
+              'pricing': data['price'] ?? '0',
+              'shift': data['shift'] ?? 'Unknown',
+              'busNumber': data['busNumber'] ?? 'N/A',
+              'busType': data['bustype'] ?? 'Standard',
+              'depMin': data['depTimeMin'] ?? '00',
+              'depHr': data['depTimeHr'] ?? '00',
+              'arrMin': data['arrTimeMin'] ?? '00',
+              'arrHr': data['arrTimeHr'] ?? '00',
+              'busUniqueID': data['busUId'] ?? busUniqueId,
+              'availableSeats': data['avaliableSeat'] ?? 0,
+              'reservedSeats': data['reservedSeat'] ?? 0,
+            });
+          } else {
+            print(
+                'Bus $busUniqueId has date ${data['date']}, not matching ${widget.date}');
+          }
+        } catch (e) {
+          print('Error processing bus document ${busDoc.id}: $e');
+          continue;
+        }
       }
 
       // Update state with fetched data
@@ -375,6 +96,9 @@ class _SearchBusState extends State<SearchBus> {
         dataItems = fetchedData;
         isLoading = false;
       });
+
+      print(
+          'Successfully loaded ${fetchedData.length} buses available for ${widget.date} on route ${widget.location}');
     } catch (e) {
       print('Error fetching bus details: $e');
       setState(() {
