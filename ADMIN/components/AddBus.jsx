@@ -14,14 +14,23 @@ const AddBus = ({ onClose }) => {
     depTimeHr: "06",
     arrTimeMin: "00",
     arrTimeHr: "08",
-    availableSeat: 40,
-    reservedSeat: 0,
+    availableSeat: 29,
+    reservedSeat: 1,
+    date: '', // Default date
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const busTypes = ["AC Deluxe", "AC Standard", "Non-AC", "Sleeper"];
   const shifts = ["Morning", "Afternoon", "Evening", "Night"];
+  const busesRoutes = [
+    "JKR-POK",
+      "POK-JKR",
+      "KTM-JKR",
+      "JKR-KTM",
+      "KTM-POK",
+      "POK-KTM",
+  ]
   
   // Generate time options
   const hours = Array.from({ length: 24 }, (_, i) => 
@@ -98,15 +107,16 @@ const AddBus = ({ onClose }) => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Location
                 </label>
-                <input
-                  type="text"
+                <select
                   name="location"
                   value={busData.location}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Starting location"
-                  required
-                />
+                >
+                  {busesRoutes.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -268,6 +278,21 @@ const AddBus = ({ onClose }) => {
                 </div>
               </div>
             </div>
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Date of Journey
+              </label>
+              <input
+                type="date"
+                name="date"
+                value={busData.date}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+              <p className="text-xs text-gray-500 mt-1">Select the date of the bus journey</p>
+              </div>
+
           </div>
 
           {/* Seating */}
@@ -284,14 +309,15 @@ const AddBus = ({ onClose }) => {
                 <input
                   type="number"
                   name="availableSeat"
+
                   value={busData.availableSeat}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   min="1"
-                  max="60"
+                  max="30"
                   required
                 />
-                <p className="text-xs text-gray-500 mt-1">Maximum 60 seats</p>
+                <p className="text-xs text-gray-500 mt-1">Maximum 30 seats</p>
               </div>
 
               <div className="bg-white p-4 rounded-lg border">
