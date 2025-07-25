@@ -182,9 +182,7 @@ const DriverPaymentTable = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Date
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Bus Number
-                  </th>
+
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Withdraw Amount
                   </th>
@@ -232,16 +230,6 @@ const DriverPaymentTable = () => {
                         <Calendar className="w-4 h-4 text-gray-400 mr-2" />
                         <span className="text-sm text-gray-900">
                           {driver.date.toDate().toISOString().split("T")[0]}
-                        </span>
-                      </div>
-                    </td>
-
-                    {/* Total Balance */}
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        {/* <DollarSign className="w-4 h-4 text-green-500 mr-1" /> */}
-                        <span className="text-sm font-semibold text-green-600">
-                          NRs {driver.busNumber}
                         </span>
                       </div>
                     </td>

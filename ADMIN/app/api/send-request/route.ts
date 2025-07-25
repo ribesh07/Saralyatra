@@ -3,9 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json(); // Parse the incoming JSON body
-    const { id, time, status } = body;
-    console.log("Received request from ESP32 :", id, time, status);
-    if (!id || !time || !status) {
+    const { id, time, status, driver_ID } = body;
+    console.log("Received request from ESP32 :", id, time, status, driver_ID);
+    if (!id || !time || !status || !driver_ID) {
       return NextResponse.json(
         { error: "Missing id or time in request body" },
         { status: 400 }
@@ -13,8 +13,8 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({
-      message: "Data received successfully",
-      received: { id, time },
+      message: `Data received successfully ${id} ${time} ${status} ${driver_ID}`,
+      received: { id, time, status, driver_ID },
     });
   } catch (error) {
     return NextResponse.json(

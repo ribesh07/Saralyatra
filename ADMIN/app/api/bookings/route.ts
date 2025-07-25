@@ -11,6 +11,12 @@ export async function GET() {
       "upcomingHistoryDetails",
       "package"
     );
+    const busref = collection(
+      db,
+      "history",
+      "upcomingHistoryDetails",
+      "busSeat"
+    );
     const reservationsRef = collection(
       db,
       "history",
@@ -25,12 +31,17 @@ export async function GET() {
     );
 
     // Fetch documents from both subcollections
-    const [packageSnapshot, reservationsSnapshot, completedSnapshot] =
-      await Promise.all([
-        getDocs(packageRef),
-        getDocs(reservationsRef),
-        getDocs(completedRef),
-      ]);
+    const [
+      packageSnapshot,
+      reservationsSnapshot,
+      completedSnapshot,
+      busSnapshot,
+    ] = await Promise.all([
+      getDocs(packageRef),
+      getDocs(reservationsRef),
+      getDocs(completedRef),
+      getDocs(busref),
+    ]);
     console;
 
     // Extract data from package documents
@@ -51,12 +62,19 @@ export async function GET() {
       ...doc.data(),
     }));
 
+    // Extract data from bus documents
+    const busData = busSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
     // Return both sets of data
     return NextResponse.json({
       success: true,
       packages: packageData,
       reservations: reservationsData,
       completed: completedData,
+      bus: busData,
     });
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -107,6 +125,10 @@ let bookings: any = []; // Optional if you're persisting everything to Firestore
 //   }
 // }
 
+function generateRandom13DigitNumber() {
+  return Math.floor(Math.random() * 9e12) + 1e12;
+}
+
 import { deleteDoc, getDoc, updateDoc } from "firebase/firestore";
 
 export async function POST(req: NextRequest) {
@@ -126,7 +148,9 @@ export async function POST(req: NextRequest) {
       "completedHistoryDetails",
       "completedHistory"
     );
-    const completedDocRef = doc(completedRef, completedBooking.id);
+    const randomNumber = generateRandom13DigitNumber();
+    console.log(randomNumber);
+    const completedDocRef = doc(completedRef, randomNumber.toString());
     await setDoc(completedDocRef, completedBooking);
 
     // Update only the 'status' field in upcoming/package and reservations
@@ -144,6 +168,13 @@ export async function POST(req: NextRequest) {
       "reservation",
       updatedBooking.id
     );
+    const busDocRef = doc(
+      db,
+      "history",
+      "upcomingHistoryDetails",
+      "busSeat",
+      updatedBooking.id
+    );
 
     const packageDocSnap = await getDoc(packageDocRef);
     if (packageDocSnap.exists()) {
@@ -155,9 +186,15 @@ export async function POST(req: NextRequest) {
       await updateDoc(reservationsDocRef, { status: updatedBooking.status });
     }
 
+    const busDocSnap = await getDoc(busDocRef);
+    if (busDocSnap.exists()) {
+      await updateDoc(busDocRef, { status: updatedBooking.status });
+    }
+
     // Delete both from upcoming/package and upcoming/reservations
     await deleteDoc(packageDocRef);
     await deleteDoc(reservationsDocRef); // Safe even if doc doesn't exist
+    await deleteDoc(busDocRef);
 
     return NextResponse.json(
       { message: "Booking completed and removed from upcoming." },
