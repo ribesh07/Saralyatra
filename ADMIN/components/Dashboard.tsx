@@ -1,5 +1,9 @@
 "use client"
 import React from 'react';
+import useSWR, { mutate } from "swr";
+import axios from "axios";
+
+const fetcher = (url : any) => axios.get(url).then((res) => res.data);
 const Dashboard = () => {
 
   const stats = [
@@ -15,6 +19,23 @@ const Dashboard = () => {
     { id: 'BK003', customer: 'Mike Johnson', route: 'Miami → Orlando', date: '2024-05-24', status: 'confirmed' },
     { id: 'BK004', customer: 'Sarah Wilson', route: 'Chicago → Detroit', date: '2024-05-24', status: 'cancelled' },
   ];
+
+    const { data, error } = useSWR("/api/bookings", fetcher);
+  
+    if (error) return <div>Failed to load</div>;
+    if (!data) return <div>Loading...</div>;
+  
+      const updateBooking = async (booking :any) => {
+    await axios.post("/api/bookings", booking);
+    mutate("/api/bookings"); // Refresh the data
+    alert("Booking updated successfully!");
+  };
+    // const packages = data.packages || [];
+    // const reservations = data.reservations || [];
+    const completed = data.completed || [];
+  
+    const bookings = [...(data.packages || []), ...(data.reservations || []) , ...(data.completed || [])];
+  
 
   return (
     <>
@@ -63,7 +84,7 @@ const Dashboard = () => {
                         Customer
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Route
+                        Package
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Date
@@ -74,19 +95,19 @@ const Dashboard = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {recentBookings.map((booking) => (
+                    {bookings.map((booking) => (
                       <tr key={booking.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                           {booking.id}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {booking.customer}
+                          {booking.email}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {booking.route}
+                          {booking.packageName ?? 'N/A'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {booking.date}
+                          {booking.date ?? 'N/A'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${

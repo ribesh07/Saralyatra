@@ -1,113 +1,123 @@
-import React, { useState } from 'react';
-import { User, Phone, Calendar, DollarSign, Check, X, Search } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import {
+  User,
+  Phone,
+  Calendar,
+  DollarSign,
+  Check,
+  X,
+  Search,
+} from "lucide-react";
+import { db } from "@/components/db/firebase";
+import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 
-interface Driver {
-  driverID: string;
-  driverName: string;
-  phoneNo: string;
-  totalBalance: number;
-  withdrawBalance: number;
-}
+// interface Driver {
+//   userName: string;
+//   userId: string;
+//   contact: string;
+//   balance: number;
+//   type: string;
+//   date: string;
+// }
 
-interface ProcessingState {
-  [key: string]: boolean;
-}
+// interface ProcessingState {
+//   [key: string]: boolean;
+// }
 
-const DriverPaymentTable: React.FC = () => {
-  const [drivers] = useState<Driver[]>([
-    {
-      driverID: 'DRV001',
-      driverName: 'John Smith',
-      phoneNo: '+1 (555) 123-4567',
-      totalBalance: 1250.75,
-      withdrawBalance: 800.00
-    },
-    {
-      driverID: 'DRV002',
-      driverName: 'Sarah Johnson',
-      phoneNo: '+1 (555) 234-5678',
-      totalBalance: 2100.50,
-      withdrawBalance: 1500.00
-    },
-    {
-      driverID: 'DRV003',
-      driverName: 'Mike Wilson',
-      phoneNo: '+1 (555) 345-6789',
-      totalBalance: 875.25,
-      withdrawBalance: 500.00
-    },
-    {
-      driverID: 'DRV004',
-      driverName: 'Emily Davis',
-      phoneNo: '+1 (555) 456-7890',
-      totalBalance: 1650.00,
-      withdrawBalance: 1200.00
-    },
-    {
-      driverID: 'DRV005',
-      driverName: 'David Brown',
-      phoneNo: '+1 (555) 567-8901',
-      totalBalance: 950.75,
-      withdrawBalance: 750.00
-    }
-  ]);
+const DriverPaymentTable = () => {
+  const [drivers, setdrivers] = useState([]);
 
-  const [processingState, setProcessingState] = useState<ProcessingState>({});
-  const [searchTerm, setSearchTerm] = useState('');
+  const [processingState, setProcessingState] = useState({});
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const [withdrawData, setWithdrawData] = useState<{ [key: string]: string }>({});
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const currentDate = new Date().toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
+  const [withdrawData, setWithdrawData] = useState({});
+  const [errors, setErrors] = useState({});
+  const currentDate = new Date().toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
   });
 
-  const filteredDrivers = drivers.filter(driver =>
-    driver.driverName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    driver.driverID.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    driver.phoneNo.includes(searchTerm)
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const routeCollectionRef = collection(
+          db,
+          "saralyatra",
+          "driverDetailsDatabase",
+          "drivers"
+        );
+        const querySnapshot = await getDocs(routeCollectionRef);
+
+        const driverss = querySnapshot.docs.map((docSnap) => ({
+          // id: docSnap.id,
+          ...docSnap.data(),
+        }));
+        setdrivers(driverss);
+        console.log("Fetched drivers:", driverss);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+
+    fetchUsers(); // Don't forget to call it!
+  }, []);
+
+  const filteredDrivers = drivers.filter(
+    (driver) =>
+      (driver.username?.toLowerCase() || "").includes(
+        searchTerm.toLowerCase()
+      ) ||
+      (driver.email?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (driver.contact?.toLowerCase() || "").includes(searchTerm.toLowerCase())
   );
 
-  const handleWithdrawChange = (driverID: string, value: string) => {
-    if (value === '' || /^\d*\.?\d*$/.test(value)) {
-      setWithdrawData(prev => ({ ...prev, [driverID]: value }));
-      setErrors(prev => ({ ...prev, [driverID]: '' }));
+  const handleWithdrawChange = (driverID, value) => {
+    if (value === "" || /^\d*\.?\d*$/.test(value)) {
+      setWithdrawData((prev) => ({ ...prev, [driverID]: value }));
+      setErrors((prev) => ({ ...prev, [driverID]: "" }));
     }
   };
 
-  const validateWithdraw = (driverID: string, totalBalance: number): boolean => {
-    const amount = parseFloat(withdrawData[driverID] || '');
-    
+  const validateWithdraw = (driverID, totalBalance) => {
+    const amount = parseFloat(withdrawData[driverID] || "");
+
     if (!withdrawData[driverID] || isNaN(amount) || amount <= 0) {
-      setErrors(prev => ({ ...prev, [driverID]: 'Please enter a valid amount' }));
+      setErrors((prev) => ({
+        ...prev,
+        [driverID]: "Please enter a valid amount",
+      }));
       return false;
     }
-    
+
     if (amount > totalBalance) {
-      setErrors(prev => ({ ...prev, [driverID]: 'Amount exceeds balance' }));
+      setErrors((prev) => ({ ...prev, [driverID]: "Amount exceeds balance" }));
       return false;
     }
-    
+
     return true;
   };
 
-  const handleConfirm = async (driver: Driver) => {
+  const handleConfirm = async (driver) => {
     if (!validateWithdraw(driver.driverID, driver.totalBalance)) return;
-    
-    setProcessingState(prev => ({ ...prev, [driver.driverID]: true }));
-    
+
+    setProcessingState((prev) => ({ ...prev, [driver.driverID]: true }));
+
     // Simulate API call
     setTimeout(() => {
-      alert(`Payment of ${parseFloat(withdrawData[driver.driverID]).toFixed(2)} confirmed for ${driver.driverName}`);
-      setProcessingState(prev => ({ ...prev, [driver.driverID]: false }));
-      setWithdrawData(prev => ({ ...prev, [driver.driverID]: '' }));
+      alert(
+        `Payment of ${parseFloat(
+          withdrawData[driver.driverID]
+        )} confirmed for ${driver.driverName}`
+      );
+      setProcessingState((prev) => ({ ...prev, [driver.driverID]: false }));
+      setWithdrawData((prev) => ({ ...prev, [driver.driverID]: "" }));
     }, 1500);
   };
 
-  const handleCancel = (driverID: string) => {
-    setWithdrawData(prev => ({ ...prev, [driverID]: '' }));
-    setErrors(prev => ({ ...prev, [driverID]: '' }));
+  const handleCancel = (driverID) => {
+    setWithdrawData((prev) => ({ ...prev, [driverID]: "" }));
+    setErrors((prev) => ({ ...prev, [driverID]: "" }));
   };
 
   return (
@@ -115,9 +125,11 @@ const DriverPaymentTable: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Driver Payment Management</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Driver Payment Management
+          </h1>
           <p className="text-gray-600">Process payments for multiple drivers</p>
-          
+
           {/* Search Bar */}
           <div className="mt-6 relative max-w-md">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -149,7 +161,7 @@ const DriverPaymentTable: React.FC = () => {
                     Date
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Total Balance
+                    Bus Number
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Withdraw Amount
@@ -170,10 +182,10 @@ const DriverPaymentTable: React.FC = () => {
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
-                            {driver.driverName}
+                            {driver.username}
                           </div>
                           <div className="text-sm text-gray-500">
-                            ID: {driver.driverID}
+                            ID: {driver.email}
                           </div>
                         </div>
                       </div>
@@ -183,7 +195,9 @@ const DriverPaymentTable: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <Phone className="w-4 h-4 text-gray-400 mr-2" />
-                        <span className="text-sm text-gray-900">{driver.phoneNo}</span>
+                        <span className="text-sm text-gray-900">
+                          {driver.contact}
+                        </span>
                       </div>
                     </td>
 
@@ -191,7 +205,9 @@ const DriverPaymentTable: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <Calendar className="w-4 h-4 text-gray-400 mr-2" />
-                        <span className="text-sm text-gray-900">{currentDate}</span>
+                        <span className="text-sm text-gray-900">
+                          {currentDate}
+                        </span>
                       </div>
                     </td>
 
@@ -199,8 +215,8 @@ const DriverPaymentTable: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         {/* <DollarSign className="w-4 h-4 text-green-500 mr-1" /> */}
-                        <span className= "text-sm font-semibold text-green-600">
-                          NRs {driver.totalBalance.toFixed(2)}
+                        <span className="text-sm font-semibold text-green-600">
+                          NRs {driver.busNumber}
                         </span>
                       </div>
                     </td>
@@ -210,7 +226,7 @@ const DriverPaymentTable: React.FC = () => {
                       <div className="flex items-center">
                         {/* <DollarSign className="w-4 h-4 text-blue-500 mr-1" /> */}
                         <span className="text-sm font-semibold text-blue-600">
-                          NRs {driver.withdrawBalance.toFixed(2)}
+                          NRs {driver.balance}
                         </span>
                       </div>
                     </td>
@@ -235,7 +251,7 @@ const DriverPaymentTable: React.FC = () => {
                             </>
                           )}
                         </button>
-                        
+
                         <button
                           onClick={() => handleCancel(driver.driverID)}
                           className="inline-flex items-center text-xs font-medium text-red-600 hover:text-red-800 focus:outline-none"
@@ -266,24 +282,25 @@ const DriverPaymentTable: React.FC = () => {
         <div className="mt-6 bg-white rounded-lg shadow p-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-gray-900">{filteredDrivers.length}</div>
+              <div className="text-2xl font-bold text-gray-900">
+                {filteredDrivers.length}
+              </div>
               <div className="text-sm text-gray-500">Total Drivers</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">
-                ${filteredDrivers.reduce((sum, driver) => sum + driver.totalBalance, 0).toFixed(2)}
-              </div>
-              <div className="text-sm text-gray-500">Total Balance</div>
-            </div>
+
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">
-                ${filteredDrivers.reduce((sum, driver) => sum + driver.withdrawBalance, 0).toFixed(2)}
+                ${filteredDrivers.withdrawBalance}
               </div>
               <div className="text-sm text-gray-500">Total Withdrawals</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-purple-600">
-                {Object.keys(processingState).filter(key => processingState[key]).length}
+                {
+                  Object.keys(processingState).filter(
+                    (key) => processingState[key]
+                  ).length
+                }
               </div>
               <div className="text-sm text-gray-500">Processing</div>
             </div>
