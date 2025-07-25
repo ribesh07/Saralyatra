@@ -256,6 +256,7 @@ class _Signup_pageState extends State<Signup_page> {
         'contact': contactnumcontroller.text.toString(),
         'uid': uid,
         'dcardId': generate8DigitNumber(),
+        'balance': balance,
         'password': passcontroller.text.toString(),
         'imageUrl': imageUrl,
         'messageUsername': messageUserName,
