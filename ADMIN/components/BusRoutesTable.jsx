@@ -63,6 +63,8 @@ const BusDashboard = () => {
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [seatsenabled, setseatsenabled] = useState(false);
+  const [handleAddBus, setHandleAddBus] = useState(null);
+
 
   const busTypes = ["AC Deluxe", "AC Standard", "Non-AC", "Sleeper"];
   const routeCollections = [
@@ -179,8 +181,15 @@ await setDoc(busRef, updatedBus, { merge: true });
   return (
     <div className="p-6 max-w-7xl mx-auto bg-gray-50 min-h-screen">
       <div className="bg-white rounded-lg shadow-sm">
-        <div className="px-6 py-4 border-b border-gray-200 px">
+        <div className="px-6 py-4 flex justify-between border-b border-gray-200 px">
           <h1 className="text-2xl font-bold text-gray-900 ">Routes</h1>
+          <div className="px-10 py-4 border-b border-gray-200 flex justify-end">
+            <button
+              className="bg-blue-600 text-white relative right-1  px-4 py-2 rounded hover:bg-blue-700 transition"
+              onClick={handleAddBus}>
+              + Add Bus
+            </button>
+            </div>
         </div>
 
         <div className="overflow-x-auto">
