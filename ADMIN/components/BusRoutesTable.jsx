@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Edit, Save, X, Trash2 } from "lucide-react";
+import { Edit, Save, X, Trash2, Loader2 } from "lucide-react";
 import SeatSelection from "@/app/seats/page";
 import { doc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/components/db/firebase"; // adjust path to your config
@@ -25,7 +25,7 @@ const BusDashboard = () => {
   //     price: '500',
 
   //     availableSeats: 32,
-      
+
   //   },
   //   {
 
@@ -45,7 +45,7 @@ const BusDashboard = () => {
   //     type: 'AC Deluxe',
   //     price: '500',
   //     availableSeats: 52,
-      
+
   //   },
   //   {
 
@@ -72,41 +72,40 @@ const BusDashboard = () => {
   };
 
 
-
   const busTypes = ["AC Deluxe", "AC Standard", "Non-AC", "Sleeper"];
   const routeCollections = [
-      "JKR-POK",
-      "POK-JKR",
-      "KTM-JKR",
-      "JKR-KTM",
-      "KTM-POK",
-      "POK-KTM",
-    ];
+    "JKR-POK",
+    "POK-JKR",
+    "KTM-JKR",
+    "JKR-KTM",
+    "KTM-POK",
+    "POK-KTM",
+  ];
 
   const [selectedBus, setSelectedBus] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Simulate fetching data from an API
     const fetchBuses = async () => {
-    try{
-        const response = await fetch('/api/get-bus-details');
-      const data = await response.json();
-      console.log("Fetched buses:", data);
-      if(data.success){
-        setBuses(data.data);
-
-      } else {
-        console.error("Failed to fetch buses:", data.message);
-        setBuses([]); // Fallback to initial data
+      setIsLoading(true);
+      try {
+        const response = await fetch("/api/get-bus-details");
+        const data = await response.json();
+        console.log("Fetched buses:", data);
+        if (data.success) {
+          setBuses(data.data);
+        } else {
+          console.error("Failed to fetch buses:", data.message);
+          setBuses([]); // Fallback to initial data
+        }
+      } catch (error) {
+        console.error("Error fetching buses:", error);
+      } finally {
+        setIsLoading(false);
+        // setBuses(data.data); // Fallback to initial data
+        // setIsLoading(false);
       }
-
-    }catch (error) {
-      console.error("Error fetching buses:", error);
-    }
-    finally {
-      // setBuses(data.data); // Fallback to initial data
-      // setIsLoading(false);
-    }
     };
 
     fetchBuses();
@@ -148,30 +147,34 @@ const BusDashboard = () => {
     setenabled(false);
   };
   const handleSave = async () => {
-  try {
-    console.log("Saving bus data to Firebase:", editForm);
-    const updatedBus = editForm;
-    const route = updatedBus.route; // e.g., "JKR-POK"
-    const id = updatedBus.id; // e.g., "0UcOYxSA3nsr0L9fBmVe"
-    const busRef = doc(db,"saralyatra" ,"busTicketDetails", editForm.route, updatedBus.id); // No route in path
-    
+    try {
+      console.log("Saving bus data to Firebase:", editForm);
+      const updatedBus = editForm;
+      const route = updatedBus.route; // e.g., "JKR-POK"
+      const id = updatedBus.id; // e.g., "0UcOYxSA3nsr0L9fBmVe"
+      const busRef = doc(
+        db,
+        "saralyatra",
+        "busTicketDetails",
+        editForm.route,
+        updatedBus.id
+      ); // No route in path
 
-console.log("Bus reference:", busRef);
-if (busRef) {
-await setDoc(busRef, updatedBus, { merge: true });
-} else {
-  console.error("Document does not exist:", route, id);
-}
+      console.log("Bus reference:", busRef);
+      if (busRef) {
+        await setDoc(busRef, updatedBus, { merge: true });
+      } else {
+        console.error("Document does not exist:", route, id);
+      }
 
-    // Update local state
-    setBuses(buses.map((bus) => (bus.id === editingId ? updatedBus : bus)));
-    setEditingId(null);
-    setEditForm({});
-  } catch (error) {
-    console.error("Failed to update Firebase bus data:", error);
-  }
-};
-
+      // Update local state
+      setBuses(buses.map((bus) => (bus.id === editingId ? updatedBus : bus)));
+      setEditingId(null);
+      setEditForm({});
+    } catch (error) {
+      console.error("Failed to update Firebase bus data:", error);
+    }
+  };
 
   const handleCancel = () => {
     setEditingId(null);
@@ -190,6 +193,9 @@ await setDoc(busRef, updatedBus, { merge: true });
     return "text-red-600 bg-red-50";
   };
 
+  if (isLoading) {
+    return <Loader2 className="animate-spin" />;
+  }
   return (
     <div className="p-6 max-w-7xl mx-auto bg-gray-50 min-h-screen">
       <div className="bg-white rounded-lg shadow-sm">
@@ -198,7 +204,8 @@ await setDoc(busRef, updatedBus, { merge: true });
           <div className="px-10 py-4 border-b border-gray-200 flex justify-end">
             <button
               className="bg-blue-600 text-white relative right-1  px-4 py-2 rounded hover:bg-blue-700 transition"
-              onClick={handleAddBus}>
+              onClick={handleAddBus}
+            >
               + Add Bus
             </button>
             </div>
@@ -209,16 +216,28 @@ await setDoc(busRef, updatedBus, { merge: true });
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
+                <th className="px-6 py-3 text-centre text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Bus ID
+                </th>
+                <th className="px-6 py-3 text-centre text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Bus Name
+                </th>
+                <th className="px-6 py-3 text-centre text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Routes
+                </th>
+                <th className="px-6 py-3 text-centre text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Bus Type
+                </th>
+                <th className="px-6 py-3 text-centre text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Seats
+                </th>
+                <th className="px-6 py-3 text-centre text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Price
+                </th>
 
-                <th className="px-6 py-3 text-centre text-xs font-medium text-gray-500 uppercase tracking-wider">Bus ID</th>
-                <th className="px-6 py-3 text-centre text-xs font-medium text-gray-500 uppercase tracking-wider">Bus Name</th>
-                <th className="px-6 py-3 text-centre text-xs font-medium text-gray-500 uppercase tracking-wider">Routes</th>
-                <th className="px-6 py-3 text-centre text-xs font-medium text-gray-500 uppercase tracking-wider">Bus Type</th>
-                <th className="px-6 py-3 text-centre text-xs font-medium text-gray-500 uppercase tracking-wider">Seats</th>
-                <th className="px-6 py-3 text-centre text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-
-                <th className="px-6 py-3 text-centre text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-
+                <th className="px-6 py-3 text-centre text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -251,13 +270,12 @@ await setDoc(busRef, updatedBus, { merge: true });
                         className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     ) : (
-
                       <span className="text-sm font-medium text-gray-900">
                         {bus.busName}
                       </span>
                     )}
                   </td>
-                  
+
                   <td className="px-6 py-4">
                     {editingId === bus.id ? (
                       <select
@@ -273,11 +291,9 @@ await setDoc(busRef, updatedBus, { merge: true });
                             {type}
                           </option>
                         ))}
-                        </select>
+                      </select>
                     ) : (
-                      <span className="text-sm text-gray-600">
-                        {bus.route}
-                      </span>
+                      <span className="text-sm text-gray-600">{bus.route}</span>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -307,29 +323,38 @@ await setDoc(busRef, updatedBus, { merge: true });
                         onClick={() => handleOpenSeats(bus)}
                         className="text-blue-600 bg-gray-100 p-1 m-1 hover:bg-gray-200 border border-gray-300 rounded semibold  hover:text-blue-900 flex items-center justify-center align-center gap-1 transition-colors" // Add this line to style the button className="w-20 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
-                         Seats: {bus.availableSeat}
+                        Seats: {bus.availableSeat}
                       </button>
                     ) : (
                       <span
                         className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getSeatStatus(
-                          bus.availableSeat 
+                          bus.availableSeat
                         )}`}
                       >
                         {bus.availableSeat} Seats
                       </span>
                     )}
                   </td>
-                   <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap">
                     {editingId === bus.id ? (
                       <input
                         type="number"
                         value={editForm.price}
-                        onChange={(e) => setEditForm({...editForm, price: parseInt(e.target.value)  })}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            price: parseInt(e.target.value),
+                          })
+                        }
                         className="w-20 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     ) : (
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getSeatStatus(bus.availableSeats)}`}>
-                        NRs {bus.price} 
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getSeatStatus(
+                          bus.availableSeats
+                        )}`}
+                      >
+                        NRs {bus.price}
                       </span>
                     )}
                   </td>

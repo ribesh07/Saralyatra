@@ -33,8 +33,8 @@ const DashboardPage = () => {
         return <DriverPaymentTable />;
       case "bookings":
         return <Bookings />;
-      case "settings":
-        return <Settings />;
+      // case "settings":
+      //   return <Settings />;
       case "buses":
         return <Buses />;
       case "tours&packages":
@@ -45,8 +45,8 @@ const DashboardPage = () => {
         return <BlogsHistory />;
       case "routes":
         return <BusRoutes />;
-      case "analytics":
-        return <Analytics />;
+      // case "analytics":
+      //   return <Analytics />;
       default:
         return <Dashboard />;
     }
