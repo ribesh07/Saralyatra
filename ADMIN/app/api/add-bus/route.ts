@@ -20,6 +20,7 @@ export async function POST(req: any) {
       arrTimeHr,
       availableSeat,
       reservedSeat,
+      date
     } = body;
 
     if (!location) {
@@ -39,12 +40,13 @@ export async function POST(req: any) {
       shift,
       busNumber,
       busType,
-      depTimeMin, // formerly: depMin
-      depTimeHr, // formerly: depHr
-      arrTimeMin, // formerly: arrMin
-      arrTimeHr, // formerly: arrHr
+      depTimeMin, 
+      depTimeHr, 
+      arrTimeMin, 
+      arrTimeHr, 
       availableSeat,
       reservedSeat,
+      date,
       createdAt: new Date().toISOString(),
     });
 
@@ -52,6 +54,7 @@ export async function POST(req: any) {
     await updateDoc(result, {
       uid: result.id,
     });
+    console.log("Ticket added with ID:", result.id);
 
     return NextResponse.json(
       { message: "Ticket added", id: result.id },

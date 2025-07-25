@@ -12,6 +12,7 @@ import Analytics from "@/components/Analytics";
 import UsersPage from "@/components/Users";
 import ChatButton from "@/components/ChatButton";
 import DriversPage from "@/components/Drivers";
+import DriverPaymentTable from "@/components/DriverPayment";
 import ToursPackagesPage from "@/components/ToursPackages";
 import PaymentHistory from "@/components/PaymentHistory";
 import BlogsHistory from "@/components/BlogsNews";
@@ -28,10 +29,12 @@ const DashboardPage = () => {
         return < Dashboard />;
       case "drivers":
         return <DriversPage />;
+      case "driver-payment":
+        return <DriverPaymentTable />;
       case "bookings":
         return <Bookings />;
-      case "settings":
-        return <Settings />;
+      // case "settings":
+      //   return <Settings />;
       case "buses":
         return <Buses />;
       case "tours&packages":
@@ -42,8 +45,8 @@ const DashboardPage = () => {
         return <BlogsHistory />;
       case "routes":
         return <BusRoutes />;
-      case "analytics":
-        return <Analytics />;
+      // case "analytics":
+      //   return <Analytics />;
       default:
         return <Dashboard />;
     }
