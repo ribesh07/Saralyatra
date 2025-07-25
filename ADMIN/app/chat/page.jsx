@@ -41,10 +41,10 @@ const AdminChat = () => {
       setLoadingUsers(true);
       const chatroomsRef = collection(db, "chatrooms");
       const chatroomsSnap = await getDocs(chatroomsRef);
-      const agents = chatroomsSnap.docs.map(docSnap => ({
+      const agents = chatroomsSnap.docs.map((docSnap) => ({
         id: docSnap.id,
         name: docSnap.id, // Or use a field if you have one
-        avatar: "👤",
+        avatar: "🐷",
         online: true, // You can add online status logic if you want
         unread: 0,
         lastMessageTime: 0,
@@ -64,11 +64,11 @@ const AdminChat = () => {
     const messagesRef = collection(db, "chatrooms", selectedUser.id, "chats");
     const q = query(messagesRef, orderBy("time", "asc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const msgs = snapshot.docs.map(doc => ({
+      const msgs = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
-      setConversations(prev => ({
+      setConversations((prev) => ({
         ...prev,
         [selectedUser.id]: msgs,
       }));
@@ -90,9 +90,9 @@ const AdminChat = () => {
     if (!newMessage.trim() || !selectedUser) return;
     const messagesRef = collection(db, "chatrooms", selectedUser.id, "chats");
     await addDoc(messagesRef, {
-      Data: 'Message',
+      Data: "Message",
       message: newMessage,
-      SendBy: 'Agent',
+      SendBy: "Agent",
       ts: new Date().toLocaleTimeString(),
       time: serverTimestamp(),
     });
@@ -102,7 +102,13 @@ const AdminChat = () => {
   // Delete message from Firestore
   const deleteMessage = async (messageId) => {
     if (!selectedUser) return;
-    const messageDocRef = doc(db, "chatrooms", selectedUser.id, "chats", messageId);
+    const messageDocRef = doc(
+      db,
+      "chatrooms",
+      selectedUser.id,
+      "chats",
+      messageId
+    );
     await deleteDoc(messageDocRef);
   };
 
@@ -146,9 +152,7 @@ const AdminChat = () => {
             <div className="flex items-center space-x-3">
               <div className="text-right">
                 <p className="text-sm font-medium text-gray-900">Admin User</p>
-                <p className="text-xs text-gray-500">
-                  admin@saralyatra.com
-                </p>
+                <p className="text-xs text-gray-500">admin@saralyatra.com</p>
               </div>
               <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center">
                 <span className="text-white text-sm font-medium">A</span>
@@ -199,7 +203,9 @@ const AdminChat = () => {
                     >
                       <div className="flex items-center space-x-3">
                         <div className="relative">
-                          <span className="text-xl border rounded-full bg-blue-100 p-2">{user.avatar}</span>
+                          <span className="text-xl border rounded-full bg-blue-100 p-2">
+                            {user.avatar}
+                          </span>
                           {/* <div
                             className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white ${
                               user.online ? "bg-green-400" : "bg-gray-400"
@@ -267,22 +273,26 @@ const AdminChat = () => {
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
                 {messagesLoading ? (
-                  <div className="text-center text-gray-400">Loading messages...</div>
+                  <div className="text-center text-gray-400">
+                    Loading messages...
+                  </div>
                 ) : (conversations[selectedUser.id] || []).length === 0 ? (
-                  <div className="text-center text-gray-400">No messages yet.</div>
+                  <div className="text-center text-gray-400">
+                    No messages yet.
+                  </div>
                 ) : (
                   (conversations[selectedUser.id] || []).map((message) => (
                     <div
                       key={message.id}
                       className={`flex group ${
-                        message.SendBy === 'Agent'
+                        message.SendBy === "Agent"
                           ? "justify-end"
                           : "justify-start"
                       }`}
                     >
                       <div
                         className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl relative ${
-                          message.SendBy === 'Agent'
+                          message.SendBy === "Agent"
                             ? "bg-indigo-600 text-white rounded-br-md"
                             : "bg-white text-gray-800 rounded-bl-md shadow-sm border border-gray-100"
                         }`}
@@ -292,14 +302,14 @@ const AdminChat = () => {
                         </div>
                         <div
                           className={`text-xs mt-1 ${
-                            message.SendBy === 'Agent'
+                            message.SendBy === "Agent"
                               ? "text-indigo-200"
                               : "text-gray-500"
                           }`}
                         >
                           {formatTime(message.time) || message.ts}
                         </div>
-                        {message.SendBy === 'Agent' && (
+                        {message.SendBy === "Agent" && (
                           <button
                             onClick={() => deleteMessage(message.id)}
                             className="absolute -top-2 -left-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
