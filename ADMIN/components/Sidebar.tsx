@@ -1,5 +1,5 @@
 "use client";
-import { Activity, BarChart3, Bus, BusFrontIcon, Calendar, LayoutDashboard, MapPin, Settings, TrendingUp, Users, } from 'lucide-react';
+import { Activity, BarChart3, Bus, BusFrontIcon, Calendar, LayoutDashboard, MapPin, Settings, TrendingUp, Users, WalletCards } from 'lucide-react';
 import { useState } from "react";
 
 //   const Sidebar = () => (
@@ -59,6 +59,7 @@ const navigation = [
   { name: 'Bookings', icon: Calendar, id: 'bookings' },
   { name: 'Users', icon: Users, id: 'users' },
   { name: 'Drivers', icon: BusFrontIcon, id: 'drivers' },
+  { name: 'DriverPayment', icon: WalletCards , id: 'driver-payment' },  
   { name: 'Tours & Packages', icon: Settings, id: 'tours&packages' },
   { name: 'Payment History', icon: Settings, id: 'payment-history' },
   { name: 'News & Blogs', icon: MapPin, id: 'blogs&news' },
