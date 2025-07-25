@@ -1,25 +1,48 @@
 "use client";
 import React from "react";
 import { db, storage } from "@/components/db/firebase";
-import { doc, addDoc, collection } from "firebase/firestore";
+import { doc, updateDoc, addDoc } from "firebase/firestore";
 
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useState, useEffect } from "react";
 import { X, Upload, Save, Camera, FileText, Type } from "lucide-react";
 
-export default function AddTourPackageForm({ onClose }) {
+export default function AddTourPackageUpdate({ onClose, item }) {
   const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    image: "",
+    title: item.title ?? "",
+    description: item.description ?? "",
+    image: item.imageUrl ?? "",
   });
 
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   // const [ isUploading, setIsUploading] = useState(false);
+
+  // Initialize form data
+  useEffect(() => {
+    const fetchPackageData = async () => {
+      try {
+        const packageData = {
+          title: item?.title || "Sample Tour Package",
+          description:
+            item?.description || "A wonderful tour experience awaits you.",
+          image: item?.imageUrl || "",
+        };
+
+        setFormData(packageData);
+        setImagePreview(packageData.image);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching package data:", error);
+        setIsLoading(false);
+      }
+    };
+
+    fetchPackageData();
+  }, [item]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -134,21 +157,22 @@ export default function AddTourPackageForm({ onClose }) {
       };
 
       // Simulate Firebase update - replace with actual Firebase code
-      console.log("Updating package with ID:");
+      console.log("Updating package with ID:", item.id);
       console.log("Updated data:", updatedData);
 
-      const packageDocRef = collection(
+      const packageDocRef = doc(
         db,
         "uploads",
         "packageDetails",
-        "packages"
+        "packages",
+        item.id
       );
-      await addDoc(packageDocRef, updatedData);
+      await updateDoc(packageDocRef, updatedData);
 
       // Simulate API delay
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      console.log("Package added successfully!");
+      console.log("Package updated successfully!");
       onClose();
     } catch (error) {
       console.error("Error updating package:", error);
@@ -179,7 +203,7 @@ export default function AddTourPackageForm({ onClose }) {
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
               <FileText className="w-6 h-6 text-blue-500" />
-              Add Tour Package
+              Update Tour Package {item?.id}
             </h1>
             <button
               onClick={onClose}
@@ -212,7 +236,7 @@ export default function AddTourPackageForm({ onClose }) {
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   errors.title ? "border-red-500" : "border-gray-300"
                 }`}
-                placeholder="Enter tour package title"
+                placeholder="Enter Blogs title"
               />
               {errors.title && (
                 <p className="text-red-500 text-sm mt-1">{errors.title}</p>
@@ -233,7 +257,7 @@ export default function AddTourPackageForm({ onClose }) {
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none ${
                   errors.description ? "border-red-500" : "border-gray-300"
                 }`}
-                placeholder="Enter tour package description"
+                placeholder="Enter Blogs description"
               />
               {errors.description && (
                 <p className="text-red-500 text-sm mt-1">
@@ -304,12 +328,12 @@ export default function AddTourPackageForm({ onClose }) {
               {isSubmitting ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  Adding...
+                  Updating...
                 </>
               ) : (
                 <>
                   <Save className="w-4 h-4" />
-                  Add Package
+                  Update Package
                 </>
               )}
             </button>

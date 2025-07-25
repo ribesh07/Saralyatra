@@ -7,7 +7,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useState, useEffect } from "react";
 import { X, Upload, Save, Camera, FileText, Type } from "lucide-react";
 
-export default function AddTourPackageForm({ onClose }) {
+export default function AddBlogs({ onClose }) {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -137,12 +137,7 @@ export default function AddTourPackageForm({ onClose }) {
       console.log("Updating package with ID:");
       console.log("Updated data:", updatedData);
 
-      const packageDocRef = collection(
-        db,
-        "uploads",
-        "packageDetails",
-        "packages"
-      );
+      const packageDocRef = collection(db, "uploads", "blogDetails", "blogs");
       await addDoc(packageDocRef, updatedData);
 
       // Simulate API delay
@@ -179,7 +174,7 @@ export default function AddTourPackageForm({ onClose }) {
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
               <FileText className="w-6 h-6 text-blue-500" />
-              Add Tour Package
+              Add Blogs Data
             </h1>
             <button
               onClick={onClose}
@@ -212,7 +207,7 @@ export default function AddTourPackageForm({ onClose }) {
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   errors.title ? "border-red-500" : "border-gray-300"
                 }`}
-                placeholder="Enter tour package title"
+                placeholder="Enter Blogs title"
               />
               {errors.title && (
                 <p className="text-red-500 text-sm mt-1">{errors.title}</p>
@@ -233,7 +228,7 @@ export default function AddTourPackageForm({ onClose }) {
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none ${
                   errors.description ? "border-red-500" : "border-gray-300"
                 }`}
-                placeholder="Enter tour package description"
+                placeholder="Enter Blogs description"
               />
               {errors.description && (
                 <p className="text-red-500 text-sm mt-1">

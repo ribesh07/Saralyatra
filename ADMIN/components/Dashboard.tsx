@@ -7,10 +7,7 @@ const fetcher = (url : any) => axios.get(url).then((res) => res.data);
 const Dashboard = () => {
 
   const stats = [
-    { name: 'Total Bookings', value: '2,847', change: '+12%', changeType: 'positive' },
-    { name: 'Active Buses', value: '124', change: '+2%', changeType: 'positive' },
-    { name: 'Revenue', value: '$89,420', change: '+18%', changeType: 'positive' },
-    { name: 'Customers', value: '1,342', change: '-2%', changeType: 'negative' },
+    { name: 'SaralYatra' , value : 'Journey Begins Here ....' },
   ];
 
   const recentBookings = [
@@ -35,7 +32,7 @@ const Dashboard = () => {
     const completed = data.completed || [];
   
     const bookings = [...(data.packages || []), ...(data.reservations || []) , ...(data.completed || [])];
-  
+  var randomNumber = Math.floor(Math.random() * 1000000);
 
   return (
     <>
@@ -50,19 +47,15 @@ const Dashboard = () => {
           </div>
           <div className="space-y-6">
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 justify-center">
               {stats.map((stat) => (
-                <div key={stat.name} className="bg-white rounded-lg shadow-sm border p-6">
+                <div key={stat.name+randomNumber} className="bg-white self-center w-100 px-8 rounded-lg shadow-sm border p-6">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600">{stat.name}</p>
                       <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
                     </div>
-                    <div className={`text-sm font-medium ${
-                      stat.changeType === 'positive' ? 'text-green-600' : 'text-red-600'
-                    }`}>
-                      {stat.change}
-                    </div>
+                   
                   </div>
                 </div>
               ))}
@@ -96,7 +89,7 @@ const Dashboard = () => {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {bookings.map((booking) => (
-                      <tr key={booking.id} className="hover:bg-gray-50">
+                      <tr key={booking.id+randomNumber} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                           {booking.id}
                         </td>

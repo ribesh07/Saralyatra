@@ -31,7 +31,9 @@
     "components/Users.jsx", // "app/users/page.tsx"
     "components/Drivers.jsx",
     "components/DriverPayment.jsx",
-    "components/PaymentHistory.jsx"
+    "components/PaymentHistory.jsx",
+    "components/ToursPackages.jsx",
+    "components/BlogsNews.jsx"
   ],
   "exclude": ["node_modules"]
 }
