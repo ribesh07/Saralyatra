@@ -415,59 +415,8 @@ class _HomeState extends State<Home> {
           currentLocation = LatLng(position.latitude, position.longitude);
         });
       });
-      // debugPrint("Function triggered at: ${DateTime.now()}");
-      // debugPrint(
-      //     " Current Location is : ${currentLocation!.latitude} , ${currentLocation!.longitude}");
     });
   }
-
-  // Widget customCard({
-  //   required String title,
-  //   required VoidCallback onTap,
-  //   required String label,
-  //   bool isSelected = false,
-  // }) {
-  //   return Card(
-  //     shape: RoundedRectangleBorder(
-  //       borderRadius: BorderRadius.circular(12),
-  //     ),
-  //     elevation: 4,
-  //     // margin: EdgeInsets.all(16),
-  //     child:
-
-  //         // padding: EdgeInsets.all(16),
-  //         InkWell(
-  //       onTap: onTap,
-  //       child: Container(
-  //         width: MediaQuery.of(context).size.width / 0.2,
-  //         decoration: BoxDecoration(
-  //           shape: BoxShape.rectangle,
-  //           borderRadius: BorderRadius.circular(12),
-  //           border:
-  //               Border.all(color: Color.fromARGB(255, 223, 231, 239), width: 3),
-  //           color: isSelected ? listColor : Colors.white,
-  //         ),
-  //         child: Column(
-  //           mainAxisSize: MainAxisSize.min,
-  //           crossAxisAlignment: CrossAxisAlignment.center,
-  //           mainAxisAlignment: MainAxisAlignment.center,
-  //           children: [
-  //             Text(
-  //               "Route No: $label",
-  //               textAlign: TextAlign.center,
-  //               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-  //             ),
-  //             // SizedBox(height: 8),
-  //             Text(
-  //               title,
-  //               style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-  //             ),
-  //           ],
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
 
   Widget customCard({
     required String title,
@@ -717,19 +666,20 @@ class _HomeState extends State<Home> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) {
-                            if (selectedMap == 'Koteshwar-Kalanki-satdobato') {
-                              return RouteMapPage(
-                                fileName: 'mahasagar',
-                              );
-                            } else if (selectedMap ==
-                                'Satdobato-Kalanki-koteshwar') {
+                            if (selectedMap ==
+                                'Pashupati - Kalanki - Koteshwor') {
                               return RouteMapPage(fileName: 'mahasagar');
-                            } else if (selectedMap == 'Koteshwar-Thimi-Sanga') {
+                            } else if (selectedMap ==
+                                'Koteshwor - Bhaktapur - Sanga') {
                               return RouteMapPage(fileName: 'sanga');
-                            } else if (selectedMap == 'Thimi-Sanga-Koteshwar') {
+                            } else if (selectedMap ==
+                                'Koteshwor - Kalanki - Pashupati') {
+                              return RouteMapPage(fileName: 'mahasagar');
+                            } else if (selectedMap ==
+                                'Sanga - Bhaktapur - Koteshwor') {
                               return RouteMapPage(fileName: 'sanga');
                             } else {
-                              return RouteMapPage(fileName: 'mahasagar');
+                              return RouteMapPage(fileName: 'sanga');
                             }
                           }),
                         );
