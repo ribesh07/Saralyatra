@@ -49,7 +49,7 @@ const Dashboard = () => {
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 justify-center">
               {stats.map((stat) => (
-                <div key={stat.name+randomNumber} className="bg-white self-center rounded-lg shadow-sm border p-6">
+                <div key={stat.name+randomNumber} className="bg-white self-center w-100 px-8 rounded-lg shadow-sm border p-6">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600">{stat.name}</p>
