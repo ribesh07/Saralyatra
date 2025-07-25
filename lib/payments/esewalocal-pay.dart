@@ -51,8 +51,8 @@ class EsewaLocalScreen extends StatelessWidget {
               onPressed: () {
                 Esewalocal esewa = Esewalocal();
                 // esewa.pay(context, price);
-                esewa.pay(
-                    context, price, userName, contact, date, email, userID);
+                esewa.pay(context, price, userName, contact, date, email,
+                    userID, 'Topup');
                 // pay(BuildContext context, String price, String userName, String busName,
                 //     String deptHr, String deptMin, String contact, String date) {
               },
