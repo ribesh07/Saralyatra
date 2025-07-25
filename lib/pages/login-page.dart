@@ -79,22 +79,34 @@ class _Login_pageState extends State<Login_page> {
   Future<void> driverLogin(
       String email, String password, BuildContext context) async {
     setState(() => _isLoading = true);
+
     try {
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
+
       final uid = userCredential.user?.uid;
+      print("UID: $uid");
 
       if (uid != null) {
         final sessionToken = const Uuid().v4();
 
-        final driverDoc = await FirebaseFirestore.instance
+        final driverDocSnapshot = await FirebaseFirestore.instance
             .collection('saralyatra')
             .doc('driverDetailsDatabase')
             .collection('drivers')
             .doc(uid)
             .get();
 
-        if (driverDoc.exists) {
+        if (driverDocSnapshot.exists) {
+          final driverData = driverDocSnapshot.data();
+          if (driverData == null) {
+            throw Exception("Driver data not found.");
+          }
+
+          // print("Driver data: $driverData");
+
+          final busNumber = driverData['busNumber']?.toString() ?? "N/A";
+
           await FirebaseFirestore.instance
               .collection('saralyatra')
               .doc('driverDetailsDatabase')
@@ -102,7 +114,7 @@ class _Login_pageState extends State<Login_page> {
               .doc(uid)
               .update({'sessionToken': sessionToken});
 
-          await SharedpreferenceHelper().saveBusNumber(driverDoc['busNumber']);
+          await SharedpreferenceHelper().saveBusNumber(busNumber);
           await SharedpreferenceHelper().saveSessionToken(sessionToken);
           await SharedpreferenceHelper().saveUserId(uid);
           await SharedpreferenceHelper().saveRole('driver');
