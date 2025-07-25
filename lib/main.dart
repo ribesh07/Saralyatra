@@ -228,6 +228,7 @@ import 'package:saralyatra/firebase_options.dart';
 import 'package:saralyatra/mapbox/provider.dart';
 import 'package:saralyatra/pages/login-page.dart';
 import 'package:saralyatra/pages/botton_nav_bar.dart';
+import 'package:saralyatra/pages/splash_screen.dart';
 import 'package:saralyatra/services/shared_pref.dart';
 
 void main() async {
@@ -308,7 +309,7 @@ class _AppState extends State<App> {
         ),
         useMaterial3: true,
       ),
-      home: const AuthCheck(),
+      home: const SplashScreen(nextScreen: AuthCheck()),
     );
   }
 }
