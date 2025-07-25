@@ -1,9 +1,7 @@
 import React, { useState, ChangeEvent, useEffect } from "react";
 import { Plus, Edit, Trash2, Upload, Loader2 } from "lucide-react";
-import AddTourPackageForm from "./AddTourPackageForm";
 import { collection, doc, getDocs, deleteDoc } from "firebase/firestore";
 import { db } from "@/components/db/firebase";
-import AddTourPackageUpdate from "./AddTourPackageUpdate";
 
 // interface TourPackage {
 //   id: number;
@@ -14,8 +12,8 @@ import AddTourPackageUpdate from "./AddTourPackageUpdate";
 //   duration: string;
 // }
 
-const ToursPackagesPage = () => {
-  const [toursPackages, setToursPackages] = useState([]);
+const BlogsNews = () => {
+  const [blogs, setblogs] = useState([]);
   const [enabled, setenabled] = useState(false);
 
   const [Loading, setLoading] = useState(false);
@@ -24,19 +22,19 @@ const ToursPackagesPage = () => {
       const packageCollectionRef = collection(
         db,
         "uploads",
-        "packageDetails",
-        "packages"
+        "blogDetails",
+        "blogs"
       );
 
       const querySnapshot = await getDocs(packageCollectionRef);
 
-      const packages = querySnapshot.docs.map((docSnap) => ({
+      const blogsData = querySnapshot.docs.map((docSnap) => ({
         id: docSnap.id,
         ...docSnap.data(),
       }));
 
-      console.log("Fetched packages:", packages);
-      return packages;
+      console.log("Fetched packages:", blogsData);
+      return blogsData;
     } catch (error) {
       console.error("Error fetching package docs:", error);
       return [];
@@ -44,16 +42,16 @@ const ToursPackagesPage = () => {
   };
 
   useEffect(() => {
-    fetchPackageDocs().then((packages) => {
-      setToursPackages(packages);
+    fetchPackageDocs().then((blogsData) => {
+      setblogs(blogsData);
     });
   }, []);
   const [enabledupdate, setenabledupdate] = useState(false);
   const handleClose = () => {
     setenabled(false);
     setenabledupdate(false);
-    fetchPackageDocs().then((packages) => {
-      setToursPackages(packages);
+    fetchPackageDocs().then((blogsData) => {
+      setToursPackages(blogsData);
     });
   };
 
@@ -61,35 +59,19 @@ const ToursPackagesPage = () => {
     setenabled(true);
   };
 
-  const handleImageUpload = (id, event) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result || "";
-        setToursPackages((prev) =>
-          prev.map((item) =>
-            item.id === id ? { ...item, image: result } : item
-          )
-        );
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const handleDelete = async (id) => {
     console.log("Attempting to delete document with ID:", id);
     setLoading(true);
     try {
-      const docRef = doc(db, "uploads", "packageDetails", "packages", id);
+      const docRef = doc(db, "uploads", "blogDetails", "blogs", id);
       await deleteDoc(docRef);
       console.log("Document deleted successfully!");
     } catch (error) {
       console.error("Error deleting document:", error);
     } finally {
       setLoading(false);
-      fetchPackageDocs().then((packages) => {
-        setToursPackages(packages);
+      fetchPackageDocs().then((blogsData) => {
+        setToursPackages(blogsData);
       });
     }
   };
@@ -118,10 +100,10 @@ const ToursPackagesPage = () => {
       <div className="max-w-7xl mx-auto">
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Tours & Packages Management
+            News & Blogs Management
           </h1>
           <p className="text-gray-600">
-            Manage your travel tours and packages efficiently
+            Manage your blogs and news efficiently
           </p>
         </div>
 
@@ -131,12 +113,12 @@ const ToursPackagesPage = () => {
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 font-medium transition-colors"
           >
             <Plus size={20} />
-            Add Tours & Package
+            Add Blogs
           </button>
         </div>
-        {enabled && <AddTourPackageForm onClose={handleClose} />}
+        {enabled && <AddBlogs onClose={handleClose} />}
         {enabledupdate && (
-          <AddTourPackageUpdate onClose={handleClose} item={selectedItem} />
+          <AddBlogsUpdate onClose={handleClose} item={selectedItem} />
         )}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
@@ -159,7 +141,7 @@ const ToursPackagesPage = () => {
               </thead>
 
               <tbody className="bg-white divide-y divide-gray-200">
-                {toursPackages.map((item) => (
+                {blogs.map((item) => (
                   <tr key={item.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
