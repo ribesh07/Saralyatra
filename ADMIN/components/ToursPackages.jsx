@@ -1,0 +1,198 @@
+import React, { useState, ChangeEvent, useEffect } from "react";
+import { Plus, Edit, Trash2, Upload } from "lucide-react";
+import AddTourPackageForm from "./AddTourPackageForm";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/components/db/firebase";
+import AddTourPackageUpdate from "./AddTourPackageUpdate";
+
+// interface TourPackage {
+//   id: number;
+//   title: string;
+//   description: string;
+//   image: string | null;
+//   price: string;
+//   duration: string;
+// }
+
+const ToursPackagesPage = () => {
+  const [toursPackages, setToursPackages] = useState([]);
+  const [enabled, setenabled] = useState(false);
+
+  const fetchPackageDocs = async () => {
+    try {
+      const packageCollectionRef = collection(
+        db,
+        "uploads",
+        "packageDetails",
+        "packages"
+      );
+
+      const querySnapshot = await getDocs(packageCollectionRef);
+
+      const packages = querySnapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data(),
+      }));
+
+      console.log("Fetched packages:", packages);
+      return packages;
+    } catch (error) {
+      console.error("Error fetching package docs:", error);
+      return [];
+    }
+  };
+
+  useEffect(() => {
+    fetchPackageDocs().then((packages) => {
+      setToursPackages(packages);
+    });
+  }, []);
+  const [enabledupdate, setenabledupdate] = useState(false);
+  const handleClose = () => {
+    setenabled(false);
+    setenabledupdate(false);
+  };
+
+  const handleOpen = () => {
+    setenabled(true);
+  };
+
+  const handleImageUpload = (id, event) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result || "";
+        setToursPackages((prev) =>
+          prev.map((item) =>
+            item.id === id ? { ...item, image: result } : item
+          )
+        );
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDelete = (id) => {
+    if (window.confirm("Are you sure you want to delete this item?")) {
+      setToursPackages((prev) => prev.filter((item) => item.id !== id));
+    }
+  };
+
+  const [selectedItem, setSelectedItem] = useState(null);
+  const handleUpdate = (id) => {
+    setSelectedItem(id);
+    setenabledupdate(true);
+    // setenabled(true);/
+    // alert(`Update functionality for item ID: ${id}`);
+  };
+
+  const handleAddNew = () => {
+    setenabled(true);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Tours & Packages Management
+          </h1>
+          <p className="text-gray-600">
+            Manage your travel tours and packages efficiently
+          </p>
+        </div>
+
+        <div className="flex justify-start mb-6">
+          <button
+            onClick={handleAddNew}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 font-medium transition-colors"
+          >
+            <Plus size={20} />
+            Add Tours & Package
+          </button>
+        </div>
+        {enabled && <AddTourPackageForm onClose={handleClose} />}
+        {enabledupdate && (
+          <AddTourPackageUpdate onClose={handleClose} item={selectedItem} />
+        )}
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Image
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Title
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Description
+                  </th>
+                  <th className="px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody className="bg-white divide-y divide-gray-200">
+                {toursPackages.map((item) => (
+                  <tr key={item.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        {item.imageUrl ? (
+                          <img
+                            src={item.imageUrl}
+                            alt={item.title}
+                            className="h-12 w-12 rounded-lg object-cover"
+                          />
+                        ) : (
+                          <div className="h-12 w-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                            <Upload size={16} className="text-gray-400" />
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-medium text-gray-900">
+                        {item.title}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-500 max-w-xs truncate">
+                        {item.description}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex justify-center align-center items-center gap-2">
+                        <button
+                          onClick={() => handleUpdate(item)}
+                          className="text-blue-600 hover:text-blue-700 p-1 rounded transition-colors"
+                          title="Update"
+                          type="button"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          className="text-red-600 hover:text-red-700 p-1 rounded transition-colors"
+                          title="Delete"
+                          type="button"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ToursPackagesPage;
