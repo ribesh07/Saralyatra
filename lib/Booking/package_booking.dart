@@ -30,7 +30,7 @@ class _PackageBookingState extends State<PackageBooking> {
   final phonecontroller = TextEditingController();
   final formkey = GlobalKey<FormState>();
   final mailcontroller = TextEditingController();
-  final passengercontroller = TextEditingController();
+  // final passengercontroller = TextEditingController();
   String tripdetails = '[details]';
   var departureDate = DateFormat("dd/MM/yyyy").format(DateTime.now());
   String packagePrice = "0";
@@ -132,11 +132,12 @@ class _PackageBookingState extends State<PackageBooking> {
           'name': namecontroller.text.trim(),
           'packageName': widget.packageTitle,
           'reservationDate': departureDate,
-          'totalPassenger': passengercontroller.text.trim(),
+          // 'totalPassenger': passengercontroller.text.trim(),
           'price': packagePrice,
           'bookingDate': DateTime.now().toIso8601String(),
           'bookingTime': DateFormat('HH:mm').format(DateTime.now()),
           'userUid': currentUser.uid,
+          'status': 'pending',
         };
 
         // Save to Firebase location: uploads/packageDetails/packages/{uniqueId}
@@ -291,15 +292,15 @@ class _PackageBookingState extends State<PackageBooking> {
                             validator: (value) =>
                                 provider.emailValidator(value),
                           ),
-                          InputField(
-                            icon: Icons.numbers,
-                            label: "Total Passenger",
-                            controller: passengercontroller,
-                            inputFormat: [
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
-                            validator: (value) => provider.passValidator(value),
-                          ),
+                          // InputField(
+                          //   icon: Icons.numbers,
+                          //   label: "Total Passenger",
+                          //   controller: passengercontroller,
+                          //   inputFormat: [
+                          //     FilteringTextInputFormatter.digitsOnly,
+                          //   ],
+                          //   validator: (value) => provider.passValidator(value),
+                          // ),
                         ],
                       ),
                     ),
@@ -380,32 +381,32 @@ class _PackageBookingState extends State<PackageBooking> {
                     ),
 
                     //billing
-                    Card(
-                      elevation: 10,
-                      child: Container(
-                        height: 100,
-                        width: MediaQuery.of(context).size.width,
-                        child: Column(
-                          children: [
-                            SizedBox(
-                              height: 10,
-                            ),
-                            Text(
-                              'Bill Amount',
-                              style: textStyle,
-                              textAlign: TextAlign.center,
-                            ),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            Text(
-                              "Amount : Rs.$toPay",
-                              style: TextStyle(fontSize: 18),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                    // Card(
+                    //   elevation: 10,
+                    //   child: Container(
+                    //     height: 100,
+                    //     width: MediaQuery.of(context).size.width,
+                    //     child: Column(
+                    //       children: [
+                    //         SizedBox(
+                    //           height: 10,
+                    //         ),
+                    //         Text(
+                    //           'Bill Amount',
+                    //           style: textStyle,
+                    //           textAlign: TextAlign.center,
+                    //         ),
+                    //         SizedBox(
+                    //           height: 10,
+                    //         ),
+                    //         Text(
+                    //           "Amount : Rs.$toPay",
+                    //           style: TextStyle(fontSize: 18),
+                    //         ),
+                    //       ],
+                    //     ),
+                    //   ),
+                    // ),
                     SizedBox(
                       height: 10,
                     ),

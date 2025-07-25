@@ -110,6 +110,7 @@ class _BottomBarState extends State<BottomBar> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: appbarcolor,
+
         title: const Text('SaralYatra'),
         centerTitle: true,
         automaticallyImplyLeading: false,

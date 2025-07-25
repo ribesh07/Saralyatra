@@ -77,6 +77,8 @@ class DatabaseMethod {
     String messageId,
     Map<String, dynamic> messageInfoMap,
   ) async {
+    print('Adding message to chat room: $chatRoomId');
+    print('Message ID: $messageId');
     return await FirebaseFirestore.instance
         .collection("chatrooms")
         .doc(chatRoomId)
@@ -101,10 +103,29 @@ class DatabaseMethod {
     String chatRoomId,
     Map<String, dynamic> lastMessageInfoMap,
   ) async {
-    return FirebaseFirestore.instance
-        .collection("chatrooms")
-        .doc(chatRoomId)
-        .update(lastMessageInfoMap);
+    try {
+      // Check if chatroom exists first
+      final chatRoomRef = FirebaseFirestore.instance
+          .collection("chatrooms")
+          .doc(chatRoomId);
+      
+      final chatRoomDoc = await chatRoomRef.get();
+      
+      if (chatRoomDoc.exists) {
+        // Update existing chatroom
+        return await chatRoomRef.update(lastMessageInfoMap);
+      } else {
+        // Create chatroom with last message info if it doesn't exist
+        Map<String, dynamic> chatRoomData = {
+          "users": ["Agent", chatRoomId.split('_')[1]], // Extract username from chatRoomId
+          ...lastMessageInfoMap,
+        };
+        return await chatRoomRef.set(chatRoomData);
+      }
+    } catch (e) {
+      print('Error updating last message: $e');
+      throw e;
+    }
   }
 
   // Future<QuerySnapshot> search(String username) async {
@@ -118,13 +139,18 @@ class DatabaseMethod {
     String chatRoomId,
     Map<String, dynamic> chatRoomInfoMap,
   ) async {
+    print('Creating/checking chat room with ID: $chatRoomId');
+    print('Chat room info: $chatRoomInfoMap');
+    
     final snapshot = await FirebaseFirestore.instance
-        .collection("Chatrooms")
+        .collection("chatrooms")
         .doc(chatRoomId)
         .get();
     if (snapshot.exists) {
+      print('Chat room $chatRoomId already exists');
       return true;
     } else {
+      print('Creating new chat room $chatRoomId');
       return FirebaseFirestore.instance
           .collection("chatrooms")
           .doc(chatRoomId)
