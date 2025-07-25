@@ -4,7 +4,7 @@ import { Edit, Save, X, Trash2 } from "lucide-react";
 import SeatSelection from "@/app/seats/page";
 import { doc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/components/db/firebase"; // adjust path to your config
-
+import AddBus from "./AddBus";
 
 const BusDashboard = () => {
   // const initialBuses = [
@@ -63,7 +63,14 @@ const BusDashboard = () => {
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [seatsenabled, setseatsenabled] = useState(false);
-  const [handleAddBus, setHandleAddBus] = useState(null);
+  // const [handleAddBus, setHandleAddBus] = useState(null);
+  const [enabled, setenabled] = useState(false);
+
+
+  const handleAddBus = () => {
+    setenabled(true);
+  };
+
 
 
   const busTypes = ["AC Deluxe", "AC Standard", "Non-AC", "Sleeper"];
@@ -135,6 +142,11 @@ const BusDashboard = () => {
   //   setEditingId(null);
   //   setEditForm({});
   // };
+
+  const handleClose = () => {
+    // setHandleAddBus(null);
+    setenabled(false);
+  };
   const handleSave = async () => {
   try {
     console.log("Saving bus data to Firebase:", editForm);
@@ -190,6 +202,7 @@ await setDoc(busRef, updatedBus, { merge: true });
               + Add Bus
             </button>
             </div>
+            { enabled && <AddBus onClose={handleClose} /> }
         </div>
 
         <div className="overflow-x-auto">

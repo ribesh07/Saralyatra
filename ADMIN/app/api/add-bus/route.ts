@@ -39,10 +39,10 @@ export async function POST(req: any) {
       shift,
       busNumber,
       busType,
-      depTimeMin, // formerly: depMin
-      depTimeHr, // formerly: depHr
-      arrTimeMin, // formerly: arrMin
-      arrTimeHr, // formerly: arrHr
+      depTimeMin, 
+      depTimeHr, 
+      arrTimeMin, 
+      arrTimeHr, 
       availableSeat,
       reservedSeat,
       createdAt: new Date().toISOString(),
