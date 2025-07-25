@@ -38,50 +38,49 @@ const DriverPaymentTable = () => {
     day: "numeric",
   });
 
-  useEffect(() => {
-    const fetchAllDriverPayments = async () => {
-      try {
-        const driverWithdrawRef = collection(
+  const fetchAllDriverPayments = async () => {
+    try {
+      const driverWithdrawRef = collection(
+        db,
+        "saralyatra",
+        "paymentDetails",
+        "driverWithdrawHistory"
+      );
+
+      const driverDocsSnap = await getDocs(driverWithdrawRef);
+
+      const allPayments = [];
+
+      for (const driverDoc of driverDocsSnap.docs) {
+        const driverID = driverDoc.id;
+
+        const paymentsRef = collection(
           db,
           "saralyatra",
           "paymentDetails",
-          "driverWithdrawHistory"
+          "driverWithdrawHistory",
+          driverID,
+          "payments" // the subcollection
         );
 
-        const driverDocsSnap = await getDocs(driverWithdrawRef);
+        const paymentsSnap = await getDocs(paymentsRef);
 
-        const allPayments = [];
-
-        for (const driverDoc of driverDocsSnap.docs) {
-          const driverID = driverDoc.id;
-
-          const paymentsRef = collection(
-            db,
-            "saralyatra",
-            "paymentDetails",
-            "driverWithdrawHistory",
+        paymentsSnap.forEach((paymentDoc) => {
+          allPayments.push({
             driverID,
-            "payments" // the subcollection
-          );
-
-          const paymentsSnap = await getDocs(paymentsRef);
-
-          paymentsSnap.forEach((paymentDoc) => {
-            allPayments.push({
-              driverID,
-              paymentID: paymentDoc.id,
-              ...paymentDoc.data(),
-            });
+            paymentID: paymentDoc.id,
+            ...paymentDoc.data(),
           });
-        }
-
-        setdrivers(allPayments); // or setDriverPayments if it's payment-specific
-        console.log("Fetched all driver payments:", allPayments);
-      } catch (err) {
-        console.error("Error fetching nested driver payments:", err);
+        });
       }
-    };
 
+      setdrivers(allPayments); // or setDriverPayments if it's payment-specific
+      console.log("Fetched all driver payments:", allPayments);
+    } catch (err) {
+      console.error("Error fetching nested driver payments:", err);
+    }
+  };
+  useEffect(() => {
     fetchAllDriverPayments();
   }, []);
 
@@ -121,10 +120,27 @@ const DriverPaymentTable = () => {
   };
 
   const handleConfirm = async (driver) => {
-    if (!validateWithdraw(driver.driverID, driver.totalBalance)) return;
-
+    // if (!validateWithdraw(driver.driverID, driver.totalBalance)) return;
+    try {
+      const driverDocRef = doc(
+        db,
+        "saralyatra",
+        "paymentDetails",
+        "driverWithdrawHistory",
+        driver.driverID,
+        "payments",
+        driver.paymentID
+      );
+      await updateDoc(driverDocRef, {
+        status: "confirmed",
+      });
+      fetchAllDriverPayments();
+    } catch (err) {
+      console.log(err);
+    }
     setProcessingState((prev) => ({ ...prev, [driver.driverID]: true }));
-
+    console.log(driver.driverID);
+    console.log(driver);
     // Simulate API call
     setTimeout(() => {
       alert(
@@ -137,9 +153,23 @@ const DriverPaymentTable = () => {
     }, 1500);
   };
 
-  const handleCancel = (driverID) => {
-    setWithdrawData((prev) => ({ ...prev, [driverID]: "" }));
-    setErrors((prev) => ({ ...prev, [driverID]: "" }));
+  const handleCancel = async (driver) => {
+    console.log(driver);
+    console.log("Inside handle cancel");
+    const driverDocRef = doc(
+      db,
+      "saralyatra",
+      "paymentDetails",
+      "driverWithdrawHistory",
+      driver.driverID,
+      "payments",
+      driver.paymentID
+    );
+    await updateDoc(driverDocRef, {
+      status: "cancelled",
+    });
+    setWithdrawData((prev) => ({ ...prev, [driver.driverID]: "" }));
+    setErrors((prev) => ({ ...prev, [driver.driverID]: "" }));
   };
 
   return (
@@ -247,31 +277,38 @@ const DriverPaymentTable = () => {
                     {/* Actions */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex space-x-2">
-                        <button
-                          onClick={() => handleConfirm(driver)}
-                          disabled={processingState[driver.driverID]}
-                          className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300 disabled:cursor-not-allowed"
-                        >
-                          {processingState[driver.driverID] ? (
-                            <>
-                              <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin mr-1"></div>
-                              Processing
-                            </>
-                          ) : (
-                            <>
-                              <Check className="w-3 h-3 mr-1" />
-                              Confirm
-                            </>
-                          )}
-                        </button>
+                        {driver.status !== "confirmed" && (
+                          <button
+                            onClick={() => handleConfirm(driver)}
+                            disabled={processingState[driver.driverID]}
+                            className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300 disabled:cursor-not-allowed"
+                          >
+                            {processingState[driver.driverID] ? (
+                              <>
+                                <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin mr-1"></div>
+                                Processing
+                              </>
+                            ) : (
+                              <>
+                                <Check className="w-3 h-3 mr-1" />
+                                Confirm
+                              </>
+                            )}
+                          </button>
+                        )}
+                        {driver.status === "confirmed" && (
+                          <span className="text-xs font-medium text-green-600">
+                            Confirmed
+                          </span>
+                        )}
 
-                        <button
-                          onClick={() => handleCancel(driver.driverID)}
+                        {/* <button
+                          onClick={() => handleCancel(driver)}
                           className="inline-flex items-center text-xs font-medium text-red-600 hover:text-red-800 focus:outline-none"
                         >
                           <X className="w-3 h-3 mr-1" />
                           Cancel
-                        </button>
+                        </button> */}
                       </div>
                     </td>
                   </tr>
