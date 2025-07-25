@@ -66,11 +66,9 @@ const BusDashboard = () => {
   // const [handleAddBus, setHandleAddBus] = useState(null);
   const [enabled, setenabled] = useState(false);
 
-
   const handleAddBus = () => {
     setenabled(true);
   };
-
 
   const busTypes = ["AC Deluxe", "AC Standard", "Non-AC", "Sleeper"];
   const routeCollections = [
@@ -181,10 +179,9 @@ const BusDashboard = () => {
     setEditForm({});
   };
 
-  const handleDelete = (busId) => {
-    if (window.confirm("Are you sure you want to delete this bus?")) {
-      setBuses(buses.filter((bus) => bus.id !== busId));
-    }
+  const handleDelete = async (id) => {
+    console.log("Attempting to delete user with ID:", id);
+    alert(`We Don't Delete Buses HERE 😂 !`);
   };
 
   const getSeatStatus = (seats) => {
@@ -208,8 +205,8 @@ const BusDashboard = () => {
             >
               + Add Bus
             </button>
-            </div>
-            { enabled && <AddBus onClose={handleClose} /> }
+          </div>
+          {enabled && <AddBus onClose={handleClose} />}
         </div>
 
         <div className="overflow-x-auto">

@@ -6,17 +6,13 @@ import {
   Plus,
   Phone,
   MapPin,
-  Calendar,
-  Bus,
-  Activity,
-  TrendingUp,
-  DollarSign,
-  Eye,
   Edit,
   Trash2,
+  Loader2,
 } from "lucide-react";
 import { db } from "@/components/db/firebase";
-import { collection, getDocs } from "firebase/firestore";
+import UpdateModel from "./UpdateModel";
+import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
 
 const UsersPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -28,31 +24,38 @@ const UsersPage = () => {
   const [phone, setPhone] = useState("");
   const [location, setLocation] = useState("");
   const [customers, setCustomers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [deleted, setDeleted] = useState(false);
+  const [showmodel, setShowmodel] = useState(false);
 
+  const fetchUsers = async () => {
+    try {
+      const routeCollectionRef = collection(
+        db,
+        "saralyatra",
+        "userDetailsDatabase",
+        "users"
+      );
+      const querySnapshot = await getDocs(routeCollectionRef);
+
+      const users = querySnapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data(),
+      }));
+      setCustomers(users);
+      console.log("Fetched users:", users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const routeCollectionRef = collection(
-          db,
-          "saralyatra",
-          "userDetailsDatabase",
-          "users"
-        );
-        const querySnapshot = await getDocs(routeCollectionRef);
-
-        const users = querySnapshot.docs.map((docSnap) => ({
-          id: docSnap.id,
-          ...docSnap.data(),
-        }));
-        setCustomers(users);
-        console.log("Fetched users:", users);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      }
-    };
-
     fetchUsers(); // Don't forget to call it!
-  }, []);
+  }, [deleted]);
+
+  const handlemodelClose = () => {
+    setShowmodel(false);
+    fetchUsers();
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -159,26 +162,39 @@ const UsersPage = () => {
     </div>
   );
 
-  // type Customer = {
-  //   id: string;
-  //   name: string;
-  //   email: string;
-  //   phone: string;
-  //   location: string;
-  //   joinDate: string;
-  //   totalBookings: number;
-  //   totalSpent: number;
-  //   status: string;
-  //   lastBooking: string;
-  //   avatar: string;
-  // };
-
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
   const handleupdate = (c) => {
-    alert(`Update functionality for item ID: ${c.id}`);
+    // alert(`Update functionality for item ID: ${c.id}`);
+    setSelectedCustomer(c);
+    setShowmodel(true);
   };
 
-  const handleDelete = (id) => {
-    // alert(`Delete functionality for item ID: ${id}`);
+  const handleDelete = async (id) => {
+    console.log("Attempting to delete user with ID:", id);
+    setLoading(true);
+    try {
+      const userDocRef = doc(
+        db,
+        "saralyatra",
+        "userDetailsDatabase",
+        "users",
+        id
+      );
+
+      await deleteDoc(userDocRef);
+      console.log(`✅ User ${id} deleted successfully.`);
+
+      alert(`✅ User ${id} deleted`);
+
+      // setDeleted(true);
+    } catch (error) {
+      console.error("❌ Error deleting user:", error);
+      alert("❌ Error deleting user");
+    } finally {
+      setLoading(false);
+      // setDeleted(false);
+      setDeleted((prev) => !prev);
+    }
   };
 
   const CustomerRow = ({ customer }) => (
@@ -232,6 +248,18 @@ const UsersPage = () => {
     </tr>
   );
 
+  if (loading) {
+    return <Loader2 className="animate-spin" />;
+  }
+  if (showmodel) {
+    return (
+      <UpdateModel
+        handleClose={handlemodelClose}
+        initialData={selectedCustomer}
+      />
+    );
+  }
+
   return (
     <main className="flex-1 overflow-y-auto p-6">
       {/* Stats Cards */}
@@ -277,7 +305,7 @@ const UsersPage = () => {
                 placeholder="Search customers..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-80"
               />
             </div>
 
@@ -297,13 +325,13 @@ const UsersPage = () => {
             </select> */}
           </div>
 
-          <button
+          {/* <button
             onClick={() => setShowAddModal(true)}
             className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Plus className="h-4 w-4" />
             <span>Add Customer</span>
-          </button>
+          </button> */}
         </div>
       </div>
 

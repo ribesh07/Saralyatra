@@ -13,13 +13,18 @@ const BookingTable = () => {
   // const reservations = data.reservations || [];
   const completed = data.completed || [];
 
-  const bookings = [...(data.packages || []), ...(data.reservations || [])];
+  const bookings = [
+    ...(data.packages || []),
+    ...(data.reservations || []),
+    ...(data.bus || []),
+  ];
 
   const updateBooking = async (booking) => {
     await axios.post("/api/bookings", booking);
     mutate("/api/bookings"); // Refresh the data
     alert("Booking updated successfully!");
   };
+  const currenttime = new Date().getTime();
 
   return (
     <div className="bg-white shadow-sm">
@@ -52,22 +57,25 @@ const BookingTable = () => {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {bookings.map((booking) => (
-              <tr key={booking.id} className="hover:bg-gray-50">
+              <tr
+                key={`${booking.id}+${currenttime}`}
+                className="hover:bg-gray-50"
+              >
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {booking.id}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {booking.name || booking.customer || "-"}
+                  {booking.userName ?? booking.name ?? "N/A"}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {booking.packageName || booking.route || "-"}
+                  {booking.destination ?? booking.location ?? "-"}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {booking.bookingDate?.seconds
                     ? new Date(
                         booking.bookingDate.seconds * 1000
                       ).toLocaleString()
-                    : booking.bookingDate || "-"}
+                    : booking.bookingDate ?? booking.date ?? "-"}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span
@@ -112,7 +120,7 @@ const BookingTable = () => {
           <h4 className="text-lg font-semibold mb-2">Reservations</h4>
           <ul className="list-disc list-inside text-sm text-gray-700">
             {completed.map((r) => (
-              <li className="mb-2 text-red-300" key={r.id}>
+              <li className="mb-2 text-red-300" key={r.id + r.completionDate}>
                 {r.name} completed on{" "}
                 {r.completionDate?.seconds
                   ? new Date(r.completionDate.seconds * 1000).toLocaleString()

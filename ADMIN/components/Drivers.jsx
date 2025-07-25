@@ -1,8 +1,17 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Users, Search, Plus, Phone, Edit, Trash2 } from "lucide-react";
+import {
+  Users,
+  Search,
+  Plus,
+  Phone,
+  Edit,
+  Trash2,
+  Loader2,
+} from "lucide-react";
 import { db } from "@/components/db/firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
+import UpdateModelDriver from "./UpdateDriver";
 
 const DriversPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -14,31 +23,40 @@ const DriversPage = () => {
   const [phone, setPhone] = useState("");
   const [location, setLocation] = useState("");
   const [drivers, setdrivers] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const [deleted, setDeleted] = useState(false);
+  const [showmodel, setShowmodel] = useState(false);
+  const [selectedDriver, setSelectedDriver] = useState(null);
+
+  const fetchUsers = async () => {
+    try {
+      const routeCollectionRef = collection(
+        db,
+        "saralyatra",
+        "driverDetailsDatabase",
+        "drivers"
+      );
+      const querySnapshot = await getDocs(routeCollectionRef);
+
+      const driverss = querySnapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data(),
+      }));
+      setdrivers(driverss);
+      console.log("Fetched drivers:", driverss);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
+  const handleClose = () => {
+    setShowmodel(false);
+    fetchUsers();
+  };
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const routeCollectionRef = collection(
-          db,
-          "saralyatra",
-          "driverDetailsDatabase",
-          "drivers"
-        );
-        const querySnapshot = await getDocs(routeCollectionRef);
-
-        const driverss = querySnapshot.docs.map((docSnap) => ({
-          id: docSnap.id,
-          ...docSnap.data(),
-        }));
-        setdrivers(driverss);
-        console.log("Fetched drivers:", driverss);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      }
-    };
-
     fetchUsers(); // Don't forget to call it!
-  }, []);
+  }, [deleted]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -160,11 +178,37 @@ const DriversPage = () => {
   // };
 
   const handleupdate = (c) => {
-    alert(`Update functionality for item ID: ${c.id}`);
+    // alert(`Update functionality for item ID: ${c.id}`);
+    setSelectedDriver(c);
+    setShowmodel(true);
   };
 
-  const handleDelete = (id) => {
-    // alert(`Delete functionality for item ID: ${id}`);
+  const handleDelete = async (id) => {
+    console.log("Attempting to delete user with ID:", id);
+    setLoading(true);
+    try {
+      const userDocRef = doc(
+        db,
+        "saralyatra",
+        "driverDetailsDatabase",
+        "drivers",
+        id
+      );
+
+      await deleteDoc(userDocRef);
+      console.log(`✅ User ${id} deleted successfully.`);
+
+      alert(`✅ User ${id} deleted`);
+
+      // setDeleted(true);
+    } catch (error) {
+      console.error("❌ Error deleting user:", error);
+      alert("❌ Error deleting user");
+    } finally {
+      setLoading(false);
+      // setDeleted(false);
+      setDeleted((prev) => !prev);
+    }
   };
 
   const DriverRow = ({ driver }) => (
@@ -213,7 +257,7 @@ const DriversPage = () => {
             <Edit className="h-4 w-4" />
           </button>
           <button
-            onClick={() => handleDelete(driver.id)}
+            onClick={() => handleDelete(driver.uid)}
             className="text-red-600 hover:text-red-900"
             title="Delete"
           >
@@ -224,6 +268,17 @@ const DriversPage = () => {
     </tr>
   );
 
+  if (loading) {
+    return <Loader2 className="animate-spin" />;
+  }
+  if (showmodel) {
+    return (
+      <UpdateModelDriver
+        initialData={selectedDriver}
+        handleClose={handleClose}
+      />
+    );
+  }
   return (
     <main className="flex-1 overflow-y-auto p-6">
       {/* Stats Cards */}
@@ -289,20 +344,20 @@ const DriversPage = () => {
             </select> */}
           </div>
 
-          <button
+          {/* <button
             onClick={() => setShowAddModal(true)}
             className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Plus className="h-4 w-4" />
             <span>Add driver</span>
-          </button>
+          </button> */}
         </div>
       </div>
 
       {/* drivers Table */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-800">driver List</h3>
+          <h3 className="text-lg font-semibold text-gray-800">Driver List</h3>
           <p className="text-sm text-gray-600 mt-1">
             Showing {filtereddrivers.length} of {drivers.length} drivers
           </p>
