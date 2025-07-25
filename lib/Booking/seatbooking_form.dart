@@ -83,7 +83,7 @@ class _bookSeatState extends State<bookSeat> {
           centerTitle: true,
           leading: IconButton(
               onPressed: () {
-                Navigator.pop(context, "hello");
+                Navigator.pop(context, "reset");
               },
               icon: Icon(Icons.arrow_back)),
           // actions: [
