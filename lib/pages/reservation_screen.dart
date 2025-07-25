@@ -93,7 +93,7 @@ class _TicketScreenState extends State<TicketScreen> {
 
         // Generate a unique ID for the reservation
         String uniqueId = DateTime.now().millisecondsSinceEpoch.toString();
-        
+
         final reservationDetails = {
           'name': namecontroller.text.trim(),
           'contact': phonecontroller.text.trim(),
@@ -105,6 +105,7 @@ class _TicketScreenState extends State<TicketScreen> {
           'bookingDate': DateTime.now().toIso8601String(),
           'bookingTime': DateFormat('HH:mm').format(DateTime.now()),
           'userUid': currentUser.uid,
+          'status': 'pending', // Add status field
         };
 
         // Save to Firebase location: history/upcomingHistoryDetails/reservation/{uniqueId}
@@ -122,14 +123,13 @@ class _TicketScreenState extends State<TicketScreen> {
         }
 
         print('Reservation details stored successfully');
-        
       } catch (e) {
         // Close loading dialog safely
         if (isDialogShowing && mounted) {
           Navigator.of(context, rootNavigator: true).pop();
           isDialogShowing = false;
         }
-        
+
         print('Error storing reservation details: $e');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -420,17 +420,18 @@ class _TicketScreenState extends State<TicketScreen> {
                                       onPressed: () async {
                                         // Close confirmation dialog
                                         Navigator.pop(context);
-                                        
+
                                         try {
                                           //main Logic
                                           await _storeReservationDetails();
-                                          
+
                                           // Show success message
                                           if (mounted) {
                                             final snackBar = SnackBar(
                                               backgroundColor: Colors.green,
                                               elevation: 10,
-                                              duration: Duration(milliseconds: 3000),
+                                              duration:
+                                                  Duration(milliseconds: 3000),
                                               content: const Text(
                                                 "Reservation created successfully! We will contact you soon.",
                                                 style: TextStyle(fontSize: 16),

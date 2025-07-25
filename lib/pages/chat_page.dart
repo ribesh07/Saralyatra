@@ -11,6 +11,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:random_string/random_string.dart';
 import 'package:saralyatra/services/database.dart';
+import 'package:saralyatra/services/shared_pref.dart';
 
 class ChatPage extends StatefulWidget {
   ChatPage({
@@ -30,6 +31,7 @@ class _ChatPageState extends State<ChatPage> {
   final ImagePicker _picker = ImagePicker();
   bool _isRecording = false;
   String? _filePath;
+  bool isLoading = true;
 
   User? _currentUser;
   Map<String, dynamic>? _userData;
@@ -123,32 +125,117 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future<void> _initUserFlow() async {
+    setState(() {
+      isLoading = true;
+    });
+
     await _fetchUserData(); // wait until data is fetched
     await getDetails(); // then use it
-    ontheload(); // then load anything else
+    await ontheload(); // then load anything else
+
+    setState(() {
+      isLoading = false;
+    });
   }
 
   Future<void> _fetchUserData() async {
     _currentUser = _auth.currentUser;
     if (_currentUser != null) {
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance
-          .collection('saralyatra')
-          .doc('userDetailsDatabase')
-          .collection('users')
-          .doc(_currentUser!.uid)
-          .get();
-      setState(() {
-        _userData = userDoc.data() as Map<String, dynamic>?;
-      });
+      try {
+        // Get user role from SharedPreferences first
+        String? userRole = await SharedpreferenceHelper().getRole();
+        print('User role from SharedPreferences: $userRole');
+
+        DocumentSnapshot userDoc;
+
+        if (userRole == 'driver') {
+          print('Fetching data from drivers collection');
+          userDoc = await FirebaseFirestore.instance
+              .collection('saralyatra')
+              .doc('driverDetailsDatabase')
+              .collection('drivers')
+              .doc(_currentUser!.uid)
+              .get();
+        } else {
+          print('Fetching data from users collection');
+          userDoc = await FirebaseFirestore.instance
+              .collection('saralyatra')
+              .doc('userDetailsDatabase')
+              .collection('users')
+              .doc(_currentUser!.uid)
+              .get();
+        }
+
+        if (userDoc.exists) {
+          print('Found user data in ${userRole ?? "users"} collection');
+          setState(() {
+            _userData = userDoc.data() as Map<String, dynamic>?;
+          });
+        } else {
+          print('User data not found in ${userRole ?? "users"} collection');
+          // Fallback: try the other collection if role-based fetch fails
+          if (userRole == 'driver') {
+            print('Trying users collection as fallback...');
+            userDoc = await FirebaseFirestore.instance
+                .collection('saralyatra')
+                .doc('userDetailsDatabase')
+                .collection('users')
+                .doc(_currentUser!.uid)
+                .get();
+          } else {
+            print('Trying drivers collection as fallback...');
+            userDoc = await FirebaseFirestore.instance
+                .collection('saralyatra')
+                .doc('driverDetailsDatabase')
+                .collection('drivers')
+                .doc(_currentUser!.uid)
+                .get();
+          }
+
+          if (userDoc.exists) {
+            print('Found user data in fallback collection');
+            setState(() {
+              _userData = userDoc.data() as Map<String, dynamic>?;
+            });
+          } else {
+            print('User data not found in either collection');
+          }
+        }
+      } catch (e) {
+        print('Error fetching user data: $e');
+      }
     }
   }
 
   getDetails() async {
-    myUsername = await _userData?['messageUsername'];
-    myEmail = await _userData?['email'];
-    myPicture = await _userData?['imageUrl'];
-    chatRoomId = getChatRoomIdbyUsername("Agent", myUsername!);
-    setState(() {});
+    print('getDetails called');
+    print('_userData: $_userData');
+
+    if (_userData != null) {
+      print('_userData is not null, extracting data...');
+
+      // Print all available keys in _userData for debugging
+      print('Available keys in _userData: ${_userData!.keys.toList()}');
+
+      myUsername = _userData!['messageUsername'];
+      myEmail = _userData!['email'];
+      myPicture = _userData!['imageUrl'];
+
+      print('Extracted myUsername: $myUsername');
+      print('Extracted myEmail: $myEmail');
+      print('Extracted myPicture: $myPicture');
+
+      if (myUsername != null) {
+        chatRoomId = getChatRoomIdbyUsername("Agent", myUsername!);
+        print('Generated Chat room ID: $chatRoomId');
+        print('My username: $myUsername');
+      } else {
+        print('myUsername is null!');
+      }
+      setState(() {});
+    } else {
+      print('_userData is null!');
+    }
   }
 
   getandSetMessages() async {
@@ -293,7 +380,9 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   String getChatRoomIdbyUsername(String a, String b) {
-    return (a.compareTo(b) < 0) ? "${a}_$b" : "${b}_$a";
+    String chatRoomId = (a.compareTo(b) < 0) ? "${a}_$b" : "${b}_$a";
+    print('Generated chatRoomId: $chatRoomId from users: $a and $b');
+    return chatRoomId;
   }
 
   // @override
@@ -605,39 +694,65 @@ class _ChatPageState extends State<ChatPage> {
         ),
       );
 
-  addMessage(bool sendClicked) {
-    if (messagecontroller.text != "") {
-      String message = messagecontroller.text;
-      messagecontroller.text = "";
-      DateTime now = DateTime.now();
-      String formattedDate = DateFormat('h:mm:ssa').format(now);
-      Map<String, dynamic> messageInfoMap = {
-        "Data": "Message",
-        "message": message,
-        "SendBy": myUsername,
-        "ts": formattedDate,
-        "time": FieldValue.serverTimestamp(),
-        // "imgUrl": myPicture,
-      };
-      messageId = randomAlphaNumeric(10);
+  addMessage(bool sendClicked) async {
+    if (messagecontroller.text.trim() == "") {
+      print("Message is empty");
+      return;
+    }
 
-      DatabaseMethod().addMessage(chatRoomId!, messageId!, messageInfoMap).then(
-        (value) {
-          Map<String, dynamic> lastMessageInfoMap = {
-            "lastMessage": message,
-            "lastMessageSendTs": formattedDate,
-            "time": FieldValue.serverTimestamp(),
-            "lastMessageSendBy": myUsername,
-          };
-          DatabaseMethod().updateLastMessageSend(
-            chatRoomId!,
-            lastMessageInfoMap,
-          );
-          if (sendClicked) {
-            message = "";
-            print("Done");
-          }
-        },
+    if (myUsername == null || chatRoomId == null) {
+      print("Username or ChatRoomId is null");
+      print("myUsername: $myUsername");
+      print("chatRoomId: $chatRoomId");
+      return;
+    }
+
+    String message = messagecontroller.text.trim();
+    messagecontroller.clear();
+    DateTime now = DateTime.now();
+    String formattedDate = DateFormat('h:mm:ssa').format(now);
+
+    Map<String, dynamic> messageInfoMap = {
+      "Data": "Message",
+      "message": message,
+      "SendBy": myUsername,
+      "ts": formattedDate,
+      "time": FieldValue.serverTimestamp(),
+      "imgUrl": myPicture ?? "",
+    };
+
+    messageId = randomAlphaNumeric(10);
+
+    print("Sending message: $message");
+    print("ChatRoomId: $chatRoomId");
+    print("MessageId: $messageId");
+    print("MessageInfoMap: $messageInfoMap");
+
+    try {
+      await DatabaseMethod()
+          .addMessage(chatRoomId!, messageId!, messageInfoMap);
+
+      Map<String, dynamic> lastMessageInfoMap = {
+        "lastMessage": message,
+        "lastMessageSendTs": formattedDate,
+        "time": FieldValue.serverTimestamp(),
+        "lastMessageSendBy": myUsername,
+      };
+
+      await DatabaseMethod().updateLastMessageSend(
+        chatRoomId!,
+        lastMessageInfoMap,
+      );
+
+      print("Message sent successfully");
+    } catch (e) {
+      print("Error sending message: $e");
+      // Show error to user
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red,
+          content: Text("Failed to send message: $e"),
+        ),
       );
     }
   }

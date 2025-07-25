@@ -114,6 +114,7 @@ class Esewa {
       'uniqueBusID': uniqueBusID,
       'userUid': userID,
       'location': location,
+      'status': 'pending',
     };
 
     try {
