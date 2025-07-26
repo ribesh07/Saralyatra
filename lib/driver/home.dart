@@ -21,6 +21,8 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 class Home extends StatefulWidget {
   const Home({super.key});
 
+  static final GlobalKey<_HomeState> globalKey = GlobalKey<_HomeState>();
+
   @override
   State<Home> createState() => _HomeState();
 }
@@ -232,7 +234,7 @@ class _HomeState extends State<Home> {
       channel.sink.add(message);
       // count++;
       // print('Sent: $message');
-      debugPrint("Message sent: $message");
+      // debugPrint("Message sent: $message");
     });
 
     channel.stream.listen((data) {
@@ -241,7 +243,7 @@ class _HomeState extends State<Home> {
         setState(() {
           drivers = message['drivers'];
         });
-        debugPrint("Drivers: $drivers");
+        //debugPrint("Drivers: $drivers");
       }
     });
     // channel.sink.add(message);
