@@ -74,8 +74,8 @@ class _CompletedTicketsState extends State<CompletedTickets> {
 
       // Sort by completionDate in code if we used the fallback query
       fetchedData.sort((a, b) {
-        final aDate = a['completionDate'] as Timestamp?;
-        final bDate = b['completionDate'] as Timestamp?;
+        final aDate = _parseDateTimeFromString(a['completionDate']);
+        final bDate = _parseDateTimeFromString(b['completionDate']);
 
         if (aDate == null && bDate == null) return 0;
         if (aDate == null) return 1; // null values go to end
@@ -212,10 +212,30 @@ class _CompletedTicketsState extends State<CompletedTickets> {
   }
 
   String _formatFieldValue(String key, dynamic value) {
+    if (key == 'completionDate') {
+      final dateTime = _parseDateTimeFromString(value);
+      return dateTime != null
+          ? dateTime.toLocal().toString().split('.')[0]
+          : 'Unknown';
+    }
     if (value is Timestamp) {
       return value.toDate().toString().split('.')[0];
     }
     return value.toString();
+  }
+
+  DateTime? _parseDateTimeFromString(dynamic value) {
+    if (value is String) {
+      try {
+        return DateTime.parse(value);
+      } catch (e) {
+        print('Error parsing date: $e');
+        return null;
+      }
+    } else if (value is Timestamp) {
+      return value.toDate();
+    }
+    return null;
   }
 
   Future<void> _saveRatingToFirebase(
