@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
+    //https://suck.onrender.com/drivers
     const res = await fetch("https://saralyatra-socket.onrender.com/drivers", {
       method: "GET",
       headers: { "Content-Type": "application/json" },
