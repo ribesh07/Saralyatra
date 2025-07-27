@@ -21,8 +21,6 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    
-
 
     if (id && driver_ID) {
       // return NextResponse.json({
@@ -109,6 +107,14 @@ const transferBalance = async (
       userId,
       "payments"
     );
+    const driverPaymentsRef = collection(
+      db,
+      "saralyatra",
+      "paymentDetails",
+      "driverlocalpaymenthistory",
+      driverId,
+      "payments"
+    );
 
     // Step 2: Get user and driver data
     const userSnap = await getDoc(userRef);
@@ -137,6 +143,16 @@ const transferBalance = async (
 
     await updateDoc(driverRef, {
       balance: driverBalance + 15,
+    });
+    const docRef = await addDoc(driverPaymentsRef, {
+      balance: 15,
+      timestamp: new Date(),
+      userId: userId,
+      type: "Bus fare",
+      location: {
+        lat: lat,
+        lng: lng,
+      },
     });
 
     const setsucc = await updatePayment(userId, lat, lng);
