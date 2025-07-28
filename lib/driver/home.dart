@@ -38,6 +38,7 @@ class _HomeState extends State<Home> {
   double toggleHeight = 50;
   double knobSize = 35;
   double knobPadding = 7;
+  String? driver_uid;
 
   // ADD THIS LINE
 
@@ -172,6 +173,7 @@ class _HomeState extends State<Home> {
   void connectToWebSocket() async {
     const serverUrl =
         'wss://saralyatra-socket.onrender.com'; // Replace with your server URL
+    // 'wss://670c5dd327e3.ngrok-free.app/';
     if (isConnected) {
       print("Already connected to $serverUrl");
       return;
@@ -220,21 +222,22 @@ class _HomeState extends State<Home> {
     super.dispose();
   }
 
-  void startSending() {
+  Future<void> startSending() async {
+    final did = await SharedpreferenceHelper().getDriverId();
     // int count = 0;
     timer = Timer.periodic(Duration(seconds: 1), (timer) {
       var message = jsonEncode({
         "type": "IDENTIFY",
         "role": "Driver",
-        "phone": _driverData?['contact'],
-        "username": _driverData?['username'],
+        "uid": did,
+        "username": name,
         "latitude": currentLocation!.latitude,
         "longitude": currentLocation!.longitude
       });
       channel.sink.add(message);
       // count++;
       // print('Sent: $message');
-      // debugPrint("Message sent: $message");
+      debugPrint("Message sent: $message");
     });
 
     channel.stream.listen((data) {
@@ -255,8 +258,8 @@ class _HomeState extends State<Home> {
     var message = jsonEncode({
       "type": "IDENTIFY",
       "role": "Driver",
-      "phone": _driverData?['contact'],
-      "username": _driverData?['username'],
+      "uid": driver_uid,
+      "username": name,
       "latitude": currentLocation!.latitude,
       "longitude": currentLocation!.longitude,
       "offline": "true"
@@ -288,6 +291,8 @@ class _HomeState extends State<Home> {
           name = _driverData!['username'];
           driverID = _driverData!['dcardId'];
           driverBus = _driverData!['busNumber'];
+          driver_uid = _driverData!['uid'];
+
           // labelid = _driverData!['label'];
           print("Driver ID is : $driverID");
           print("Driver Bus is : $driverBus");

@@ -252,7 +252,7 @@ class _ProfileSettingState extends State<ProfileSetting> {
                                             .update({'sessionToken': ''});
                                       }
                                       //  Home.globalKey.currentState
-                                      //       ?.stopSending();
+                                      // ?.stopSending();
 
                                       await SharedpreferenceHelper()
                                           .clearSessionToken();

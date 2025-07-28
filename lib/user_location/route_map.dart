@@ -115,7 +115,9 @@ class _RouteMapPageState extends State<RouteMapPage> {
   }
 
   void connectToWebSocket() async {
-    const serverUrl = 'wss://saralyatra-socket.onrender.com';
+    const serverUrl =
+        // 'wss://saralyatra-socket.onrender.com';
+        'wss://saralyatra-socket.onrender.com';
     if (isConnected) {
       print("Already connected to $serverUrl");
       return;

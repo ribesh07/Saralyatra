@@ -118,6 +118,7 @@ class _Login_pageState extends State<Login_page> {
           await SharedpreferenceHelper().saveSessionToken(sessionToken);
           await SharedpreferenceHelper().saveUserId(uid);
           await SharedpreferenceHelper().saveRole('driver');
+          await SharedpreferenceHelper().saveDriverId(uid);
 
           setState(() => _isLoading = false);
           Navigator.pushReplacement(

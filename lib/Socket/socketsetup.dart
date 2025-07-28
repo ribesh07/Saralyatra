@@ -23,8 +23,9 @@ class _ViewerScreenState extends State<ViewerScreen> {
   @override
   void initState() {
     super.initState();
-    channel = WebSocketChannel.connect(Uri.parse('ws://<YOUR-IP>:8080'));
-
+    channel = WebSocketChannel.connect(
+        // Uri.parse('wss://saralyatra-socket.onrender.com'));
+        Uri.parse('wss://saralyatra-socket.onrender.com'));
     channel.stream.listen((data) {
       final message = jsonDecode(data);
       if (message['type'] == 'DRIVER_LIST') {
