@@ -102,14 +102,15 @@ class _MapScreenState extends State<MapScreen> {
       locationSettings = AndroidSettings(
           accuracy: geolocator.LocationAccuracy.high,
           distanceFilter: 10,
-          forceLocationManager: true,
+          forceLocationManager: true
           //(Optional) Set foreground notification config to keep the app alive
           //when going to the background
-          foregroundNotificationConfig: const ForegroundNotificationConfig(
-            notificationText: "Getting location in background",
-            notificationTitle: "Location Service",
-            enableWakeLock: true,
-          ));
+          // foregroundNotificationConfig: const ForegroundNotificationConfig(
+          //   notificationText: "Getting location in background",
+          //   notificationTitle: "Location Service",
+          //   enableWakeLock: true,
+          // )
+          );
     }
     Geolocator.getCurrentPosition(locationSettings: locationSettings)
         .then((position) async {

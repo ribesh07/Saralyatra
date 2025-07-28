@@ -43,9 +43,8 @@ class _TicketUpcomingState extends State<ticketUpcoming> {
             .collection(collectionName);
 
         // Query for documents where userUid matches current user
-        QuerySnapshot querySnapshot = await collection
-            .where('userUid', isEqualTo: currentUser.uid)
-            .get();
+        QuerySnapshot querySnapshot =
+            await collection.where('userUid', isEqualTo: currentUser.uid).get();
 
         // Add items from this collection with collection type
         for (var doc in querySnapshot.docs) {
@@ -57,10 +56,12 @@ class _TicketUpcomingState extends State<ticketUpcoming> {
       }
 
       // Sort allItems by date in ascending order
-      allItems.sort((a, b) {
+      allItems.sort((b, a) {
         // Try to get date from multiple possible field names
-        String dateA = _getFieldValue(a, ['date', 'bookingDate', 'travelDate', 'reservationDate']);
-        String dateB = _getFieldValue(b, ['date', 'bookingDate', 'travelDate', 'reservationDate']);
+        String dateA = _getFieldValue(
+            a, ['date', 'bookingDate', 'travelDate', 'reservationDate']);
+        String dateB = _getFieldValue(
+            b, ['date', 'bookingDate', 'travelDate', 'reservationDate']);
 
         // Handle 'N/A' values by putting them at the end
         if (dateA == 'N/A' && dateB == 'N/A') return 0;
@@ -161,9 +162,9 @@ class _TicketUpcomingState extends State<ticketUpcoming> {
     // Iterate through all fields and display them
     data.forEach((key, value) {
       // Skip internal fields and userUid
-      if (key != 'docId' && 
-          key != 'type' && 
-          key != 'userUid' && 
+      if (key != 'docId' &&
+          key != 'type' &&
+          key != 'userUid' &&
           value != null) {
         String displayKey = _formatFieldName(key);
         String displayValue = value.toString();
@@ -389,17 +390,21 @@ class _TicketUpcomingState extends State<ticketUpcoming> {
     );
   }
 
-  Future<void> _cancelTicket(Map<String, dynamic> ticketData, String reason) async {
+  Future<void> _cancelTicket(
+      Map<String, dynamic> ticketData, String reason) async {
     try {
       // Create cancelled ticket data with reason and timestamp
-      Map<String, dynamic> cancelledTicketData = Map<String, dynamic>.from(ticketData);
+      Map<String, dynamic> cancelledTicketData =
+          Map<String, dynamic>.from(ticketData);
       cancelledTicketData['cancellationReason'] = reason;
-      cancelledTicketData['cancellationDate'] = DateTime.now().toIso8601String();
+      cancelledTicketData['cancellationDate'] =
+          DateTime.now().toIso8601String();
       cancelledTicketData['originalDocId'] = ticketData['docId'];
-      
+      cancelledTicketData['status'] = 'cancelled';
+
       // Generate a unique ID for the cancelled ticket
       String uniqueId = DateTime.now().millisecondsSinceEpoch.toString();
-      
+
       // Save to cancelled history in Firebase
       await FirebaseFirestore.instance
           .collection('history')
@@ -407,12 +412,12 @@ class _TicketUpcomingState extends State<ticketUpcoming> {
           .collection('cancelledHistory')
           .doc(uniqueId)
           .set(cancelledTicketData);
-      
+
       // Remove only the specific document from upcoming tickets
       // Do NOT delete the collection (busSeat, package, reservation)
       String collectionName = ticketData['type'];
       String docId = ticketData['docId'];
-      
+
       // Delete only the specific document with the unique ID
       await FirebaseFirestore.instance
           .collection('history')
@@ -420,9 +425,9 @@ class _TicketUpcomingState extends State<ticketUpcoming> {
           .collection(collectionName)
           .doc(docId)
           .delete();
-      
-      print('Successfully cancelled ticket: $docId from collection: $collectionName');
-      
+
+      print(
+          'Successfully cancelled ticket: $docId from collection: $collectionName');
     } catch (e) {
       print('Error cancelling ticket: $e');
       throw e;

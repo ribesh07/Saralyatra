@@ -1,8 +1,5 @@
-// ignore_for_file: camel_case_types, prefer_const_constructors, prefer_const_literals_to_create_immutables, sort_child_properties_last, sized_box_for_whitespace
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-// import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:saralyatra/Booking/input_field.dart';
 import 'package:saralyatra/Booking/provide.dart';
 import 'package:saralyatra/payments/payment_options.dart';
@@ -21,6 +18,7 @@ class bookSeat extends StatefulWidget {
   final String uniqueBusID;
   final String userID;
   final String location;
+
   const bookSeat({
     super.key,
     required this.busName,
@@ -41,7 +39,7 @@ class bookSeat extends StatefulWidget {
   State<bookSeat> createState() => _bookSeatState();
 }
 
-class _bookSeatState extends State<bookSeat> {
+class _bookSeatState extends State<bookSeat> with TickerProviderStateMixin {
   var _value = -1;
   final double toPay = 0.0;
   final namecontroller = TextEditingController();
@@ -50,10 +48,29 @@ class _bookSeatState extends State<bookSeat> {
   final formkey = GlobalKey<FormState>();
   final mailcontroller = TextEditingController();
   final numbercontroller = TextEditingController();
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
 
   @override
   void initState() {
     super.initState();
+    // Animation setup
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.2),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOut,
+    ));
+    _animationController.forward();
   }
 
   @override
@@ -62,316 +79,328 @@ class _bookSeatState extends State<bookSeat> {
     phonecontroller.dispose();
     mailcontroller.dispose();
     provider.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // int totalPrice = int.parse(${widget.price})
-    String pickup = "";
-
     int priceD = int.parse(widget.price) * widget.selectedSeats.length;
-    print(priceD);
+
     return PopScope(
       canPop: false,
       child: Scaffold(
         appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: Text(
-            'Booking',
+          title: const Text(
+            'Seat Booking',
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
           ),
           centerTitle: true,
           leading: IconButton(
-              onPressed: () {
-                Navigator.pop(context, "reset");
-              },
-              icon: Icon(Icons.arrow_back)),
-          // actions: [
-          //    IconButton(onPressed: (){}, icon: Icon(Icons.arrow_back_ios_new_sharp)),
-          //   Text("data"),
-          // ],
+            onPressed: () {
+              Navigator.pop(context, "reset");
+            },
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+          ),
           backgroundColor: appbarcolor,
+          elevation: 10,
+          shadowColor: Colors.black.withOpacity(0.5),
         ),
         body: Container(
           width: MediaQuery.of(context).size.width,
           height: double.infinity,
-          color: backgroundColor,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [backgroundColor, Colors.blue[50]!],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
           child: Form(
             key: formkey,
             child: SingleChildScrollView(
-              physics: BouncingScrollPhysics(
+              physics: const BouncingScrollPhysics(
                 parent: AlwaysScrollableScrollPhysics(),
               ),
               child: Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Column(
-                  children: [
-                    Card(
-                      elevation: 8,
-                      child: Container(
-                        height: 110,
-                        width: MediaQuery.of(context).size.width,
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                children: [
-                                  Text(
-                                    widget.busName,
-                                    style: textStyle,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  // Padding(
-                                  //   padding: const EdgeInsets.all(8.0),
-                                  //   child: Row(
-                                  //     mainAxisAlignment:
-                                  //         MainAxisAlignment.spaceEvenly,
-                                  //     children: [
-                                  Text(
-                                    "Shift: ${widget.shift}",
-                                    style: textStyle,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        "Time: ${widget.depHr}",
-                                        style: textStyle,
-                                      ),
-                                      Text(" : "),
-                                      Text(
-                                        widget.depHr,
-                                        style: textStyle,
-                                      ),
-                                      Text(
-                                        " --- ",
-                                        style: textStyle,
-                                      ),
-                                      Text(
-                                        widget.arrHr,
-                                        style: textStyle,
-                                      ),
-                                      Text(" : "),
-                                      Text(
-                                        widget.arrMin,
-                                        style: textStyle,
-                                      )
-                                    ],
-                                  ),
-                                  //     ],
-                                  //   ),
-                                  // ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                padding: const EdgeInsets.all(16.0),
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: SlideTransition(
+                    position: _slideAnimation,
+                    child: Column(
+                      children: [
+                        _buildBusDetailsCard(),
+                        const SizedBox(height: 20),
+                        _buildContactDetailsCard(),
+                        const SizedBox(height: 20),
+                        _buildPickupPointCard(),
+                        const SizedBox(height: 20),
+                        _buildBillingCard(priceD),
+                        const SizedBox(height: 30),
+                        _buildPayNowButton(priceD),
+                      ],
                     ),
-                    SizedBox(height: 20),
-                    Card(
-                      elevation: 8,
-                      child: Column(
-                        children: [
-                          Text('Contact Details', style: textStyle),
-                          //Name
-                          InputField(
-                            icon: Icons.person,
-                            label: "Full Name",
-                            keypad: TextInputType.text,
-                            controller: namecontroller,
-                            inputFormat: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(r'[a-zA-z ]'),
-                              ),
-                              LengthLimitingTextInputFormatter(50),
-                            ],
-                            validator: (value) => provider.validator(
-                                value, "full Name is required"),
-                          ),
-
-                          //phone Number
-                          InputField(
-                            icon: Icons.phone,
-                            label: "+977",
-                            keypad: TextInputType.number,
-                            controller: phonecontroller,
-                            inputFormat: [
-                              FilteringTextInputFormatter.digitsOnly,
-                              LengthLimitingTextInputFormatter(10),
-                            ],
-                            validator: (value) =>
-                                provider.phoneValidator(value),
-                          ),
-                          InputField(
-                            icon: Icons.mail,
-                            label: "Email",
-                            controller: mailcontroller,
-                            validator: (value) =>
-                                provider.emailValidator(value),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-
-                    //address detail
-                    Card(
-                      elevation: 8,
-                      child: Column(
-                        children: [
-                          Text('Pickup Point', style: textStyle),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: DropdownButtonFormField(
-                              autovalidateMode:
-                                  AutovalidateMode.onUserInteraction,
-                              validator: (value) {
-                                if (value == -1) {
-                                  return "please select pickup point";
-                                } else {
-                                  return null;
-                                }
-                              },
-                              decoration: InputDecoration(
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(5),
-                                    borderSide: BorderSide(
-                                        color: Colors.grey.withOpacity(0.5),
-                                        width: 1.5),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(5),
-                                    borderSide: BorderSide(
-                                        color: Colors.blue.withOpacity(1),
-                                        width: 2),
-                                  ),
-                                  errorBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(5),
-                                    borderSide: BorderSide(
-                                        color: Colors.red.withOpacity(0.5),
-                                        width: 2),
-                                  ),
-                                  focusedErrorBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(5),
-                                    borderSide: BorderSide(
-                                        color: Colors.red.withOpacity(1),
-                                        width: 2),
-                                  ),
-                                  prefixIcon:
-                                      Icon(Icons.add_location_alt_outlined)),
-                              value: _value,
-                              onChanged: (value) {
-                                setState(() {
-                                  _value = value as int;
-                                });
-                              },
-                              items: [
-                                DropdownMenuItem(
-                                    child: Text("--Choose Pickup Point"),
-                                    value: -1),
-                                DropdownMenuItem(
-                                    child: Text("Tinkune"), value: 1),
-                                DropdownMenuItem(
-                                    child: Text("Gaushala"), value: 2),
-                                DropdownMenuItem(
-                                    child: Text("Kalanki"), value: 3),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-
-                    //billing
-                    Card(
-                      elevation: 10,
-                      child: Container(
-                        height: 100,
-                        width: MediaQuery.of(context).size.width,
-                        child: Column(
-                          children: [
-                            SizedBox(
-                              height: 10,
-                            ),
-                            Text(
-                              'Bill Amount',
-                              style: textStyle,
-                              textAlign: TextAlign.center,
-                            ),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            Text(
-                              "Amount : ${int.parse(widget.price) * widget.selectedSeats.length}",
-                              style: TextStyle(fontSize: 18),
-                            ),
-                            SizedBox(
-                              height: 5,
-                            ),
-                            Text(
-                              "Total Seat: ${widget.selectedSeats.length}",
-                              style: TextStyle(fontSize: 12),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Card(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50)),
-                      child: Container(
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(50),
-                            color: Colors.blue),
-                        child: TextButton(
-                          onPressed: () {
-                            if (formkey.currentState!.validate()) {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => PaymentOptions(
-                                            userName: namecontroller.text,
-                                            busName: widget.busName,
-                                            deptHr: widget.depHr,
-                                            deptMin: widget.depMin,
-                                            contact: phonecontroller.text,
-                                            date: widget.date,
-                                            price: priceD.toString(),
-                                            // seatNumber:widget
-                                            selectedList: widget.selectedSeats,
-                                            email: mailcontroller.text,
-                                            uniqueBusID: widget.uniqueBusID,
-                                            userID: widget.userID,
-                                            location: widget.location,
-                                          )));
-                            }
-                          },
-                          child: Text(
-                            "Pay Now",
-                            textAlign: TextAlign.center,
-                            style: textStyle,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildBusDetailsCard() {
+    return Card(
+      elevation: 8,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          gradient: LinearGradient(
+            colors: [Colors.white, Colors.blue[100]!],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.busName,
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 15),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildInfoRow(Icons.event_seat, 'Shift', widget.shift),
+                _buildInfoRow(Icons.access_time, 'Time',
+                    '${widget.depHr}:${widget.depMin} - ${widget.arrHr}:${widget.arrMin}'),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContactDetailsCard() {
+    return Card(
+      elevation: 8,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Contact Details',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 15),
+            InputField(
+              icon: Icons.person_outline,
+              label: "Full Name",
+              keypad: TextInputType.text,
+              controller: namecontroller,
+              inputFormat: [
+                FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z ]')),
+                LengthLimitingTextInputFormatter(50),
+              ],
+              validator: (value) =>
+                  provider.validator(value, "Full Name is required"),
+            ),
+            const SizedBox(height: 15),
+            InputField(
+              icon: Icons.phone_outlined,
+              label: "+977 Phone Number",
+              keypad: TextInputType.number,
+              controller: phonecontroller,
+              inputFormat: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(10),
+              ],
+              validator: (value) => provider.phoneValidator(value),
+            ),
+            const SizedBox(height: 15),
+            InputField(
+              icon: Icons.email_outlined,
+              label: "Email Address",
+              controller: mailcontroller,
+              validator: (value) => provider.emailValidator(value),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPickupPointCard() {
+    return Card(
+      elevation: 8,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Pickup Point',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 15),
+            DropdownButtonFormField(
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              validator: (value) {
+                if (value == -1) {
+                  return "Please select a pickup point";
+                } else {
+                  return null;
+                }
+              },
+              decoration: InputDecoration(
+                prefixIcon: const Icon(Icons.location_on_outlined),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              value: _value,
+              onChanged: (value) {
+                setState(() {
+                  _value = value as int;
+                });
+              },
+              items: const [
+                DropdownMenuItem(
+                    value: -1, child: Text("--Choose Pickup Point--")),
+                DropdownMenuItem(value: 1, child: Text("Tinkune")),
+                DropdownMenuItem(value: 2, child: Text("Gaushala")),
+                DropdownMenuItem(value: 3, child: Text("Kalanki")),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBillingCard(int priceD) {
+    return Card(
+      elevation: 8,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          color: Colors.white,
+        ),
+        child: Column(
+          children: [
+            const Text(
+              'Bill Summary',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 15),
+            _buildBillingRow('Selected Seats', widget.selectedSeats.join(', ')),
+            const SizedBox(height: 10),
+            _buildBillingRow(
+                'Total Seats', widget.selectedSeats.length.toString()),
+            const SizedBox(height: 10),
+            _buildBillingRow('Price per Seat', 'Rs. ${widget.price}'),
+            const Divider(height: 20, thickness: 1),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Total Amount',
+                    style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(
+                  'Rs. $priceD',
+                  style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPayNowButton(int priceD) {
+    return ElevatedButton(
+      onPressed: () {
+        if (formkey.currentState!.validate()) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PaymentOptions(
+                userName: namecontroller.text,
+                busName: widget.busName,
+                deptHr: widget.depHr,
+                deptMin: widget.depMin,
+                contact: phonecontroller.text,
+                date: widget.date,
+                price: priceD.toString(),
+                selectedList: widget.selectedSeats,
+                email: mailcontroller.text,
+                uniqueBusID: widget.uniqueBusID,
+                userID: widget.userID,
+                location: widget.location,
+              ),
+            ),
+          );
+        }
+      },
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 15),
+        backgroundColor: Colors.blue,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+        elevation: 10,
+        shadowColor: Colors.black.withOpacity(0.5),
+      ),
+      child: const Text(
+        'Proceed to Pay',
+        style: TextStyle(
+            fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: Colors.black54),
+        const SizedBox(width: 8),
+        Text(
+          '$label: ',
+          style: const TextStyle(fontSize: 16, color: Colors.black54),
+        ),
+        Text(
+          value,
+          style: const TextStyle(
+              fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBillingRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label,
+            style: const TextStyle(fontSize: 16, color: Colors.black54)),
+        Text(value,
+            style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87)),
+      ],
     );
   }
 }

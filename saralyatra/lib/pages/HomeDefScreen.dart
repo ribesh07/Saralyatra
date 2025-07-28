@@ -346,7 +346,7 @@ class _HomeDefScreenState extends State<HomeDefScreen>
   ];
 
   final _value = -1;
-  var departureDate = DateFormat("dd/MM/yyyy").format(DateTime.now());
+  var departureDate = DateFormat("yyyy/MM/dd").format(DateTime.now());
 
   @override
   Widget build(BuildContext context) {
@@ -521,7 +521,7 @@ class _HomeDefScreenState extends State<HomeDefScreen>
                                 );
                                 if (selectedate != null) {
                                   setState(() {
-                                    departureDate = DateFormat("dd/MM/yyyy")
+                                    departureDate = DateFormat("yyyy/MM/dd")
                                         .format(selectedate);
                                     print(selectedate);
                                   });
@@ -541,7 +541,7 @@ class _HomeDefScreenState extends State<HomeDefScreen>
                                       if (selectedate != null) {
                                         setState(() {
                                           departureDate =
-                                              DateFormat("dd/MM/yyyy")
+                                              DateFormat("yyyy/MM/dd")
                                                   .format(selectedate);
                                           print(selectedate);
                                         });

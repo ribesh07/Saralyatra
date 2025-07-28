@@ -32,6 +32,7 @@ dependencies:
   #   path: ./lib/UserCard
   flutter:
     sdk: flutter
+   
 
   firebase_core: ^3.6.0
   firebase_auth: ^5.3.1
@@ -82,10 +83,8 @@ dependencies:
   uuid: ^4.5.1
   web_socket_channel:
   # khalti_checkout_flutter: ^1.0.0-dev.4
-
-dependency_overrides:
-  geolocator_android: 4.4.1
-
+  flutter_launcher_icons: ^0.14.3 
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -115,6 +114,7 @@ flutter:
     - .env
     - assets/
     - assets/logos/localbus.jpg
+    - assets/logo.png
   # - assets/logos/instagram_icon.png
   # - assets/logos/Facebook_icon.png
   # - assets/logos/esewa_logo.png
@@ -147,3 +147,8 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+flutter_launcher_icons:
+  flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/logo.png"

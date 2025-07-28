@@ -26,7 +26,9 @@ class Esewalocal {
     String price,
     String email,
     String userID,
+    String type,
   ) async {
+    type = type.isEmpty ? 'Topup' : type; // Default to 'topup' if empty
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     DocumentReference documentReference = firestore
         .collection('saralyatra')
@@ -44,6 +46,7 @@ class Esewalocal {
       'price': price,
       'timestamp': FieldValue.serverTimestamp(),
       'userID': userID,
+      'type': type,
     };
     print('Adding payment data to the database: $paymentData');
     try {
@@ -62,6 +65,7 @@ class Esewalocal {
     String price,
     String email,
     String userID,
+    String type,
   ) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     DocumentReference documentReference = firestore
@@ -108,6 +112,7 @@ class Esewalocal {
     String date,
     String email,
     String userID,
+    String type,
   ) {
     print('Price: $price');
     try {
@@ -141,17 +146,11 @@ class Esewalocal {
             formattedPrice,
             email,
             userID,
+            type,
           );
 
-          await _addUserInDatabase(
-            userName,
-            txnRefId,
-            contact,
-            date,
-            formattedPrice,
-            email,
-            userID,
-          );
+          await _addUserInDatabase(userName, txnRefId, contact, date,
+              formattedPrice, email, userID, type);
 
           showSnackBarMsg(
             context: context,
