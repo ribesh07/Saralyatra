@@ -39,7 +39,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Home'),
+        title: Text('Home', style: textStyleappbar),
         backgroundColor: appbarcolor,
         centerTitle: true,
         actions: [
@@ -53,11 +53,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             },
             icon: Icon(Icons.history),
             iconSize: 30,
+            color: appbarfontcolor,
           )
         ],
       ),
       body: Container(
-        color: backgroundColor,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [backgroundColor, listColor],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
         child: Column(
           children: [
             SizedBox(
@@ -72,25 +79,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 child: Card(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
-                  //elevation: 5,
+                  elevation: 8,
+                  shadowColor: Colors.black54,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.8),
+                      gradient: LinearGradient(
+                        colors: [Colors.white, listColor],
+                        stops: [0.6, 1],
+                      ),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: TabBar(
-                      // indicator: BoxDecoration(
-                      //     borderRadius: BorderRadius.circular(6),
-                      //     color: Color.fromARGB(255, 225, 138, 240)),
                       controller: _tabController,
-                      //isScrollable: true,
                       labelPadding: EdgeInsets.only(right: 10, left: 10),
-                      labelColor: Color.fromARGB(255, 78, 72, 72),
+                      labelColor: appbarfontcolor,
                       unselectedLabelColor: Color.fromARGB(255, 135, 131, 131),
                       indicatorPadding: EdgeInsets.only(top: 5, bottom: 5),
-                      indicatorColor: Color.fromARGB(255, 78, 72, 72),
-
-                      //padding: EdgeInsets.symmetric(),
+                      indicator: BoxDecoration(
+                        borderRadius: BorderRadius.circular(6),
+                        color: buttonColor,
+                      ),
                       tabs: [
                         FittedBox(
                           child: Container(
@@ -98,6 +106,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             child: Tab(
                               height: 60,
                               child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Icon(
                                     Icons.directions_bus_filled_outlined,
@@ -105,7 +114,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   ),
                                   Text(
                                     'Bus Tickets',
-                                    style: TextStyle(fontSize: 18),
+                                    style: TextStyle(
+                                      color: textcolor,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -118,6 +131,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             child: Tab(
                               height: 60,
                               child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Icon(
                                     Icons.airport_shuttle_outlined,
@@ -125,7 +139,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   ),
                                   Text(
                                     'Reservation',
-                                    style: TextStyle(fontSize: 18),
+                                    style: TextStyle(
+                                      color: textcolor,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -138,6 +156,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             child: Tab(
                               height: 60,
                               child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Icon(
                                     Icons.surfing_outlined,
@@ -145,7 +164,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   ),
                                   Text(
                                     'Packages',
-                                    style: TextStyle(fontSize: 18),
+                                    style: TextStyle(
+                                      color: textcolor,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
                                 ],
                               ),

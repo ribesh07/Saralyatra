@@ -91,7 +91,9 @@ class _Signup_pageState extends State<Signup_page> {
   // }
 
   String getChatRoomIdbyUsername(String a, String b) {
-    return (a.compareTo(b) < 0) ? "${a}_$b" : "${b}_$a";
+    String chatRoomId = (a.compareTo(b) < 0) ? "${a}_$b" : "${b}_$a";
+    print('Generated chatRoomId: $chatRoomId from users: $a and $b');
+    return chatRoomId;
   }
 
   Future<String?> _uploadImage(XFile image) async {
@@ -146,7 +148,7 @@ class _Signup_pageState extends State<Signup_page> {
   // }
 
   userSignUp(String email, String password) async {
-    String messageUserName = email.replaceAll("@gmail.com", "");
+    String messageUserName = email.replaceAll("@gmail.com", "").replaceAll(" ", "").toLowerCase();
     if (_image == null) {
       _showErrorSnackBar('Please select an image');
       return;
@@ -191,17 +193,19 @@ class _Signup_pageState extends State<Signup_page> {
       print(userInfoMap);
 
       var chatRoomId =
-          getChatRoomIdbyUsername("Agent", userInfoMap["username"]);
+          getChatRoomIdbyUsername("Agent", userInfoMap["messageUsername"]);
       Map<String, dynamic> chatInfoMap = {
-        "users": ["Agent", userInfoMap["username"]],
+        "users": ["Agent", userInfoMap["messageUsername"]],
       };
 
       // Run database operations in parallel
       await Future.wait<void>([
         DatabaseMethod().addUserDetails(userInfoMap, uid!),
-        DatabaseMethod().createChatRoom(chatRoomId, chatInfoMap),
         _saveUserPreferences(uid, sessionToken, imageUrl),
       ]);
+      
+      // Create chatroom separately to handle existing chatroom check
+      await DatabaseMethod().createChatRoom(chatRoomId, chatInfoMap);
 
       _hideLoadingDialog();
       _showSuccessSnackBar('User account created successfully!');
@@ -222,7 +226,7 @@ class _Signup_pageState extends State<Signup_page> {
   }
 
   driverSignUp(String email, String password) async {
-    String messageUserName = email.replaceAll("@gmail.com", "");
+    String messageUserName = email.replaceAll("@gmail.com", "").replaceAll(" ", "").toLowerCase();
     if (_image == null) {
       _showErrorSnackBar('Please select an image');
       return;
@@ -256,6 +260,7 @@ class _Signup_pageState extends State<Signup_page> {
         'contact': contactnumcontroller.text.toString(),
         'uid': uid,
         'dcardId': generate8DigitNumber(),
+        'balance': balance,
         'password': passcontroller.text.toString(),
         'imageUrl': imageUrl,
         'messageUsername': messageUserName,
@@ -265,16 +270,18 @@ class _Signup_pageState extends State<Signup_page> {
       };
 
       var chatRoomId =
-          getChatRoomIdbyUsername("Agent", userInfoMap["username"]);
+          getChatRoomIdbyUsername("Agent", userInfoMap["messageUsername"]);
       Map<String, dynamic> chatInfoMap = {
-        "users": ["Agent", userInfoMap["username"]],
+        "users": ["Agent", userInfoMap["messageUsername"]],
       };
 
       await Future.wait<void>([
         DatabaseMethod().addDriverDetails(userInfoMap, uid!),
-        DatabaseMethod().createChatRoom(chatRoomId, chatInfoMap),
         _saveDriverPreferences(uid, sessionToken, imageUrl),
       ]);
+      
+      // Create chatroom separately to handle existing chatroom check
+      await DatabaseMethod().createChatRoom(chatRoomId, chatInfoMap);
 
       _hideLoadingDialog();
       _showSuccessSnackBar('Driver account created successfully!');

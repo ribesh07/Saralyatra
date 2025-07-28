@@ -21,6 +21,8 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 class Home extends StatefulWidget {
   const Home({super.key});
 
+  static final GlobalKey<_HomeState> globalKey = GlobalKey<_HomeState>();
+
   @override
   State<Home> createState() => _HomeState();
 }
@@ -36,6 +38,7 @@ class _HomeState extends State<Home> {
   double toggleHeight = 50;
   double knobSize = 35;
   double knobPadding = 7;
+  String? driver_uid;
 
   // ADD THIS LINE
 
@@ -170,6 +173,7 @@ class _HomeState extends State<Home> {
   void connectToWebSocket() async {
     const serverUrl =
         'wss://saralyatra-socket.onrender.com'; // Replace with your server URL
+    // 'wss://670c5dd327e3.ngrok-free.app/';
     if (isConnected) {
       print("Already connected to $serverUrl");
       return;
@@ -218,14 +222,15 @@ class _HomeState extends State<Home> {
     super.dispose();
   }
 
-  void startSending() {
+  Future<void> startSending() async {
+    final did = await SharedpreferenceHelper().getDriverId();
     // int count = 0;
     timer = Timer.periodic(Duration(seconds: 1), (timer) {
       var message = jsonEncode({
         "type": "IDENTIFY",
         "role": "Driver",
-        "phone": _driverData?['contact'],
-        "username": _driverData?['username'],
+        "uid": did,
+        "username": name,
         "latitude": currentLocation!.latitude,
         "longitude": currentLocation!.longitude
       });
@@ -241,7 +246,7 @@ class _HomeState extends State<Home> {
         setState(() {
           drivers = message['drivers'];
         });
-        debugPrint("Drivers: $drivers");
+        //debugPrint("Drivers: $drivers");
       }
     });
     // channel.sink.add(message);
@@ -253,8 +258,8 @@ class _HomeState extends State<Home> {
     var message = jsonEncode({
       "type": "IDENTIFY",
       "role": "Driver",
-      "phone": _driverData?['contact'],
-      "username": _driverData?['username'],
+      "uid": driver_uid,
+      "username": name,
       "latitude": currentLocation!.latitude,
       "longitude": currentLocation!.longitude,
       "offline": "true"
@@ -286,6 +291,8 @@ class _HomeState extends State<Home> {
           name = _driverData!['username'];
           driverID = _driverData!['dcardId'];
           driverBus = _driverData!['busNumber'];
+          driver_uid = _driverData!['uid'];
+
           // labelid = _driverData!['label'];
           print("Driver ID is : $driverID");
           print("Driver Bus is : $driverBus");
@@ -387,14 +394,15 @@ class _HomeState extends State<Home> {
       locationSettings = AndroidSettings(
           accuracy: geolocator.LocationAccuracy.high,
           distanceFilter: 10,
-          forceLocationManager: true,
+          forceLocationManager: true
           //(Optional) Set foreground notification config to keep the app alive
           //when going to the background
-          foregroundNotificationConfig: const ForegroundNotificationConfig(
-            notificationText: "Getting location in background",
-            notificationTitle: "Location Service",
-            enableWakeLock: true,
-          ));
+          // foregroundNotificationConfig: const ForegroundNotificationConfig(
+          //   notificationText: "Getting location in background",
+          //   notificationTitle: "Location Service",
+          //   enableWakeLock: true,
+          // )
+          );
     }
     Geolocator.getPositionStream(locationSettings: locationSettings)
         .listen((Position position) {
@@ -415,59 +423,8 @@ class _HomeState extends State<Home> {
           currentLocation = LatLng(position.latitude, position.longitude);
         });
       });
-      // debugPrint("Function triggered at: ${DateTime.now()}");
-      // debugPrint(
-      //     " Current Location is : ${currentLocation!.latitude} , ${currentLocation!.longitude}");
     });
   }
-
-  // Widget customCard({
-  //   required String title,
-  //   required VoidCallback onTap,
-  //   required String label,
-  //   bool isSelected = false,
-  // }) {
-  //   return Card(
-  //     shape: RoundedRectangleBorder(
-  //       borderRadius: BorderRadius.circular(12),
-  //     ),
-  //     elevation: 4,
-  //     // margin: EdgeInsets.all(16),
-  //     child:
-
-  //         // padding: EdgeInsets.all(16),
-  //         InkWell(
-  //       onTap: onTap,
-  //       child: Container(
-  //         width: MediaQuery.of(context).size.width / 0.2,
-  //         decoration: BoxDecoration(
-  //           shape: BoxShape.rectangle,
-  //           borderRadius: BorderRadius.circular(12),
-  //           border:
-  //               Border.all(color: Color.fromARGB(255, 223, 231, 239), width: 3),
-  //           color: isSelected ? listColor : Colors.white,
-  //         ),
-  //         child: Column(
-  //           mainAxisSize: MainAxisSize.min,
-  //           crossAxisAlignment: CrossAxisAlignment.center,
-  //           mainAxisAlignment: MainAxisAlignment.center,
-  //           children: [
-  //             Text(
-  //               "Route No: $label",
-  //               textAlign: TextAlign.center,
-  //               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-  //             ),
-  //             // SizedBox(height: 8),
-  //             Text(
-  //               title,
-  //               style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-  //             ),
-  //           ],
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
 
   Widget customCard({
     required String title,
@@ -717,19 +674,20 @@ class _HomeState extends State<Home> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) {
-                            if (selectedMap == 'Koteshwar-Kalanki-satdobato') {
-                              return RouteMapPage(
-                                fileName: 'mahasagar',
-                              );
-                            } else if (selectedMap ==
-                                'Satdobato-Kalanki-koteshwar') {
+                            if (selectedMap ==
+                                'Pashupati - Kalanki - Koteshwor') {
                               return RouteMapPage(fileName: 'mahasagar');
-                            } else if (selectedMap == 'Koteshwar-Thimi-Sanga') {
+                            } else if (selectedMap ==
+                                'Koteshwor - Bhaktapur - Sanga') {
                               return RouteMapPage(fileName: 'sanga');
-                            } else if (selectedMap == 'Thimi-Sanga-Koteshwar') {
+                            } else if (selectedMap ==
+                                'Koteshwor - Kalanki - Pashupati') {
+                              return RouteMapPage(fileName: 'mahasagar');
+                            } else if (selectedMap ==
+                                'Sanga - Bhaktapur - Koteshwor') {
                               return RouteMapPage(fileName: 'sanga');
                             } else {
-                              return RouteMapPage(fileName: 'mahasagar');
+                              return RouteMapPage(fileName: 'sanga');
                             }
                           }),
                         );
