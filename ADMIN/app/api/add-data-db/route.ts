@@ -4,8 +4,10 @@ import { collection, addDoc } from "firebase/firestore";
 
 export async function GET() {
   try {
-    const driverId = "4dD3WLyocCaz9sCNcVYJddjFEpI3";
+    const driverId = "xy4hVhcOpWbaJE86svd7dWWwnNX2";
     const driverId1 = "AofneqG15bWYDtNd7ECUAatdYyJ3";
+
+    const dateId = new Date().toISOString().split("T")[0];
 
     const driverPaymentsRef = collection(
       db,
@@ -13,7 +15,8 @@ export async function GET() {
       "paymentDetails",
       "driverlocalpaymenthistory",
       driverId,
-      "payments"
+      dateId
+      // "payments"
     );
 
     const paymentData = {
