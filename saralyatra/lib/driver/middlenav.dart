@@ -17,59 +17,59 @@ class History extends StatefulWidget {
 
 class _HistoryState extends State<History> {
   List<Map<String, String>> tiles = [
-    {"title": "Date1"},
-    {"title": "Date2"},
-    {"title": "Date3"},
-    {"title": "Date4"},
-    {"title": "Date5"},
+    // {"title": "Date1"},
+    // {"title": "Date2"},
+    // {"title": "Date3"},
+    // {"title": "Date4"},
+    // {"title": "Date5"},
   ];
 
-  final Map<String, List<Map<String, String>>> tiles2 = {
-    "Date1": [
-      {
-        "Passengers ID": "123",
-        "Entry": "koteshwor",
-        "Exit": "kalanki",
-        "Amount": "1000.00",
-      },
-      {
-        "Passengers ID": "124",
-        "Entry": "thimi",
-        "Exit": "satdobato",
-        "Amount": "100.00",
-      },
-    ],
-    "Date2": [
-      {
-        "Passengers ID": "456",
-        "Entry": "baneshwor",
-        "Exit": "balaju",
-        "Amount": "1500.00",
-      },
-    ],
-    "Date3": [],
-    "Date4": [
-      {
-        "Passengers ID": "789",
-        "Entry": "putalisadak",
-        "Exit": "newroad",
-        "Amount": "200.00",
-      },
-      {
-        "Passengers ID": "789",
-        "Entry": "putalisadak",
-        "Exit": "newroad",
-        "Amount": "200.00",
-      },
-    ],
-    "Date5": [
-      {
-        "Passengers ID": "789",
-        "Entry": "newroad",
-        "Exit": "putalisadak",
-        "Amount": "200.00",
-      },
-    ],
+  final Map<String, List<Map<String, dynamic>>> tiles2 = {
+    // "Date1": [
+    //   {
+    //     "Passengers ID": "123",
+    //     "Entry": "koteshwor",
+    //     "Exit": "kalanki",
+    //     "Amount": "1000.00",
+    //   },
+    //   {
+    //     "Passengers ID": "124",
+    //     "Entry": "thimi",
+    //     "Exit": "satdobato",
+    //     "Amount": "100.00",
+    //   },
+    // ],
+    // "Date2": [
+    //   {
+    //     "Passengers ID": "456",
+    //     "Entry": "baneshwor",
+    //     "Exit": "balaju",
+    //     "Amount": "1500.00",
+    //   },
+    // ],
+    // "Date3": [],
+    // "Date4": [
+    //   {
+    //     "Passengers ID": "789",
+    //     "Entry": "putalisadak",
+    //     "Exit": "newroad",
+    //     "Amount": "200.00",
+    //   },
+    //   {
+    //     "Passengers ID": "789",
+    //     "Entry": "putalisadak",
+    //     "Exit": "newroad",
+    //     "Amount": "200.00",
+    //   },
+    // ],
+    // "Date5": [
+    //   {
+    //     "Passengers ID": "789",
+    //     "Entry": "newroad",
+    //     "Exit": "putalisadak",
+    //     "Amount": "200.00",
+    //   },
+    // ],
   };
 
   String driverId = '';
@@ -84,6 +84,7 @@ class _HistoryState extends State<History> {
   void initState() {
     super.initState();
     fetchDriverDetails();
+    fetchPayments();
   }
 
   Future<void> fetchDriverDetails() async {
@@ -116,6 +117,68 @@ class _HistoryState extends State<History> {
         isLoading = false;
       });
     }
+  }
+
+  Future<void> fetchPayments() async {
+    final driverId = FirebaseAuth.instance.currentUser?.uid;
+    if (driverId == null) return;
+    print("Driver ID: $driverId");
+    final paymentsCollectionRef = FirebaseFirestore.instance
+        .collection("saralyatra")
+        .doc("paymentDetails")
+        .collection("driverlocalpaymenthistory")
+        .doc(driverId)
+        .collection("payments");
+
+    // Step 1: Get all date documents under 'payments'
+    final dateDocsSnapshot = await paymentsCollectionRef.get();
+    print(
+        "Date docs snapshot: $dateDocsSnapshot.docs.length: ${dateDocsSnapshot.docs.length}");
+    final dates = dateDocsSnapshot.docs.map((doc) => doc.id).toList();
+    print(
+        "Querying path: saralyatra/paymentDetails/driverlocalpaymenthistory/$driverId/payments/");
+
+    debugPrint("Fetched dates: $dates");
+
+    if (!context.mounted) return;
+
+    setState(() {
+      tiles = dates.map((date) => {"title": date}).toList();
+    });
+
+    Map<String, List<Map<String, dynamic>>> groupedPayments = {};
+
+    // Step 2: For each date, fetch its 'payments' subcollection
+    for (final date in dates) {
+      final dailyPaymentsRef =
+          paymentsCollectionRef.doc(date).collection("payments");
+
+      final paymentsSnapshot = await dailyPaymentsRef.get();
+
+      tiles2[date] = [];
+
+      final paymentEntries = paymentsSnapshot.docs.map((doc) {
+        final data = doc.data();
+
+        final entry = {
+          "Passengers ID": data["userid"] ?? "",
+          "Entry": data["location"]?["lat"]?.toString() ?? "N/A",
+          "Exit": data["location"]?["lng"]?.toString() ?? "N/A",
+          "Amount": (data["price"] ?? 0).toString(),
+        };
+
+        setState(() {
+          print("Date: $date, Entry: $entry");
+          tiles2[date]?.add(entry);
+        });
+
+        return entry;
+      }).toList();
+
+      groupedPayments[date] = paymentEntries;
+    }
+
+    // You can use groupedPayments for further processing if needed
   }
 
   void onWithdraw() {

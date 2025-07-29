@@ -60,7 +60,11 @@ class _Login_pageState extends State<Login_page> {
         await SharedpreferenceHelper()
             .saveUserBalance(userDoc['balance'] ?? '0.00');
 
-        setState(() => _isLoading = false);
+        setState(() {
+          if (!mounted) return;
+
+          _isLoading = false;
+        });
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => BottomBar()),
@@ -120,7 +124,11 @@ class _Login_pageState extends State<Login_page> {
           await SharedpreferenceHelper().saveRole('driver');
           await SharedpreferenceHelper().saveDriverId(uid);
 
-          setState(() => _isLoading = false);
+          setState(() {
+            if (!mounted) return;
+
+            _isLoading = false;
+          });
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => DriverPage()),

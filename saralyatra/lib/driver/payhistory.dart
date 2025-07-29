@@ -193,7 +193,7 @@ import 'package:flutter/material.dart';
 
 class Payhistory extends StatefulWidget {
   final String date;
-  final List<Map<String, String>> details;
+  final List<Map<String, dynamic>> details;
 
   const Payhistory({super.key, required this.date, required this.details});
 
@@ -298,7 +298,7 @@ class _PayhistoryState extends State<Payhistory> {
   }
 
   // Helper to calculate total amount
-  String _calculateTotalAmount(List<Map<String, String>> details) {
+  String _calculateTotalAmount(List<Map<String, dynamic>> details) {
     double total = 0;
     for (var item in details) {
       total += double.tryParse(item["Amount"] ?? '0') ?? 0;
