@@ -17,8 +17,14 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "SaralYatra",
-  description: "Bus booking made easy with SaralYatra",
+  description: "Bus booking made easy with SaralYatra - Your travel companion for seamless bus bookings and hassle-free travel experiences.",
+    authors: [{ name: "Ribesh Kumar Sah" }],
+    creator: "Ribesh Kumar Sah",
+   icons: {
+    icon: "/logo.png",
+  },
 };
+
 
 export default function RootLayout({
   children,
