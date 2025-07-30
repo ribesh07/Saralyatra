@@ -33,7 +33,8 @@
     "components/DriverPayment.jsx",
     "components/PaymentHistory.jsx",
     "components/ToursPackages.jsx",
-    "components/BlogsNews.jsx"
+    "components/BlogsNews.jsx",
+    "components/SeatsForm.jsx"
   ],
   "exclude": ["node_modules"]
 }

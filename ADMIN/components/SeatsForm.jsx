@@ -1,6 +1,6 @@
 "use client";
-import React, { use, useState , useEffect } from "react";
-import { doc, setDoc , getDoc } from "firebase/firestore";
+import React, { use, useState, useEffect } from "react";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "@/components/db/firebase"; // Adjust the import based on your project structure
 
 const SeatSelection = ({ bus, onUpdateSeats, onClose }) => {
@@ -20,19 +20,18 @@ const SeatSelection = ({ bus, onUpdateSeats, onClose }) => {
 
   useEffect(() => {
     const fetchSeats = async () => {
-    const busRef = doc(db,"saralyatra" ,"busTicketDetails", "buses" , bus.id); 
-         const busSnap = await getDoc(busRef);
+      const busRef = doc(db, "saralyatra", "busTicketDetails", "buses", bus.id);
+      const busSnap = await getDoc(busRef);
 
-    if (busSnap.exists()) {
-      const busData = busSnap.data();
-      console.log("Fetched bus data:", busData);
-      setSeats(busData); 
-      // setSelectedSeats([]);
-    } else {
-      console.error("Bus document not found!");
-    }
-
-    }
+      if (busSnap.exists()) {
+        const busData = busSnap.data();
+        console.log("Fetched bus data:", busData);
+        setSeats(busData);
+        // setSelectedSeats([]);
+      } else {
+        console.error("Bus document not found!");
+      }
+    };
 
     fetchSeats();
   }, []);
@@ -58,7 +57,11 @@ const SeatSelection = ({ bus, onUpdateSeats, onClose }) => {
       : "text-gray-600";
 
     return (
-      <svg className={`w-8 h-8 ${iconColor}`} fill="currentColor" viewBox="0 0 24 24">
+      <svg
+        className={`w-8 h-8 ${iconColor}`}
+        fill="currentColor"
+        viewBox="0 0 24 24"
+      >
         <path d="M7 13c1.66 0 3-1.34 3-3S8.66 7 7 7s-3 1.34-3 3 1.34 3 3 3zm12-6h-8v7H3V6H1v15h2v-3h18v3h2V10c0-2.21-1.79-4-4-4z" />
       </svg>
     );
@@ -69,7 +72,11 @@ const SeatSelection = ({ bus, onUpdateSeats, onClose }) => {
       onClick={() => toggleSeat(id)}
       className={`w-16 h-16 rounded-xl flex flex-col items-center justify-center
         ${getSeatColor(id)}
-        ${seats[`book${id}`] ? "cursor-not-allowed" : "cursor-pointer hover:opacity-80"}
+        ${
+          seats[`book${id}`]
+            ? "cursor-not-allowed"
+            : "cursor-pointer hover:opacity-80"
+        }
         transition-all duration-200 shadow-sm`}
     >
       {getSeatIcon(id)}
@@ -90,10 +97,10 @@ const SeatSelection = ({ bus, onUpdateSeats, onClose }) => {
     });
 
     const updatedBus = {
-     updatedSeats
+      updatedSeats,
     };
 
-    const busRef = doc(db, "saralyatra", "busTicketDetails","buses", bus.id);
+    const busRef = doc(db, "saralyatra", "busTicketDetails", "buses", bus.id);
     await setDoc(busRef, updatedSeats, { merge: true });
 
     const newSeatCount = bus.availableSeats - selectedSeats.length;
@@ -151,7 +158,9 @@ const SeatSelection = ({ bus, onUpdateSeats, onClose }) => {
           {/* Selected Info */}
           {selectedSeats.length > 0 && (
             <div className="mt-8 p-4 bg-gray-50 rounded-2xl">
-              <h3 className="font-semibold text-gray-800 mb-2">Selected Seats:</h3>
+              <h3 className="font-semibold text-gray-800 mb-2">
+                Selected Seats:
+              </h3>
               <div className="flex flex-wrap gap-2">
                 {selectedSeats.map((seatId) => (
                   <span
