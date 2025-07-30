@@ -315,8 +315,8 @@ class _HomeState extends State<Home> {
 
     if (localToken != serverToken) {
       // Force logout — session is invalidated
-      await FirebaseAuth.instance.signOut();
       if (!context.mounted) return;
+      await FirebaseAuth.instance.signOut();
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (_) => Login_page()));
     }
@@ -375,8 +375,8 @@ class _HomeState extends State<Home> {
 
     if (localToken != serverToken) {
       // Force logout — session is invalidated
-      await FirebaseAuth.instance.signOut();
       if (!context.mounted) return;
+      await FirebaseAuth.instance.signOut();
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (_) => Login_page()));
     }

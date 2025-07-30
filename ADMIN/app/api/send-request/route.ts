@@ -83,6 +83,7 @@ const transferBalance = async (
   lng: any
 ) => {
   try {
+    const dateId = new Date().toISOString().split("T")[0];
     // Step 1: Reference for user and driver
     const userRef = doc(
       db,
@@ -107,18 +108,31 @@ const transferBalance = async (
       userId,
       "payments"
     );
-    const driverPaymentsRef = collection(
+    // const driverPaymentsRef = collection(
+    //   db,
+    //   "saralyatra",
+    //   "paymentDetails",
+    //   "driverlocalpaymenthistory",
+    //   driverId,
+    //   "payments",
+    //     dateId,
+    //   "payments"
+    // );
+    const dateDocRef = doc(
       db,
       "saralyatra",
       "paymentDetails",
       "driverlocalpaymenthistory",
       driverId,
-      "payments"
+      "payments",
+      dateId
     );
 
+    await setDoc(dateDocRef, { createdAt: new Date() }, { merge: true });
     // Step 2: Get user and driver data
     const userSnap = await getDoc(userRef);
     const driverSnap = await getDoc(driverRef);
+    const paymentsSubColRef = collection(dateDocRef, "payments");
 
     if (!userSnap.exists() || !driverSnap.exists()) {
       console.error("User or Driver not found");
@@ -144,7 +158,7 @@ const transferBalance = async (
     await updateDoc(driverRef, {
       balance: driverBalance + 15,
     });
-    const docRef = await addDoc(driverPaymentsRef, {
+    const docRef = await addDoc(paymentsSubColRef, {
       balance: 15,
       timestamp: new Date(),
       userId: userId,
@@ -154,6 +168,7 @@ const transferBalance = async (
         lng: lng,
       },
     });
+    console.log("Payment added with ID:", docRef.id);
 
     const setsucc = await updatePayment(userId, lat, lng);
     console.log("Balance transferred successfully.");
