@@ -246,9 +246,10 @@ const BusDashboard = () => {
                       <input
                         type="text"
                         value={editForm.id}
-                        onChange={(e) =>
-                          setEditForm({ ...editForm, id: e.target.value })
-                        }
+                        readOnly
+                        // onChange={(e) =>
+                        //   setEditForm({ ...editForm, id: e.target.value })
+                        // }
                         className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     ) : (
