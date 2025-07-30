@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Edit, Save, X, Trash2, Loader2 } from "lucide-react";
-import SeatSelection from "@/app/seats/page";
+import SeatSelection from "@/components/SeatsForm";
 import { doc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/components/db/firebase"; // adjust path to your config
 import AddBus from "./AddBus";
