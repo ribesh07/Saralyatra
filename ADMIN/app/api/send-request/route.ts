@@ -176,7 +176,7 @@ const transferBalance = async (
       return true;
     }
   } catch (error) {
-    console.error("Error during balance transfer:", error);
+    console.log("Error during balance transfer:", error);
   }
 };
 
@@ -195,7 +195,7 @@ const savehistory = async (userId: any, driverId: any, lat: any, lng: any) => {
     const driverSnap = await getDoc(driverRef);
 
     if (!driverSnap.exists()) {
-      console.error("User or Driver not found");
+      console.log("User or Driver not found");
       return false;
     }
 

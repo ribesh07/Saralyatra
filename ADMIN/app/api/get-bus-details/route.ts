@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
     const route = searchParams.get("route"); // e.g., "ktm-pkr", "pkr-ktm"
     const busId = searchParams.get("busId"); // specific bus ID if needed
     const includeSeatData = true;
-    console.log(route, busId, includeSeatData);
+    // console.log(route, busId, includeSeatData);
     // If specific bus ID is requested
     if (busId) {
       return await getSingleBusDetails(busId, includeSeatData);
@@ -77,7 +77,7 @@ export async function GET(req: NextRequest) {
 
     // If route is specified, get buses for that route
     if (route) {
-      console.log("Fetching buses for route:", route);
+      // console.log("Fetching buses for route:", route);
       return await getBusesByRoute(route, includeSeatData);
     }
 
@@ -190,7 +190,7 @@ async function getSingleBusDetails(busId: string, includeSeatData: boolean) {
 async function getBusesByRoute(route: string, includeSeatData: boolean) {
   try {
     const buses = await getBusesByRouteInternal(route, includeSeatData);
-    console.log("Fetched buses for route:", route, buses);
+    // console.log("Fetched buses for route:", route, buses);
     return NextResponse.json({
       success: true,
       data: buses,
@@ -293,13 +293,13 @@ async function getSeatData(busId: string): Promise<SeatData | null> {
     const seatDoc = await getDoc(seatDocRef);
     console.log("Seat data fetched:");
     if (seatDoc.exists()) {
-      console.log("Seat data exists:", seatDoc.data());
+      // console.log("Seat data exists:", seatDoc.data());
       return seatDoc.data();
     }
 
     return null;
   } catch (error) {
-    console.error(`Error fetching seat data for bus ${busId}:`, error);
+    console.log(`Error fetching seat data for bus ${busId}:`, error);
     return null;
   }
 }
